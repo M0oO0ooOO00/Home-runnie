@@ -1,0 +1,151 @@
+@import "./tokens.css";
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* dark variant (was in globals.css) */
+@custom-variant dark (&:is(.dark *));
+
+/* Base */
+@layer base {
+  html {
+    font-family: var(--font-sans);
+  }
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Typography utilities (T/B/C) */
+@layer components {
+  /* Title 140% */
+  .text-t01-b {
+    font-size: var(--text-t01);
+    line-height: var(--leading-140);
+    font-weight: var(--font-weight-b);
+  }
+  .text-t01-sb {
+    font-size: var(--text-t01);
+    line-height: var(--leading-140);
+    font-weight: var(--font-weight-sb);
+  }
+  .text-t02-b {
+    font-size: var(--text-t02);
+    line-height: var(--leading-140);
+    font-weight: var(--font-weight-b);
+  }
+  .text-t02-sb {
+    font-size: var(--text-t02);
+    line-height: var(--leading-140);
+    font-weight: var(--font-weight-sb);
+  }
+  .text-t03-b {
+    font-size: var(--text-t03);
+    line-height: var(--leading-140);
+    font-weight: var(--font-weight-b);
+  }
+  .text-t03-sb {
+    font-size: var(--text-t03);
+    line-height: var(--leading-140);
+    font-weight: var(--font-weight-sb);
+  }
+  .text-t04-b {
+    font-size: var(--text-t04);
+    line-height: var(--leading-140);
+    font-weight: var(--font-weight-b);
+  }
+  .text-t04-sb {
+    font-size: var(--text-t04);
+    line-height: var(--leading-140);
+    font-weight: var(--font-weight-sb);
+  }
+
+  /* Body 150% */
+  .text-b01-b {
+    font-size: var(--text-b01);
+    line-height: var(--leading-150);
+    font-weight: var(--font-weight-b);
+  }
+  .text-b01-sb {
+    font-size: var(--text-b01);
+    line-height: var(--leading-150);
+    font-weight: var(--font-weight-sb);
+  }
+  .text-b01-m {
+    font-size: var(--text-b01);
+    line-height: var(--leading-150);
+    font-weight: var(--font-weight-m);
+  }
+  .text-b01-r {
+    font-size: var(--text-b01);
+    line-height: var(--leading-150);
+    font-weight: var(--font-weight-r);
+  }
+
+  .text-b02-b {
+    font-size: var(--text-b02);
+    line-height: var(--leading-150);
+    font-weight: var(--font-weight-b);
+  }
+  .text-b02-sb {
+    font-size: var(--text-b02);
+    line-height: var(--leading-150);
+    font-weight: var(--font-weight-sb);
+  }
+  .text-b02-m {
+    font-size: var(--text-b02);
+    line-height: var(--leading-150);
+    font-weight: var(--font-weight-m);
+  }
+  .text-b02-r {
+    font-size: var(--text-b02);
+    line-height: var(--leading-150);
+    font-weight: var(--font-weight-r);
+  }
+
+  .text-b03-b {
+    font-size: var(--text-b03);
+    line-height: var(--leading-150);
+    font-weight: var(--font-weight-b);
+  }
+  .text-b03-sb {
+    font-size: var(--text-b03);
+    line-height: var(--leading-150);
+    font-weight: var(--font-weight-sb);
+  }
+  .text-b03-m {
+    font-size: var(--text-b03);
+    line-height: var(--leading-150);
+    font-weight: var(--font-weight-m);
+  }
+  .text-b03-r {
+    font-size: var(--text-b03);
+    line-height: var(--leading-150);
+    font-weight: var(--font-weight-r);
+  }
+
+  /* Caption */
+  .text-c01-m {
+    font-size: var(--text-c01);
+    line-height: var(--leading-150);
+    font-weight: var(--font-weight-m);
+  }
+  .text-c01-r {
+    font-size: var(--text-c01);
+    line-height: var(--leading-150);
+    font-weight: var(--font-weight-r);
+  }
+
+  /* optional: elevation aliases */
+  .elevation-1 {
+    box-shadow: var(--shadow-01);
+  }
+  .elevation-2 {
+    box-shadow: var(--shadow-02);
+  }
+  .elevation-3 {
+    box-shadow: var(--shadow-03);
+  }
+}

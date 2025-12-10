@@ -1,0 +1,191 @@
+/* === Typography / Effect / Palette tokens === */
+@theme inline {
+  /* font families */
+  --font-sans:
+    "Pretendard Variable", Pretendard, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+
+  /* font weights */
+  --font-weight-b: 700;
+  --font-weight-sb: 600;
+  --font-weight-m: 500;
+  --font-weight-r: 400;
+
+  /* line-heights */
+  --leading-140: 1.4;
+  --leading-150: 1.5;
+
+  /* Title sizes */
+  --text-t01: 26px;
+  --text-t02: 24px;
+  --text-t03: 22px;
+  --text-t04: 20px;
+
+  /* Body sizes */
+  --text-b01: 18px;
+  --text-b02: 16px;
+  --text-b03: 14px;
+
+  /* Caption size */
+  --text-c01: 12px;
+
+  /* Effects / Shadows */
+  --shadow-01: 0 4px 8px 0 rgb(0 0 0 / 0.03), 4px 0 8px 0 rgb(0 0 0 / 0.03);
+  --shadow-02: 0 4px 16px 0 rgb(0 0 0 / 0.05), 4px 0 16px 0 rgb(0 0 0 / 0.05);
+  --shadow-03: 0 4px 32px 0 rgb(0 0 0 / 0.05), 4px 0 32px 0 rgb(0 0 0 / 0.05);
+
+  /* Gray palette (physical) */
+  --color-white: #fafafa;
+  --color-black: #0e0e0e;
+  --color-gray-50: #f5f5f5;
+  --color-gray-100: #ececee;
+  --color-gray-200: #dddee0;
+  --color-gray-300: #aaacb2;
+  --color-gray-400: #95969b;
+  --color-gray-500: #7a7d82;
+  --color-gray-600: #6f7176;
+  --color-gray-700: #57585c;
+  --color-gray-800: #434448;
+  --color-gray-850: #333537;
+  --color-gray-900: #29292c;
+  --color-gray-950: #1b1b1b;
+
+  /* ===== Tailwind v4 color alias (required by shadcn utilities) =====
+       유틸 'bg-background' → '--color-background' → '--background' 순으로 참조됨
+    */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-main-green: #0abf00;
+
+  /* optional: sidebar/chart aliases (shadcn sidebar 컴포넌트 사용 시) */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* radii (derived) */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* === Semantic values (single source of truth) === */
+:root {
+  /* base radius */
+  --radius: 0.625rem;
+
+  /* Light theme using your Gray palette */
+  --background: var(--color-white);
+  --foreground: var(--color-gray-950);
+
+  --card: var(--color-white);
+  --card-foreground: var(--color-gray-950);
+  --popover: var(--color-white);
+  --popover-foreground: var(--color-gray-950);
+
+  /* brand primaries (필요 시 교체) */
+  --primary: var(--color-gray-950);
+  --primary-foreground: var(--color-white);
+
+  --secondary: var(--color-gray-100);
+  --secondary-foreground: var(--color-gray-900);
+
+  --muted: var(--color-gray-100);
+  --muted-foreground: var(--color-gray-700);
+
+  --accent: var(--color-gray-100);
+  --accent-foreground: var(--color-gray-900);
+
+  --destructive: #e5484d; /* 필요 시 브랜드 색으로 교체 */
+
+  --border: var(--color-gray-200);
+  --input: var(--color-gray-200);
+  --ring: var(--color-gray-400);
+
+  /* optional: charts/sidebar defaults */
+  --chart-1: var(--color-gray-700);
+  --chart-2: var(--color-gray-500);
+  --chart-3: var(--color-gray-300);
+  --chart-4: var(--color-gray-850);
+  --chart-5: var(--color-gray-900);
+
+  --sidebar: var(--color-gray-50);
+  --sidebar-foreground: var(--color-gray-950);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--color-gray-100);
+  --sidebar-accent-foreground: var(--color-gray-900);
+  --sidebar-border: var(--color-gray-200);
+  --sidebar-ring: var(--ring);
+}
+
+/* Dark theme overrides */
+.dark {
+  --background: var(--color-gray-950);
+  --foreground: var(--color-gray-50);
+
+  --card: var(--color-gray-900);
+  --card-foreground: var(--color-gray-50);
+  --popover: var(--color-gray-900);
+  --popover-foreground: var(--color-gray-50);
+
+  --primary: var(--color-gray-200);
+  --primary-foreground: var(--color-gray-950);
+
+  --secondary: var(--color-gray-900);
+  --secondary-foreground: var(--color-gray-100);
+
+  --muted: var(--color-gray-900);
+  --muted-foreground: var(--color-gray-300);
+
+  --accent: var(--color-gray-900);
+  --accent-foreground: var(--color-gray-100);
+
+  --destructive: #ff6369;
+  --color-main-green: #00c49f;
+
+  --border: var(--color-gray-800);
+  --input: var(--color-gray-800);
+  --ring: var(--color-gray-600);
+
+  --chart-1: var(--color-gray-300);
+  --chart-2: var(--color-gray-500);
+  --chart-3: var(--color-gray-700);
+  --chart-4: var(--color-gray-400);
+  --chart-5: var(--color-gray-600);
+
+  --sidebar: var(--color-gray-900);
+  --sidebar-foreground: var(--color-gray-50);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--color-gray-800);
+  --sidebar-accent-foreground: var(--color-gray-100);
+  --sidebar-border: var(--color-gray-800);
+  --sidebar-ring: var(--ring);
+}
+
+/* default family */
+:root {
+  font-family: var(--font-sans);
+}

@@ -1,0 +1,11 @@
+#!/bin/sh
+# Husky v10 호환, GUI(pnpm PATH) 환경 대비
+
+if command -v pnpm >/dev/null 2>&1; then
+  pnpm exec lint-staged
+else
+  npx --no-install lint-staged
+fi
+
+# 로그가 필요하면 이렇게:
+# echo "pre-commit running"
