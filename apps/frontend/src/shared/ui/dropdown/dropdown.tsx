@@ -97,7 +97,8 @@ export type ItemWeight = "normal" | "medium" | "semibold" | "bold";
 export type ItemState = "default" | "selected" | "disabled";
 
 export interface DropdownProps
-  extends Omit<React.ComponentProps<typeof Select>, "children">,
+  extends
+    Omit<React.ComponentProps<typeof Select>, "children">,
     VariantProps<typeof triggerVariants> {
   placeholder?: string;
   label?: string;

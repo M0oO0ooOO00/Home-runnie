@@ -45,8 +45,7 @@ const textFieldVariants = cva(
 type InputPropsWithoutSize = Omit<InputHTMLAttributes<HTMLInputElement>, "size">;
 
 export interface TextFieldProps
-  extends InputPropsWithoutSize,
-    VariantProps<typeof textFieldVariants> {
+  extends InputPropsWithoutSize, VariantProps<typeof textFieldVariants> {
   errorMessage?: string;
   helperText?: string;
 }

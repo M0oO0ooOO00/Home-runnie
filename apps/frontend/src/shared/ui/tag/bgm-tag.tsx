@@ -62,8 +62,7 @@ const tagVariants = cva(
 );
 
 export interface BgmTagProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof tagVariants> {
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof tagVariants> {
   text: string;
   selected?: boolean;
 }

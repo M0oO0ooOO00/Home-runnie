@@ -58,8 +58,7 @@ const thumbVariants = cva(
 );
 
 export interface ToggleSwitchProps
-  extends React.ComponentProps<typeof SwitchPrimitive.Root>,
-    VariantProps<typeof toggleVariants> {
+  extends React.ComponentProps<typeof SwitchPrimitive.Root>, VariantProps<typeof toggleVariants> {
   label?: string;
   description?: string;
   disabled?: boolean;

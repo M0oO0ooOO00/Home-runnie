@@ -63,8 +63,7 @@ const ctaSmallVariants = cva(
 );
 
 export interface CtaSmallProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof ctaSmallVariants> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof ctaSmallVariants> {
   asChild?: boolean;
   icon?: React.ReactNode;
   text?: string;
