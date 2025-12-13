@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ErrorData, ErrorResponse } from '@homerunnie/shared';
 
-export class ErrorDataDto {
+export class ErrorDataDto implements ErrorData {
     @ApiProperty({
         description: '에러 코드',
         type: 'string',
@@ -31,7 +32,7 @@ export class ErrorDataDto {
     timestamp: string;
 }
 
-export class ErrorResponseDto {
+export class ErrorResponseDto implements ErrorResponse {
     @ApiProperty({
         description: 'HTTP 상태 코드',
         type: 'integer',

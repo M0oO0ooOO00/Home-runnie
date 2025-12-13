@@ -1,8 +1,9 @@
 import { Type } from 'class-transformer';
 import { IsInt, Min, Max, IsOptional } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { PaginationQuery } from '@homerunnie/shared';
 
-export class PaginationQueryDto {
+export class PaginationQueryDto implements PaginationQuery {
     @ApiPropertyOptional({
         description: '페이지 번호',
         example: 1,

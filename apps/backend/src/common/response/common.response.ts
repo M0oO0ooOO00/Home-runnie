@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { CommonResponse } from '@homerunnie/shared';
 
-export class CommonResponse<T> {
+export class CommonResponseDto<T> implements CommonResponse<T> {
     @ApiProperty({ example: 200 })
     code: number;
     @ApiProperty({ type: () => Object, required: false })

@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { MemberRepository } from '../repository';
-import { PagePaginationResponse, PaginationService } from '../../common';
+import { PagePaginationResponseDto, PaginationService } from '../../common';
 import {
     GetMemberListResponse,
     GetMyProfileResponse,
@@ -74,8 +74,8 @@ export class MemberService {
         currentPage: number,
         pageSize: number,
         totalMembers: number,
-    ): PagePaginationResponse<GetMemberListResponse[]> {
-        return PagePaginationResponse.from(
+    ): PagePaginationResponseDto<GetMemberListResponse[]> {
+        return PagePaginationResponseDto.from(
             memberListResponses,
             currentPage,
             pageSize,
@@ -168,7 +168,7 @@ export class MemberService {
         memberId: number,
         page: number = 1,
         pageSize: number = PaginationService.getDefaultRecruitmentPageSize(),
-    ): Promise<PagePaginationResponse<RecruitmentSummaryResponse[]>> {
+    ): Promise<PagePaginationResponseDto<RecruitmentSummaryResponse[]>> {
         return this.getMyRecruitments(
             (memberId, page, pageSize) =>
                 this.memberRepository.findScrappedRecruitmentsByMemberId(
@@ -190,7 +190,7 @@ export class MemberService {
         memberId: number,
         page: number = 1,
         pageSize: number = PaginationService.getDefaultRecruitmentPageSize(),
-    ): Promise<PagePaginationResponse<RecruitmentSummaryResponse[]>> {
+    ): Promise<PagePaginationResponseDto<RecruitmentSummaryResponse[]>> {
         return this.getMyRecruitments(
             (memberId, page, pageSize) =>
                 this.memberRepository.findWrittenRecruitmentsByMemberId(
@@ -212,7 +212,7 @@ export class MemberService {
         memberId: number,
         page: number = 1,
         pageSize: number = PaginationService.getDefaultRecruitmentPageSize(),
-    ): Promise<PagePaginationResponse<RecruitmentSummaryResponse[]>> {
+    ): Promise<PagePaginationResponseDto<RecruitmentSummaryResponse[]>> {
         return this.getMyRecruitments(
             (memberId, page, pageSize) =>
                 this.memberRepository.findParticipatedRecruitmentsByMemberId(
@@ -240,7 +240,7 @@ export class MemberService {
         memberId: number,
         page: number,
         pageSize: number,
-    ): Promise<PagePaginationResponse<RecruitmentSummaryResponse[]>> {
+    ): Promise<PagePaginationResponseDto<RecruitmentSummaryResponse[]>> {
         const [recruitments, totalCount] = await Promise.all([
             findFunction(memberId, page, pageSize),
             countFunction(memberId),

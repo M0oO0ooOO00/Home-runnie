@@ -1,6 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { PagePaginationResponse } from '../../common';
+import { PagePaginationResponseDto } from '../../common';
 import { RecruitmentSummaryResponse } from '../dto/response/recruitment-summary.response';
 
 export const GetScrappedRecruitmentsSwagger = applyDecorators(
@@ -26,6 +26,6 @@ export const GetScrappedRecruitmentsSwagger = applyDecorators(
     ApiResponse({
         status: 200,
         description: '스크랩한 모집글 목록 조회 성공',
-        type: PagePaginationResponse<RecruitmentSummaryResponse[]>,
+        type: PagePaginationResponseDto<RecruitmentSummaryResponse[]>,
     }),
 );
