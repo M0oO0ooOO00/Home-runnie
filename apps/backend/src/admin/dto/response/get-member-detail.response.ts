@@ -11,44 +11,13 @@ import {
     GenderDescription,
     PostType,
     PostTypeDescription,
-} from '../../../common';
-
-interface MemberDetailInfo {
-    id: number;
-    name: string;
-    nickname: string | null;
-    supportTeam: Team | null;
-    supportTeamName: string | null;
-    gender: string | null;
-    age: number | null;
-    phoneNumber: string | null;
-    joinedAt: Date;
-    accountStatus: string;
-}
-
-interface WarnRecord {
-    reason: string;
-    postType: string | null;
-    postTitle: string | null;
-    postId: number | null;
-    warnedAt: Date;
-}
-
-interface ReportRecord {
-    reportType: string | null;
-    postType: string | null;
-    postTitle: string | null;
-    postId: number | null;
-    reportedMemberName: string | null;
-    reporterName: string | null;
-    reportedAt: Date;
-}
-
-interface MemberStatistics {
-    totalWarnCount: number;
-    totalReportingCount: number;
-    totalReportedCount: number;
-}
+} from '@homerunnie/shared';
+import {
+    MemberDetailInfo,
+    MemberStatistics,
+    ReportRecord,
+    WarnRecord,
+} from '@homerunnie/shared';
 
 export class WarnRecordResponse implements WarnRecord {
     @ApiProperty({

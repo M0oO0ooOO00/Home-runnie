@@ -1,5 +1,5 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { Team } from '../../enums/team.enum';
+import { Team } from '@homerunnie/shared';
 
 export const teamPgEnum = pgEnum(
     'team',

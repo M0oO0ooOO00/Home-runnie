@@ -1,6 +1,6 @@
 import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Team } from '../../../common';
+import { Team } from '@homerunnie/shared';
 
 export class UpdateMyProfileRequest {
     @ApiProperty({

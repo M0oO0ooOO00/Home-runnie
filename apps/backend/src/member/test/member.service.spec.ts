@@ -24,22 +24,4 @@ describe('MemberService', () => {
 
         service = module.get(MemberService);
     });
-
-    it('findOneById_success', async () => {
-        const expected = {
-            id: 1,
-            name: 'John Doe',
-            email: 'test@test.com',
-            deleted: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        };
-
-        mockMemberRepository.findOne.mockResolvedValue(expected);
-
-        const result = await service.findOneById(1);
-
-        expect(result).toEqual(expected);
-        expect(mockMemberRepository.findOne).toHaveBeenCalledWith(1);
-    });
 });

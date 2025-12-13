@@ -1,7 +1,12 @@
 {
     "name": "@homerunnie/shared",
     "version": "1.0.0",
-    "main": "src/index.ts",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch"
+    },
     "devDependencies": {
         "typescript": "^5.0.4"
     }

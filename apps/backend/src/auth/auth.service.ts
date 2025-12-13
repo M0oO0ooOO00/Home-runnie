@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { MemberRepository } from 'src/member/repository';
-import { OAuthProvider, Role } from '../common';
+import { OAuthProvider, Role } from '@homerunnie/shared';
 import { SignUpCompleteRequestDto } from './dto/request/sign-up.complete.request';
 
 export interface KakaoOAuthMember {

@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import { Strategy, Profile } from 'passport-kakao';
 import { VerifyCallback } from 'passport-oauth2';
-import { OAuthProvider } from '../../common';
+import { OAuthProvider } from '@homerunnie/shared';
 
 @Injectable()
 export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
