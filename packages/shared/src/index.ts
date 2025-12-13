@@ -1,3 +1,2 @@
-export * from './dto/common';
-export * from './dto/admin';
+export * from './dto';
 export * from './enums';

@@ -7,7 +7,7 @@ import {
     ApiConflictResponse,
     ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
-import { CreateMemberResponse, CreateMemberRequest } from '../dto';
+import { CreateMemberResponseDto, CreateMemberRequestDto } from '../dto';
 import { ErrorResponseDto } from '../../common';
 
 export const CreateMemberSwagger = applyDecorators(
@@ -16,11 +16,11 @@ export const CreateMemberSwagger = applyDecorators(
         description: '새로운 멤버 생성',
     }),
     ApiBody({
-        type: CreateMemberRequest,
+        type: CreateMemberRequestDto,
         description: '회원가입시 필요한 데이터',
     }),
     ApiCreatedResponse({
-        type: CreateMemberResponse,
+        type: CreateMemberResponseDto,
         description: '회원가입 성공 후 반환하는 데이터',
     }),
     ApiBadRequestResponse({

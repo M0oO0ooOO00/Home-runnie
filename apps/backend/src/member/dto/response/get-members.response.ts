@@ -1,13 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { GetMemberResponse } from './get-member.response';
 import { Member } from '../../domain';
+import { GetMemberResponse, GetMembersResponse } from '@homerunnie/shared';
+import { GetMemberResponseDto } from './get-member.response';
 
-interface GetMembersResponseInterface {
-    members: GetMemberResponse[];
-}
-
-export class GetMembersResponse implements GetMembersResponseInterface {
-    @ApiProperty({ type: [GetMemberResponse] })
+export class GetMembersResponseDto implements GetMembersResponse {
+    @ApiProperty({ type: [GetMemberResponseDto] })
     members: GetMemberResponse[];
 
     constructor(members: GetMemberResponse[]) {
@@ -15,6 +12,6 @@ export class GetMembersResponse implements GetMembersResponseInterface {
     }
 
     static from(members: (typeof Member.$inferSelect)[]): GetMembersResponse {
-        return new GetMembersResponse(members);
+        return new GetMembersResponseDto(members);
     }
 }

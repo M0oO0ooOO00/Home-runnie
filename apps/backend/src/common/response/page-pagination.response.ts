@@ -29,7 +29,7 @@ export class PagePaginationResponseDto<T> implements PagePaginationResponse<T> {
         currentPage: number,
         pageSize: number,
         totalCount: number,
-    ): PagePaginationResponse<T[]> {
+    ): PagePaginationResponseDto<T[]> {
         const totalPage = Math.ceil(totalCount / pageSize);
         return new PagePaginationResponseDto<T[]>(
             currentPage,

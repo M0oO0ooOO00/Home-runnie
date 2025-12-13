@@ -7,7 +7,7 @@ import {
     ApiInternalServerErrorResponse,
     ApiBearerAuth,
 } from '@nestjs/swagger';
-import { GetMyProfileResponse } from '../dto';
+import { GetMyProfileResponseDto } from '../dto';
 import { ErrorResponseDto } from '../../common';
 
 export const GetMyProfileSwagger = applyDecorators(
@@ -18,7 +18,7 @@ export const GetMyProfileSwagger = applyDecorators(
     }),
     ApiBearerAuth(),
     ApiOkResponse({
-        type: GetMyProfileResponse,
+        type: GetMyProfileResponseDto,
         description: '내 프로필 정보 조회 성공',
         example: {
             nickname: '야구왕타돌이',

@@ -1,8 +1,8 @@
 import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Team } from '@homerunnie/shared';
+import { Team, UpdateMyProfileRequest } from '@homerunnie/shared';
 
-export class UpdateMyProfileRequest {
+export class UpdateMyProfileRequestDto implements UpdateMyProfileRequest {
     @ApiProperty({
         description: '닉네임',
         example: '야구팬123',

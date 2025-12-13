@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { RecruitmentSummaryResponse } from '@homerunnie/shared';
 
-export class RecruitmentSummaryResponse {
+export class RecruitmentSummaryResponseDto implements RecruitmentSummaryResponse {
     @ApiProperty({
         description: '페이지 내 순서 번호',
         example: 1,
@@ -77,15 +78,15 @@ export class RecruitmentSummaryResponse {
             gameDateTime: string;
             createdAt: Date;
         },
-    ): RecruitmentSummaryResponse {
+    ): RecruitmentSummaryResponseDto {
         const number = (page - 1) * pageSize + index + 1;
         const gameTeams = `${data.teamHome} vs ${data.teamAway}`;
-        const recruitmentStatus = RecruitmentSummaryResponse.determineStatus(
+        const recruitmentStatus = RecruitmentSummaryResponseDto.determineStatus(
             data.postStatus,
             data.gameDateTime,
         );
 
-        return new RecruitmentSummaryResponse(
+        return new RecruitmentSummaryResponseDto(
             number,
             data.title,
             data.gameDate,
