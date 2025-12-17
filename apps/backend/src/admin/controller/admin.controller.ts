@@ -9,7 +9,8 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { AdminService } from '../service';
 import { MemberService } from '../../member/service';
-import { PaginationQueryDto, RolesGuard, Roles, Role } from '../../common';
+import { PaginationQueryDto, RolesGuard, Roles } from '../../common';
+import { Role } from '@homerunnie/shared';
 import { GetMemberByIdSwagger, GetMembersByPageSwagger } from '../swagger';
 
 @ApiTags('관리자')

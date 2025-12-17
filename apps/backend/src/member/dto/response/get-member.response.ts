@@ -1,13 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Member } from '../../domain';
+import { GetMemberResponse } from '@homerunnie/shared';
 
-interface GetMemberResponseInterface {
-    id: number;
-    name: string;
-    createdAt: Date;
-}
-
-export class GetMemberResponse implements GetMemberResponseInterface {
+export class GetMemberResponseDto implements GetMemberResponse {
     @ApiProperty({
         description: '사용자 ID',
         type: 'integer',
@@ -28,8 +23,8 @@ export class GetMemberResponse implements GetMemberResponseInterface {
     })
     createdAt: Date;
 
-    static from(member: typeof Member.$inferSelect): GetMemberResponse {
-        const dto = new GetMemberResponse();
+    static from(member: typeof Member.$inferSelect): GetMemberResponseDto {
+        const dto = new GetMemberResponseDto();
         dto.id = member.id;
         dto.name = member.name;
         dto.createdAt = member.createdAt;

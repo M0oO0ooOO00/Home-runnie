@@ -27,7 +27,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
             const exceptionResponse = exception.getResponse();
 
             // ValidationPipe 에러 처리
-            if (typeof exceptionResponse === 'object' && exceptionResponse !== null && 'message' in exceptionResponse) {
+            if (
+                typeof exceptionResponse === 'object' &&
+                exceptionResponse !== null &&
+                'message' in exceptionResponse
+            ) {
                 const validationResponse = exceptionResponse as any;
                 const message = Array.isArray(validationResponse.message)
                     ? validationResponse.message.join(', ')

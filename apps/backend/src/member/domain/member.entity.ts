@@ -15,7 +15,7 @@ import {
     oauthProviderPgEnum,
     accountStatusPgEnum,
 } from '../../common/db/enums';
-import { AccountStatusEnum } from '../../common';
+import { AccountStatusEnum } from '@homerunnie/shared';
 
 export { rolePgEnum, genderPgEnum, oauthProviderPgEnum, accountStatusPgEnum };
 

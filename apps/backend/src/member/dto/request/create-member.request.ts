@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { CreateMemberRequest } from '@homerunnie/shared';
 
-export class CreateMemberRequest {
+export class CreateMemberRequestDto implements CreateMemberRequest {
     @ApiProperty({ description: '이름', example: '홍길동' })
     name: string;
 

@@ -1,5 +1,5 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { Role } from '../../enums';
+import { Role } from '@homerunnie/shared';
 
 export const rolePgEnum = pgEnum(
     'role',

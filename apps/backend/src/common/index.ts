@@ -4,7 +4,6 @@ export * from './db/enums';
 export * from './db/base.entity';
 export * from './decorators';
 export * from './dto';
-export * from './enums';
 export * from './exceptions';
 export * from './filters';
 export * from './guards';

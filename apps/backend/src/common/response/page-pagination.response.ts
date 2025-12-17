@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { PagePaginationResponse } from '@homerunnie/shared';
 
-export class PagePaginationResponse<T> {
+export class PagePaginationResponseDto<T> implements PagePaginationResponse<T> {
     @ApiProperty({ example: 1 })
     currentPage: number;
     @ApiProperty({ example: 10 })
@@ -28,9 +29,9 @@ export class PagePaginationResponse<T> {
         currentPage: number,
         pageSize: number,
         totalCount: number,
-    ): PagePaginationResponse<T[]> {
+    ): PagePaginationResponseDto<T[]> {
         const totalPage = Math.ceil(totalCount / pageSize);
-        return new PagePaginationResponse<T[]>(
+        return new PagePaginationResponseDto<T[]>(
             currentPage,
             totalPage,
             totalCount,

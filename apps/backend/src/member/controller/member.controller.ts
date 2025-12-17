@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Put, Query } from '@nestjs/common';
 import { MemberService } from '../service';
-import { CreateMemberRequest, UpdateMyProfileRequest } from '../dto';
+import { CreateMemberRequestDto, UpdateMyProfileRequestDto } from '../dto';
 import {
     CreateMemberSwagger,
     GetMyProfileSwagger,
@@ -19,7 +19,7 @@ export class MemberController {
 
     @Post()
     @CreateMemberSwagger
-    async signUp(@Body() createMemberDto: CreateMemberRequest) {
+    async signUp(@Body() createMemberDto: CreateMemberRequestDto) {
         const { name, email } = createMemberDto;
         // TODO : 바뀐 엔티티에 따라 다시 만들어야 함.
         await this.memberService.createMember(name, email);
@@ -35,7 +35,7 @@ export class MemberController {
     @UpdateMyProfileSwagger
     async updateMyProfile(
         @CurrentMember() memberId: number,
-        @Body() updateProfileDto: UpdateMyProfileRequest,
+        @Body() updateProfileDto: UpdateMyProfileRequestDto,
     ) {
         return await this.memberService.updateMyProfile(
             memberId,

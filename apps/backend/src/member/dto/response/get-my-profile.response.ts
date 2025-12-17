@@ -1,16 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Member, Profile } from '../../domain';
 import { Warn } from '../../../admin/domain';
+import { GetMyProfileResponse } from '@homerunnie/shared';
 
-interface GetMyProfileResponseInterface {
-    nickname: string;
-    supportTeam: string | null;
-    oauthProvider: string;
-    accountStatus: string;
-    warnCount: number;
-}
-
-export class GetMyProfileResponse implements GetMyProfileResponseInterface {
+export class GetMyProfileResponseDto implements GetMyProfileResponse {
     @ApiProperty({
         description: '닉네임',
         type: 'string',
@@ -51,8 +44,8 @@ export class GetMyProfileResponse implements GetMyProfileResponseInterface {
         member: typeof Member.$inferSelect,
         profile: typeof Profile.$inferSelect,
         warns: (typeof Warn.$inferSelect)[],
-    ): GetMyProfileResponse {
-        const response = new GetMyProfileResponse();
+    ): GetMyProfileResponseDto {
+        const response = new GetMyProfileResponseDto();
         response.nickname = profile.nickname;
         response.supportTeam = profile.supportTeam;
         response.oauthProvider = member.oauthProvider;

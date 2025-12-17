@@ -1,22 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { eq, count, sql, desc, and } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { Member } from '../domain';
-import { Profile } from '../domain';
-import {
-    DATABASE_CONNECTION,
-    Gender,
-    OAuthProvider,
-    Role,
-    Team,
-} from '../../common';
+import { Profile, Member } from '../domain';
+import { DATABASE_CONNECTION } from '../../common';
+import { Team, Gender, OAuthProvider, Role } from '@homerunnie/shared';
 import { Report, ReportCount } from '../../report/domain';
 import { Warn } from '../../admin/domain';
 import { Post, RecruitmentDetail } from '../../post/domain';
 import { Scrap } from '../../scrap/domain';
 import { Participation } from '../../participation/domain';
 import { RecruitmentQueryResult } from '../type';
-import { UpdateMyProfileRequest } from '../dto';
+import { UpdateMyProfileRequestDto } from '../dto';
 
 type MemberType = typeof Member.$inferSelect;
 type ProfileType = typeof Profile.$inferSelect;
@@ -96,9 +90,22 @@ export class MemberRepository {
             .select({
                 id: Member.id,
                 nickname: Profile.nickname,
-                warningCount: sql<number>`COALESCE(COUNT(${Warn.id}), 0)::integer`,
-                reportingCount: sql<number>`COALESCE(${ReportCount.reportingCount}, 0)`,
-                reportedCount: sql<number>`COALESCE(${ReportCount.reportedCount}, 0)`,
+                warningCount: sql<number>`COALESCE(COUNT(
+                ${Warn.id}
+                ),
+                0
+                )
+                :
+                :
+                integer`,
+                reportingCount: sql<number>`COALESCE(
+                ${ReportCount.reportingCount},
+                0
+                )`,
+                reportedCount: sql<number>`COALESCE(
+                ${ReportCount.reportedCount},
+                0
+                )`,
                 joinedAt: Member.createdAt,
                 accountStatus: Member.accountStatus,
             })
@@ -303,7 +310,10 @@ export class MemberRepository {
         return result[0]?.count || 0;
     }
 
-    async updateProfile(memberId: number, updateData: UpdateMyProfileRequest) {
+    async updateProfile(
+        memberId: number,
+        updateData: UpdateMyProfileRequestDto,
+    ) {
         const updateFields: Partial<typeof Profile.$inferSelect> = {};
 
         if (updateData.nickname !== undefined) {
@@ -333,7 +343,11 @@ export class MemberRepository {
     private createRecruitmentSelectQuery() {
         return this.db.select({
             title: Post.title,
-            gameDate: sql<string>`TO_CHAR(${RecruitmentDetail.gameDate}, 'YYYY-MM-DD')`,
+            gameDate: sql<string>`TO_CHAR
+            (
+            ${RecruitmentDetail.gameDate},
+            'YYYY-MM-DD'
+            )`,
             gameDateTime: RecruitmentDetail.gameDate,
             teamHome: RecruitmentDetail.teamHome,
             teamAway: RecruitmentDetail.teamAway,

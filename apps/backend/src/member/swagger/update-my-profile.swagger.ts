@@ -1,6 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { GetMyProfileResponse, UpdateMyProfileRequest } from '../dto';
+import { GetMyProfileResponseDto, UpdateMyProfileRequestDto } from '../dto';
 
 export const UpdateMyProfileSwagger = applyDecorators(
     ApiOperation({
@@ -8,13 +8,13 @@ export const UpdateMyProfileSwagger = applyDecorators(
         description: '닉네임과 응원 팀을 수정합니다.',
     }),
     ApiBody({
-        type: UpdateMyProfileRequest,
+        type: UpdateMyProfileRequestDto,
         description: '수정할 프로필 정보',
     }),
     ApiResponse({
         status: 200,
         description: '프로필 수정 성공',
-        type: GetMyProfileResponse,
+        type: GetMyProfileResponseDto,
     }),
     ApiResponse({
         status: 404,

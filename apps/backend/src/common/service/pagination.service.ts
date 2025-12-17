@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PagePaginationResponse } from '../response/page-pagination.response';
+import { PagePaginationResponseDto } from '../response';
 
 @Injectable()
 export class PaginationService {
@@ -26,11 +26,11 @@ export class PaginationService {
         page: number,
         pageSize: number,
         totalCount: number,
-    ): PagePaginationResponse<T[]> {
+    ): PagePaginationResponseDto<T[]> {
         this.validatePageNumber(page);
         this.validatePageSize(pageSize);
 
-        return PagePaginationResponse.from(data, page, pageSize, totalCount);
+        return PagePaginationResponseDto.from(data, page, pageSize, totalCount);
     }
 
     public static getDefaultPageSize(): number {

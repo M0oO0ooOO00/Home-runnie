@@ -1,11 +1,11 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { MemberRepository } from '../repository';
-import { PagePaginationResponse, PaginationService } from '../../common';
+import { PagePaginationResponseDto, PaginationService } from '../../common';
 import {
-    GetMemberListResponse,
-    GetMyProfileResponse,
-    RecruitmentSummaryResponse,
-    UpdateMyProfileRequest,
+    GetMemberListResponseDto,
+    GetMyProfileResponseDto,
+    RecruitmentSummaryResponseDto,
+    UpdateMyProfileRequestDto,
 } from '../dto';
 import { RecruitmentQueryResult } from '../type';
 import { WarnService } from '../../warn/service';
@@ -49,7 +49,7 @@ export class MemberService {
         members: Awaited<
             ReturnType<typeof this.memberRepository.findAllByPageWithDetails>
         >,
-    ): GetMemberListResponse[] {
+    ): GetMemberListResponseDto[] {
         return members.map((member) => this.createMemberListResponse(member));
     }
 
@@ -57,8 +57,8 @@ export class MemberService {
         member: Awaited<
             ReturnType<typeof this.memberRepository.findAllByPageWithDetails>
         >[0],
-    ): GetMemberListResponse {
-        return new GetMemberListResponse(
+    ): GetMemberListResponseDto {
+        return new GetMemberListResponseDto(
             member.id,
             member.nickname || MemberService.DEFAULT_NICKNAME,
             member.warningCount,
@@ -70,12 +70,12 @@ export class MemberService {
     }
 
     private createPaginationResponse(
-        memberListResponses: GetMemberListResponse[],
+        memberListResponses: GetMemberListResponseDto[],
         currentPage: number,
         pageSize: number,
         totalMembers: number,
-    ): PagePaginationResponse<GetMemberListResponse[]> {
-        return PagePaginationResponse.from(
+    ): PagePaginationResponseDto<GetMemberListResponseDto[]> {
+        return PagePaginationResponseDto.from(
             memberListResponses,
             currentPage,
             pageSize,
@@ -132,7 +132,7 @@ export class MemberService {
             throw new NotFoundException('회원 정보를 찾을 수 없습니다.');
         }
 
-        return GetMyProfileResponse.from(
+        return GetMyProfileResponseDto.from(
             result.member,
             result.profile,
             memberWarn,
@@ -141,7 +141,7 @@ export class MemberService {
 
     async updateMyProfile(
         memberId: number,
-        updateData: UpdateMyProfileRequest,
+        updateData: UpdateMyProfileRequestDto,
     ) {
         const updatedProfile = await this.memberRepository.updateProfile(
             memberId,
@@ -161,14 +161,14 @@ export class MemberService {
             throw new NotFoundException('회원 정보를 찾을 수 없습니다.');
         }
 
-        return GetMyProfileResponse.from(member, updatedProfile, warns);
+        return GetMyProfileResponseDto.from(member, updatedProfile, warns);
     }
 
     async getMyScrappedRecruitments(
         memberId: number,
         page: number = 1,
         pageSize: number = PaginationService.getDefaultRecruitmentPageSize(),
-    ): Promise<PagePaginationResponse<RecruitmentSummaryResponse[]>> {
+    ): Promise<PagePaginationResponseDto<RecruitmentSummaryResponseDto[]>> {
         return this.getMyRecruitments(
             (memberId, page, pageSize) =>
                 this.memberRepository.findScrappedRecruitmentsByMemberId(
@@ -190,7 +190,7 @@ export class MemberService {
         memberId: number,
         page: number = 1,
         pageSize: number = PaginationService.getDefaultRecruitmentPageSize(),
-    ): Promise<PagePaginationResponse<RecruitmentSummaryResponse[]>> {
+    ): Promise<PagePaginationResponseDto<RecruitmentSummaryResponseDto[]>> {
         return this.getMyRecruitments(
             (memberId, page, pageSize) =>
                 this.memberRepository.findWrittenRecruitmentsByMemberId(
@@ -212,7 +212,7 @@ export class MemberService {
         memberId: number,
         page: number = 1,
         pageSize: number = PaginationService.getDefaultRecruitmentPageSize(),
-    ): Promise<PagePaginationResponse<RecruitmentSummaryResponse[]>> {
+    ): Promise<PagePaginationResponseDto<RecruitmentSummaryResponseDto[]>> {
         return this.getMyRecruitments(
             (memberId, page, pageSize) =>
                 this.memberRepository.findParticipatedRecruitmentsByMemberId(
@@ -240,14 +240,14 @@ export class MemberService {
         memberId: number,
         page: number,
         pageSize: number,
-    ): Promise<PagePaginationResponse<RecruitmentSummaryResponse[]>> {
+    ): Promise<PagePaginationResponseDto<RecruitmentSummaryResponseDto[]>> {
         const [recruitments, totalCount] = await Promise.all([
             findFunction(memberId, page, pageSize),
             countFunction(memberId),
         ]);
 
         const responses = recruitments.map((recruitment, index) =>
-            RecruitmentSummaryResponse.create(index, page, pageSize, {
+            RecruitmentSummaryResponseDto.create(index, page, pageSize, {
                 ...recruitment,
                 authorNickname:
                     recruitment.authorNickname ||

@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { GetMemberListResponse } from '@homerunnie/shared';
 
-export class GetMemberListResponse {
+export class GetMemberListResponseDto implements GetMemberListResponse {
     @ApiProperty({
         description: '회원 ID',
         type: 'integer',

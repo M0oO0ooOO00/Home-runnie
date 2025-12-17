@@ -15,7 +15,7 @@ import {
     Role,
     PostStatusEnum,
     Team,
-} from '../../enums';
+} from '@homerunnie/shared';
 import type { InferInsertModel } from 'drizzle-orm';
 
 const REPORT_TYPES = [
