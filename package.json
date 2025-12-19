@@ -2,6 +2,9 @@
   "name": "homerunnie-monorepo",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "turbo run dev --ui=tui",
     "dev:stream": "turbo run dev --ui=stream",
