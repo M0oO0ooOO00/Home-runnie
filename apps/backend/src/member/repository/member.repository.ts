@@ -1,22 +1,22 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { eq, count, sql, desc, and } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { Member } from '../domain';
-import { Profile } from '../domain';
+import { Member } from '@/member/domain/index.js';
+import { Profile } from '@/member/domain/index.js';
 import {
     DATABASE_CONNECTION,
     Gender,
     OAuthProvider,
     Role,
     Team,
-} from '../../common';
-import { Report, ReportCount } from '../../report/domain';
-import { Warn } from '../../admin/domain';
-import { Post, RecruitmentDetail } from '../../post/domain';
-import { Scrap } from '../../scrap/domain';
-import { Participation } from '../../participation/domain';
-import { RecruitmentQueryResult } from '../type';
-import { UpdateMyProfileRequest } from '../dto';
+} from '@/common/index.js';
+import { Report, ReportCount } from '@/report/domain/index.js';
+import { Warn } from '@/admin/domain/index.js';
+import { Post, RecruitmentDetail } from '@/post/domain/index.js';
+import { Scrap } from '@/scrap/domain/index.js';
+import { Participation } from '@/participation/domain/index.js';
+import { RecruitmentQueryResult } from '@/member/type/index.js';
+import { UpdateMyProfileRequest } from '@/member/dto/index.js';
 
 type MemberType = typeof Member.$inferSelect;
 type ProfileType = typeof Profile.$inferSelect;

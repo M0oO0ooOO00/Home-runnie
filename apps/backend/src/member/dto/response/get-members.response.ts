@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { GetMemberResponse } from './get-member.response';
-import { Member } from '../../domain';
+import { GetMemberResponse } from '@/member/dto/response/get-member.response.js';
+import { Member } from '@/member/domain/index.js';
 
 interface GetMembersResponseInterface {
     members: GetMemberResponse[];

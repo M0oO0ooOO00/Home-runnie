@@ -1,1 +1,1 @@
-export * from './warn.service';
+export * from '@/warn/service/warn.service.js';

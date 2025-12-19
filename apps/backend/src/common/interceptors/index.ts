@@ -1,1 +1,1 @@
-export * from './log.interceptor';
+export * from '@/common/interceptors/log.interceptor.js';

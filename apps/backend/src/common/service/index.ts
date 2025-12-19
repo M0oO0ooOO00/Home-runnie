@@ -1,1 +1,1 @@
-export * from './pagination.service';
+export * from '@/common/service/pagination.service.js';

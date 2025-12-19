@@ -1,9 +1,9 @@
 import { integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
-import { baseColumns } from '../../common';
+import { baseColumns } from '@/common/index.js';
 import { relations } from 'drizzle-orm';
-import { Post } from './post.entity';
-import { Participation } from '../../participation/domain';
-import { preferGenderPgEnum, ticketingTypePgEnum } from '../../common';
+import { Post } from '@/post/domain/post.entity.js';
+import { Participation } from '@/participation/domain/index.js';
+import { preferGenderPgEnum, ticketingTypePgEnum } from '@/common/index.js';
 
 export { preferGenderPgEnum, ticketingTypePgEnum };
 

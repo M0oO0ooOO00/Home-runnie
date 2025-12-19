@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { JwtStrategy } from './strategies';
-import { JwtAuthGuard } from './guards';
+import { JwtStrategy } from '@/auth/strategies/index.js';
+import { JwtAuthGuard } from '@/auth/guards/index.js';
 import { JwtModule } from '@nestjs/jwt';
-import { MemberModule } from 'src/member/member.module';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { KakaoStrategy } from './strategies/kakao.strategy';
+import { MemberModule } from '@/member/member.module.js';
+import { AuthService } from '@/auth/auth.service.js';
+import { AuthController } from '@/auth/auth.controller.js';
+import { KakaoStrategy } from '@/auth/strategies/kakao.strategy.js';
 
 @Module({
     imports: [

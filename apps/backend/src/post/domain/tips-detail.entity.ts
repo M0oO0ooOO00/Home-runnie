@@ -1,8 +1,8 @@
 import { integer, pgTable } from 'drizzle-orm/pg-core';
-import { baseColumns } from '../../common';
-import { Post } from './post.entity';
+import { baseColumns } from '@/common/index.js';
+import { Post } from '@/post/domain/post.entity.js';
 import { relations } from 'drizzle-orm';
-import { stadiumPgEnum } from '../../common';
+import { stadiumPgEnum } from '@/common/index.js';
 
 export { stadiumPgEnum };
 

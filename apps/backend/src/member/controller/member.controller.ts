@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Put, Query } from '@nestjs/common';
-import { MemberService } from '../service';
-import { CreateMemberRequest, UpdateMyProfileRequest } from '../dto';
+import { MemberService } from '@/member/service/index.js';
+import { CreateMemberRequest, UpdateMyProfileRequest } from '@/member/dto/index.js';
 import {
     CreateMemberSwagger,
     GetMyProfileSwagger,
@@ -9,8 +9,8 @@ import {
     GetParticipatedRecruitmentsSwagger,
     UpdateMyProfileSwagger,
     MemberControllerSwagger,
-} from '../swagger';
-import { CurrentMember, PaginationQueryDto } from '../../common';
+} from '@/member/swagger/index.js';
+import { CurrentMember, PaginationQueryDto } from '@/common/index.js';
 
 @Controller('member')
 @MemberControllerSwagger

@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Member } from '../../../member/domain';
-import { Profile } from '../../../member/domain';
-import { Warn } from '../../domain';
-import { Report } from '../../../report/domain';
-import { Post } from '../../../post/domain';
+import { Member } from '@/member/domain/index.js';
+import { Profile } from '@/member/domain/index.js';
+import { Warn } from '@/admin/domain/index.js';
+import { Report } from '@/report/domain/index.js';
+import { Post } from '@/post/domain/index.js';
 import {
     Team,
     TeamDescription,
@@ -11,7 +11,7 @@ import {
     GenderDescription,
     PostType,
     PostTypeDescription,
-} from '../../../common';
+} from '@/common/index.js';
 
 interface MemberDetailInfo {
     id: number;

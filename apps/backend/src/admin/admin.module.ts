@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AdminService } from './service';
-import { AdminController } from './controller';
-import { MemberModule } from '../member/member.module';
-import { PaginationService } from '../common';
-import { WarnModule } from '../warn/warn.module';
+import { AdminService } from '@/admin/service/index.js';
+import { AdminController } from '@/admin/controller/index.js';
+import { MemberModule } from '@/member/member.module.js';
+import { PaginationService } from '@/common/index.js';
+import { WarnModule } from '@/warn/warn.module.js';
 
 @Module({
     imports: [MemberModule, WarnModule],

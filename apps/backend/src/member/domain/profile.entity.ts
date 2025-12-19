@@ -1,7 +1,7 @@
 import { integer, pgEnum, pgTable, text } from 'drizzle-orm/pg-core';
-import { baseColumns } from '../../common';
-import { Team } from '../../common';
-import { Member } from './member.entity';
+import { baseColumns } from '@/common/index.js';
+import { Team } from '@/common/index.js';
+import { Member } from '@/member/domain/member.entity.js';
 import { relations } from 'drizzle-orm';
 
 export const teamEnum = pgEnum(

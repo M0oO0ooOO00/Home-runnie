@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { seeding } from './src/common/db/seed/main';
+import { seeding } from './src/common/db/seed/main.js';
 
 // Load environment variables
 dotenv.config({ path: './secret/.env' });

@@ -1,5 +1,5 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { AccountStatusEnum } from '../../enums';
+import { AccountStatusEnum } from '@/common/enums/index.js';
 
 export const accountStatusPgEnum = pgEnum(
     'account_status',

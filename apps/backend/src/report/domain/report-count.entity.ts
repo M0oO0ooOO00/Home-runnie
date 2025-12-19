@@ -1,6 +1,6 @@
 import { integer, pgTable } from 'drizzle-orm/pg-core';
-import { baseColumns } from '../../common';
-import { Member } from '../../member/domain';
+import { baseColumns } from '@/common/index.js';
+import { Member } from '@/member/domain/index.js';
 import { relations } from 'drizzle-orm';
 
 export const ReportCount = pgTable('report_count', {

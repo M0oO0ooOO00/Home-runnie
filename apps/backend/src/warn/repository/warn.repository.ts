@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
-import { DATABASE_CONNECTION } from '../../common';
+import { DATABASE_CONNECTION } from '@/common/index.js';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { Warn } from '../../admin/domain';
+import { Warn } from '@/admin/domain/index.js';
 import { eq } from 'drizzle-orm';
 
 export class WarnRepository {

@@ -1,8 +1,8 @@
 import { integer, pgTable, text } from 'drizzle-orm/pg-core';
-import { baseColumns } from '../../common';
+import { baseColumns } from '@/common/index.js';
 import { relations } from 'drizzle-orm';
-import { Member } from '../../member/domain';
-import { reportTypePgEnum } from '../../common';
+import { Member } from '@/member/domain/index.js';
+import { reportTypePgEnum } from '@/common/index.js';
 
 export { reportTypePgEnum };
 

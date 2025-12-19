@@ -1,1 +1,1 @@
-export * from './database-connection';
+export * from '@/common/db/constants/database-connection.js';

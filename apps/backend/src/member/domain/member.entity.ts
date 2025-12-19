@@ -1,21 +1,21 @@
 import { boolean, pgTable, text } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { baseColumns } from '../../common/db/base.entity';
-import { Profile } from './profile.entity';
-import { ReportCount } from '../../report/domain';
-import { Report } from '../../report/domain';
-import { Post } from '../../post/domain';
-import { Participation } from '../../participation/domain';
-import { Scrap } from '../../scrap/domain';
-import { Comment } from '../../comment/domain';
-import { Warn } from '../../admin/domain';
+import { baseColumns } from '@/common/db/base.entity.js';
+import { Profile } from '@/member/domain/profile.entity.js';
+import { ReportCount } from '@/report/domain/index.js';
+import { Report } from '@/report/domain/index.js';
+import { Post } from '@/post/domain/index.js';
+import { Participation } from '@/participation/domain/index.js';
+import { Scrap } from '@/scrap/domain/index.js';
+import { Comment } from '@/comment/domain/index.js';
+import { Warn } from '@/admin/domain/index.js';
 import {
     rolePgEnum,
     genderPgEnum,
     oauthProviderPgEnum,
     accountStatusPgEnum,
-} from '../../common/db/enums';
-import { AccountStatusEnum } from '../../common';
+} from '@/common/db/enums/index.js';
+import { AccountStatusEnum } from '@/common/index.js';
 
 export { rolePgEnum, genderPgEnum, oauthProviderPgEnum, accountStatusPgEnum };
 

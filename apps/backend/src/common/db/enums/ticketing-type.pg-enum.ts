@@ -1,5 +1,5 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { TicketingType } from '../../enums/ticketing-type.enum';
+import { TicketingType } from '@/common/enums/ticketing-type.enum.js';
 
 export const ticketingTypePgEnum = pgEnum(
     'ticketing_type',

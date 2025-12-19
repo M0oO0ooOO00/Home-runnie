@@ -1,2 +1,2 @@
-export * from './report.entity';
-export * from './report-count.entity';
+export * from '@/report/domain/report.entity.js';
+export * from '@/report/domain/report-count.entity.js';

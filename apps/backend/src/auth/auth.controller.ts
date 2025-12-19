@@ -8,10 +8,10 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthService } from './auth.service';
+import { AuthService } from '@/auth/auth.service.js';
 import { JwtService } from '@nestjs/jwt';
 import * as process from 'node:process';
-import { SignUpCompleteRequestDto } from './dto/request/sign-up.complete.request';
+import { SignUpCompleteRequestDto } from '@/auth/dto/request/sign-up.complete.request.js';
 
 @Controller('auth')
 export class AuthController {

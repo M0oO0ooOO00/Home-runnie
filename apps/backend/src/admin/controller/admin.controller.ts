@@ -7,10 +7,10 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AdminService } from '../service';
-import { MemberService } from '../../member/service';
-import { PaginationQueryDto, RolesGuard, Roles, Role } from '../../common';
-import { GetMemberByIdSwagger, GetMembersByPageSwagger } from '../swagger';
+import { AdminService } from '@/admin/service/index.js';
+import { MemberService } from '@/member/service/index.js';
+import { PaginationQueryDto, RolesGuard, Roles, Role } from '@/common/index.js';
+import { GetMemberByIdSwagger, GetMembersByPageSwagger } from '@/admin/swagger/index.js';
 
 @ApiTags('관리자')
 @Controller('admin')

@@ -1,2 +1,2 @@
-export * from './create-member.request';
-export * from './update-my-profile.request';
+export * from '@/member/dto/request/create-member.request.js';
+export * from '@/member/dto/request/update-my-profile.request.js';

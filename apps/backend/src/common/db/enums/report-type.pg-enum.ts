@@ -1,5 +1,5 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { ReportType } from '../../enums';
+import { ReportType } from '@/common/enums/index.js';
 
 export const reportTypePgEnum = pgEnum(
     'report_type',

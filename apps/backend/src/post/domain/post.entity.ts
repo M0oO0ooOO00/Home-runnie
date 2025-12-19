@@ -1,13 +1,13 @@
 import { integer, pgTable, text } from 'drizzle-orm/pg-core';
-import { baseColumns } from '../../common';
-import { Member } from '../../member/domain';
+import { baseColumns } from '@/common/index.js';
+import { Member } from '@/member/domain/index.js';
 import { relations } from 'drizzle-orm';
-import { TipsDetail } from './tips-detail.entity';
-import { RecruitmentDetail } from './recruitment-detail.entity';
-import { PostImage } from './post-image.entity';
-import { Scrap } from '../../scrap/domain';
-import { Comment } from '../../comment/domain';
-import { postTypePgEnum, postStatusPgEnum } from '../../common';
+import { TipsDetail } from '@/post/domain/tips-detail.entity.js';
+import { RecruitmentDetail } from '@/post/domain/recruitment-detail.entity.js';
+import { PostImage } from '@/post/domain/post-image.entity.js';
+import { Scrap } from '@/scrap/domain/index.js';
+import { Comment } from '@/comment/domain/index.js';
+import { postTypePgEnum, postStatusPgEnum } from '@/common/index.js';
 
 export { postStatusPgEnum, postTypePgEnum };
 

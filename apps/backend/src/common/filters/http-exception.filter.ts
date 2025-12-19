@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { STATUS_CODES } from 'node:http';
-import { DomainException } from '../exceptions';
+import { DomainException } from '@/common/exceptions/index.js';
 
 const UNKNOWN_ERROR = 'UNKNOWN_ERROR';
 

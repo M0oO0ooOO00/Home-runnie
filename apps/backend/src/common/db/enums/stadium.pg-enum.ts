@@ -1,5 +1,5 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { Stadium } from '../../enums/stadium.enum';
+import { Stadium } from '@/common/enums/stadium.enum.js';
 
 export const stadiumPgEnum = pgEnum(
     'stadium',

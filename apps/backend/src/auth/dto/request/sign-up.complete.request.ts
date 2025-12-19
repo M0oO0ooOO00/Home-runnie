@@ -1,4 +1,4 @@
-import { Gender, Team } from '../../../common';
+import { Gender, Team } from '@/common/index.js';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsNotEmpty, IsString } from 'class-validator';
 

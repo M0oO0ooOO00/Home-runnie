@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PagePaginationResponse } from '../response/page-pagination.response';
+import { PagePaginationResponse } from '@/common/response/page-pagination.response.js';
 
 @Injectable()
 export class PaginationService {

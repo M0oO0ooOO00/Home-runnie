@@ -1,11 +1,11 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { Member, Profile } from '../../../member/domain';
-import { Report, ReportCount } from '../../../report/domain';
-import { Warn } from '../../../admin/domain';
-import { Post, RecruitmentDetail } from '../../../post/domain';
-import { Scrap } from '../../../scrap/domain';
-import { Participation } from '../../../participation/domain';
+import { Member, Profile } from '@/member/domain/index.js';
+import { Report, ReportCount } from '@/report/domain/index.js';
+import { Warn } from '@/admin/domain/index.js';
+import { Post, RecruitmentDetail } from '@/post/domain/index.js';
+import { Scrap } from '@/scrap/domain/index.js';
+import { Participation } from '@/participation/domain/index.js';
 import {
     Gender,
     OAuthProvider,
@@ -15,7 +15,7 @@ import {
     Role,
     PostStatusEnum,
     Team,
-} from '../../enums';
+} from '@/common/enums/index.js';
 import type { InferInsertModel } from 'drizzle-orm';
 
 const REPORT_TYPES = [

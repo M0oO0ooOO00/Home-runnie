@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { WarnRepository } from '../repository';
+import { WarnRepository } from '@/warn/repository/index.js';
 
 @Injectable()
 export class WarnService {

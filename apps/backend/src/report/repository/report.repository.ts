@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { DATABASE_CONNECTION } from '../../common';
+import { DATABASE_CONNECTION } from '@/common/index.js';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { Report } from '../domain';
+import { Report } from '@/report/domain/index.js';
 import { eq } from 'drizzle-orm';
 
 @Injectable()

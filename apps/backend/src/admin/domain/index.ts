@@ -1,1 +1,1 @@
-export * from './warn.entity';
+export * from '@/admin/domain/warn.entity.js';

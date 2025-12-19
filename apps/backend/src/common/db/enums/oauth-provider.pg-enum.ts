@@ -1,5 +1,5 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { OAuthProvider } from '../../enums';
+import { OAuthProvider } from '@/common/enums/index.js';
 
 export const oauthProviderPgEnum = pgEnum(
     'oauth_provider',

@@ -1,7 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { PagePaginationResponse } from '../../common';
-import { RecruitmentSummaryResponse } from '../dto';
+import { PagePaginationResponse } from '@/common/index.js';
+import { RecruitmentSummaryResponse } from '@/member/dto/index.js';
 
 export const GetParticipatedRecruitmentsSwagger = applyDecorators(
     ApiOperation({

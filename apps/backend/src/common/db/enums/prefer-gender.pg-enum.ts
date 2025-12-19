@@ -1,5 +1,5 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { PreferGender } from '../../enums';
+import { PreferGender } from '@/common/enums/index.js';
 
 export const preferGenderPgEnum = pgEnum(
     'prefer_gender',

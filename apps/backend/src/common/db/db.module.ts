@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { DATABASE_CONNECTION } from './constants';
-import * as schema from './schema';
+import { DATABASE_CONNECTION } from '@/common/db/constants/index.js';
+import * as schema from '@/common/db/schema/index.js';
 
 @Module({
     providers: [

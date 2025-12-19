@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Member } from '../../domain';
+import { Member } from '@/member/domain/index.js';
 
 interface GetMemberResponseInterface {
     id: number;

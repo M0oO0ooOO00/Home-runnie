@@ -1,6 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { GetMyProfileResponse, UpdateMyProfileRequest } from '../dto';
+import { GetMyProfileResponse, UpdateMyProfileRequest } from '@/member/dto/index.js';
 
 export const UpdateMyProfileSwagger = applyDecorators(
     ApiOperation({

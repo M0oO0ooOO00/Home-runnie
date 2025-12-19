@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ReportRepository } from './repository';
-import { DbModule } from '../common/db/db.module';
+import { ReportRepository } from '@/report/repository/index.js';
+import { DbModule } from '@/common/db/db.module.js';
 
 @Module({
     imports: [DbModule],

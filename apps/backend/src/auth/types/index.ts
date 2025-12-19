@@ -1,4 +1,4 @@
-import { Role } from '../../common';
+import { Role } from '@/common/index.js';
 
 export type JwtPayload = {
     memberId: number;

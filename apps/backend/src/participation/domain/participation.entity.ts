@@ -1,8 +1,8 @@
 import { integer, pgTable, timestamp, unique } from 'drizzle-orm/pg-core';
-import { baseColumns } from '../../common';
-import { recruitmentPgEnum } from '../../common';
-import { Member } from '../../member/domain';
-import { RecruitmentDetail } from '../../post/domain';
+import { baseColumns } from '@/common/index.js';
+import { recruitmentPgEnum } from '@/common/index.js';
+import { Member } from '@/member/domain/index.js';
+import { RecruitmentDetail } from '@/post/domain/index.js';
 import { relations } from 'drizzle-orm';
 
 export { recruitmentPgEnum };

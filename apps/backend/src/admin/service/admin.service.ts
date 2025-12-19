@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { MemberService } from '../../member/service';
-import { MemberDetailResponse } from '../dto';
-import { PostType } from '../../common';
+import { MemberService } from '@/member/service/index.js';
+import { MemberDetailResponse } from '@/admin/dto/index.js';
+import { PostType } from '@/common/index.js';
 
 @Injectable()
 export class AdminService {
