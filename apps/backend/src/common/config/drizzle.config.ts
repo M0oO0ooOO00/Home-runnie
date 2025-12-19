@@ -1,6 +1,10 @@
 import type { Config } from 'drizzle-kit';
 import { config } from 'dotenv';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 여기 안걸어주면 서브모듈에서 env 불러오기 불가능...
 config({ path: path.resolve(__dirname, '../../../secret/.env') });
