@@ -6,7 +6,7 @@ import { FormLabel } from "./FormLabel";
 import { Dropdown } from "@/shared/ui/dropdown/dropdown";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { DEFAULT_PROFILE_IMAGE, TEAM_ASSETS } from "@/entities/team/teamAssets";
+import { DEFAULT_PROFILE_IMAGE, TEAM_ASSETS } from "@homerunnie/shared/types";
 
 interface FormData {
   name: string;

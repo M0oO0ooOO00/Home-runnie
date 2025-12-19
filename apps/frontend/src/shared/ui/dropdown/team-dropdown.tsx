@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import clsx from "clsx";
-import { baseBallTeamItems } from "@/entities/team/team";
+import { baseBallTeamItems } from "@homerunnie/shared/types";
 
 type Item = { value: string | number; label: string };
 

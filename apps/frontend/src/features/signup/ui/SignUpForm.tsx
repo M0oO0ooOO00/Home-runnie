@@ -1,5 +1,5 @@
 import TextFields from "@/features/signup/ui/TextFields";
-import { baseBallTeamItems } from "@/entities/team/team";
+import { baseBallTeamItems } from "@homerunnie/shared/types";
 import Header from "@/shared/ui/header/header";
 
 const genderItems = [

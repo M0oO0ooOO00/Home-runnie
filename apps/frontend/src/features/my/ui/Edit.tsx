@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { baseBallTeamItems } from "@/entities/team/team";
+import { baseBallTeamItems } from "@homerunnie/shared/types";
 import { Button } from "@/components/ui/button";
 
 export default function Edit() {

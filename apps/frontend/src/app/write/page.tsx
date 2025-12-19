@@ -6,8 +6,7 @@ import DateSelect from "@/shared/ui/write/date-select";
 import { RadioGroup } from "@/shared/ui/radio";
 import { BgmTag } from "@/shared/ui/tag/bgm-tag";
 import TeamDropdown from "@/shared/ui/dropdown/team-dropdown";
-import { baseBallTeamItems } from "@/entities/team/team";
-import { baseBallStadiumItems } from "@/entities/team/stadium";
+import { baseBallTeamItems, baseBallStadiumItems } from "@homerunnie/shared/types";
 
 export default function Page() {
   const [title, setTitle] = useState("");
