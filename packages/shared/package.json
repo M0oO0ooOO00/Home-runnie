@@ -30,6 +30,7 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
+    "@homerunnie/eslint-config": "workspace:*",
     "@rollup/plugin-typescript": "^12.1.1",
     "@types/node": "^22.10.7",
     "rollup": "^4.28.1",
