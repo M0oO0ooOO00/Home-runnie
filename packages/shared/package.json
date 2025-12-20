@@ -1,0 +1,39 @@
+{
+  "name": "@homerunnie/shared",
+  "version": "0.0.1",
+  "description": "Shared package for homerunnie monorepo",
+  "private": true,
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/esm/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm clean && rollup -c && tsc --emitDeclarationOnly --declaration --declarationMap",
+    "dev": "rollup -c --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@types/node": "^22.10.7",
+    "rollup": "^4.28.1",
+    "typescript": "^5.7.3"
+  }
+}
+
