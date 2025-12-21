@@ -27,7 +27,8 @@
     "build": "pnpm clean && rollup -c && tsc --emitDeclarationOnly --declaration --declarationMap",
     "dev": "rollup -c --watch",
     "clean": "rm -rf dist",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "lint": "eslint \"src/**/*.{ts,tsx}\""
   },
   "devDependencies": {
     "@homerunnie/eslint-config": "workspace:*",
