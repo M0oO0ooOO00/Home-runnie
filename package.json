@@ -10,6 +10,7 @@
     "clean": "turbo run clean"
   },
   "devDependencies": {
+    "globals": "^16.5.0",
     "turbo": "^2.3.3"
   },
   "packageManager": "pnpm@10.16.0"

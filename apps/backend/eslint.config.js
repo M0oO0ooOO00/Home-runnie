@@ -1,12 +1,19 @@
 import { baseConfig } from "@homerunnie/eslint-config/base.js";
+import globals from "globals";
 
 export default [
   ...baseConfig,
   {
-    // NestJS 전용 추가 설정
-    env: { node: true },
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+      },
+    },
     rules: {
       "@typescript-eslint/interface-name-prefix": "off",
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/explicit-module-boundary-types": "off",
     },
   },
 ];
