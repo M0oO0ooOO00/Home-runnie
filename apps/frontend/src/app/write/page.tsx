@@ -1,47 +1,46 @@
-"use client";
+'use client';
 
-import { useMemo, useState } from "react";
-import Image from "next/image";
-import DateSelect from "@/shared/ui/write/date-select";
-import { RadioGroup } from "@/shared/ui/radio";
-import { BgmTag } from "@/shared/ui/tag/bgm-tag";
-import TeamDropdown from "@/shared/ui/dropdown/team-dropdown";
-import { baseBallTeamItems } from "@/entities/team/team";
-import { baseBallStadiumItems } from "@/entities/team/stadium";
+import { useMemo, useState } from 'react';
+import Image from 'next/image';
+import DateSelect from '@/shared/ui/write/date-select';
+import { RadioGroup } from '@/shared/ui/radio';
+import { BgmTag } from '@/shared/ui/tag/bgm-tag';
+import TeamDropdown from '@/shared/ui/dropdown/team-dropdown';
+import { baseBallTeamItems, baseBallStadiumItems } from '@homerunnie/shared';
 
 export default function Page() {
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState('');
   const [gameDate, setGameDate] = useState<Date | null>(null);
-  const [stadium, setStadium] = useState("");
-  const [teamA, setTeamA] = useState("");
-  const [teamB, setTeamB] = useState("");
-  const [headcount, setHeadcount] = useState<string>("");
-  const [ticketStatus, setTicketStatus] = useState<"have" | "need">("need");
-  const [favTeam, setFavTeam] = useState("");
-  const [gender, setGender] = useState<"F" | "M">("M");
-  const [prefGender, setPrefGender] = useState<"F" | "M" | "ANY">("M");
-  const [note, setNote] = useState("");
+  const [stadium, setStadium] = useState('');
+  const [teamA, setTeamA] = useState('');
+  const [teamB, setTeamB] = useState('');
+  const [headcount, setHeadcount] = useState<string>('');
+  const [ticketStatus, setTicketStatus] = useState<'have' | 'need'>('need');
+  const [favTeam, setFavTeam] = useState('');
+  const [gender, setGender] = useState<'F' | 'M'>('M');
+  const [prefGender, setPrefGender] = useState<'F' | 'M' | 'ANY'>('M');
+  const [note, setNote] = useState('');
 
   const allTags = useMemo(
     () => [
-      "응원가 부르는거 좋아해요",
-      "구경",
-      "테이블",
-      "경기보면서 맛있는거 먹기",
-      "응원석이 가까이 있는게 좋아요",
-      "응원석이 가까이 있는거 싫어요",
-      "햇빛 좋아요",
-      "햇빛 싫어요",
-      "사진",
-      "외야도",
-      "선수 가까이",
+      '응원가 부르는거 좋아해요',
+      '구경',
+      '테이블',
+      '경기보면서 맛있는거 먹기',
+      '응원석이 가까이 있는게 좋아요',
+      '응원석이 가까이 있는거 싫어요',
+      '햇빛 좋아요',
+      '햇빛 싫어요',
+      '사진',
+      '외야도',
+      '선수 가까이',
     ],
-    []
+    [],
   );
   const [picked, setPicked] = useState<string[]>([
-    "응원가 부르는거 좋아해요",
-    "응원석이 가까이 있는게 좋아요",
-    "햇빛 싫어요",
+    '응원가 부르는거 좋아해요',
+    '응원석이 가까이 있는게 좋아요',
+    '햇빛 싫어요',
   ]);
 
   const toggleTag = (t: string) =>
@@ -125,7 +124,7 @@ export default function Page() {
                   inputMode="numeric"
                   pattern="[0-9]*"
                   value={headcount}
-                  onChange={(e) => setHeadcount(e.target.value.replace(/\D/g, ""))}
+                  onChange={(e) => setHeadcount(e.target.value.replace(/\D/g, ''))}
                   placeholder="00"
                   className="h-14 w-80 rounded-2xl border border-zinc-200 bg-neutral-50 px-5 text-lg placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
                 />
@@ -136,10 +135,10 @@ export default function Page() {
                 <RadioGroup
                   name="ticket"
                   value={ticketStatus}
-                  onChange={(nv) => setTicketStatus(nv as "have" | "need")}
+                  onChange={(nv) => setTicketStatus(nv as 'have' | 'need')}
                   options={[
-                    { value: "have", label: "티켓 보유 중. 동행 구함" },
-                    { value: "need", label: "티켓 X 동행 구한 후 티켓팅" },
+                    { value: 'have', label: '티켓 보유 중. 동행 구함' },
+                    { value: 'need', label: '티켓 X 동행 구한 후 티켓팅' },
                   ]}
                 />
               </div>
@@ -166,10 +165,10 @@ export default function Page() {
                 <RadioGroup
                   name="gender"
                   value={gender}
-                  onChange={(nv) => setGender(nv as "F" | "M")}
+                  onChange={(nv) => setGender(nv as 'F' | 'M')}
                   options={[
-                    { value: "F", label: "여자" },
-                    { value: "M", label: "남자" },
+                    { value: 'F', label: '여자' },
+                    { value: 'M', label: '남자' },
                   ]}
                 />
               </div>
@@ -180,17 +179,17 @@ export default function Page() {
                   <RadioGroup
                     name="prefGenderA"
                     value={prefGender}
-                    onChange={(nv) => setPrefGender(nv as "F" | "M" | "ANY")}
+                    onChange={(nv) => setPrefGender(nv as 'F' | 'M' | 'ANY')}
                     options={[
-                      { value: "F", label: "여자" },
-                      { value: "M", label: "남자" },
+                      { value: 'F', label: '여자' },
+                      { value: 'M', label: '남자' },
                     ]}
                   />
                   <RadioGroup
                     name="prefGenderB"
                     value={prefGender}
-                    onChange={(nv) => setPrefGender(nv as "F" | "M" | "ANY")}
-                    options={[{ value: "ANY", label: "상관없음" }]}
+                    onChange={(nv) => setPrefGender(nv as 'F' | 'M' | 'ANY')}
+                    options={[{ value: 'ANY', label: '상관없음' }]}
                   />
                 </div>
               </div>

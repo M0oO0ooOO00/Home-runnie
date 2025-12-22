@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState, ReactNode } from "react";
-import { TextField } from "@/shared/ui/input/text-field";
-import { FormLabel } from "./FormLabel";
-import { Dropdown } from "@/shared/ui/dropdown/dropdown";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import { DEFAULT_PROFILE_IMAGE, TEAM_ASSETS } from "@/entities/team/teamAssets";
+import { useState, ReactNode } from 'react';
+import { TextField } from '@/shared/ui/input/text-field';
+import { FormLabel } from './FormLabel';
+import { Dropdown } from '@/shared/ui/dropdown/dropdown';
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
+import { DEFAULT_PROFILE_IMAGE, TEAM_ASSETS } from '@homerunnie/shared';
 
 interface FormData {
   name: string;
@@ -19,7 +19,7 @@ interface FormData {
 type FieldConfig = {
   label: string;
   name: keyof FormData;
-  type: "text" | "dropdown";
+  type: 'text' | 'dropdown';
   placeholder: string;
   items?: { options: { value: string; text: string }[] }[];
 };
@@ -43,11 +43,11 @@ export default function TextFields({
   baseBallTeamItems: { value: string; label: string }[];
 }>) {
   const [formData, setFormData] = useState<FormData>({
-    name: "",
-    gender: genderItems?.[0]?.value ?? "",
-    birthDate: "",
-    phoneNumber: "",
-    favoriteTeam: baseBallTeamItems?.[0]?.value ?? "",
+    name: '',
+    gender: genderItems?.[0]?.value ?? '',
+    birthDate: '',
+    phoneNumber: '',
+    favoriteTeam: baseBallTeamItems?.[0]?.value ?? '',
   });
 
   const teamAssets = TEAM_ASSETS[formData.favoriteTeam as keyof typeof TEAM_ASSETS];
@@ -59,35 +59,35 @@ export default function TextFields({
 
   const fields: FieldConfig[] = [
     {
-      label: "이름",
-      name: "name",
-      type: "text",
-      placeholder: "이름을 입력해주세요",
+      label: '이름',
+      name: 'name',
+      type: 'text',
+      placeholder: '이름을 입력해주세요',
     },
     {
-      label: "성별",
-      name: "gender",
-      type: "dropdown",
-      placeholder: "성별을 선택하세요",
+      label: '성별',
+      name: 'gender',
+      type: 'dropdown',
+      placeholder: '성별을 선택하세요',
       items: toDropdownFormat(genderItems),
     },
     {
-      label: "생년월일",
-      name: "birthDate",
-      type: "text",
-      placeholder: "0000.00.00",
+      label: '생년월일',
+      name: 'birthDate',
+      type: 'text',
+      placeholder: '0000.00.00',
     },
     {
-      label: "휴대폰 번호",
-      name: "phoneNumber",
-      type: "text",
-      placeholder: "010-0000-0000",
+      label: '휴대폰 번호',
+      name: 'phoneNumber',
+      type: 'text',
+      placeholder: '010-0000-0000',
     },
     {
-      label: "응원하는 팀",
-      name: "favoriteTeam",
-      type: "dropdown",
-      placeholder: "응원하는 팀을 선택하세요.",
+      label: '응원하는 팀',
+      name: 'favoriteTeam',
+      type: 'dropdown',
+      placeholder: '응원하는 팀을 선택하세요.',
       items: toDropdownFormat(baseBallTeamItems),
     },
   ];
@@ -98,14 +98,14 @@ export default function TextFields({
         src={profileImage}
         width={170}
         height={170}
-        className={"rounded-full"}
-        alt={"프로필 사진"}
+        className={'rounded-full'}
+        alt={'프로필 사진'}
       />
       <div className="flex flex-col gap-[60px]">
         <div className="flex flex-col justify-start gap-5 w-full">
           {fields.map(({ label, name, type, placeholder, items }) => (
             <FormField key={name} label={label}>
-              {type === "text" ? (
+              {type === 'text' ? (
                 <TextField
                   className="h-[60px] px-[22px] py-4 leading-[28px] !text-b02-m placeholder:font-normal font-medium"
                   name={name}

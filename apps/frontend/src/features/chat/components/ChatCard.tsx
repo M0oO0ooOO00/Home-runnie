@@ -12,6 +12,7 @@ const ChatCard = ({ title, subtitle, description, graphic }: ChatCardProps) => {
         <h1 className="text-[28px] font-bold leading-tight">
           {title}
           <br />
+
           {subtitle}
         </h1>
         <h3 className="text-[16px] text-gray-500 mt-[8px]">{description}</h3>

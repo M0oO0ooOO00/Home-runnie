@@ -1,10 +1,10 @@
-import TextFields from "@/features/signup/ui/TextFields";
-import { baseBallTeamItems } from "@/entities/team/team";
-import Header from "@/shared/ui/header/header";
+import TextFields from '@/features/signup/ui/TextFields';
+import { baseBallTeamItems } from '@homerunnie/shared';
+import Header from '@/shared/ui/header/header';
 
 const genderItems = [
-  { value: "male", label: "남성" },
-  { value: "female", label: "여성" },
+  { value: 'male', label: '남성' },
+  { value: 'female', label: '여성' },
 ];
 
 export default function SignUpForm() {

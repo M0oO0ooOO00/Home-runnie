@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
-import clsx from "clsx";
-import { baseBallTeamItems } from "@/entities/team/team";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
+import clsx from 'clsx';
+import { baseBallTeamItems } from '@homerunnie/shared';
 
 type Item = { value: string | number; label: string };
 
@@ -23,7 +23,7 @@ export default function TeamDropdown({
   value,
   onChange,
   items = baseBallTeamItems as unknown as Item[],
-  placeholder = "팀 선택",
+  placeholder = '팀 선택',
   className,
   disabled,
   fitContent = false,
@@ -36,7 +36,7 @@ export default function TeamDropdown({
 
   const selectedLabel = useMemo(() => {
     const v = value ?? internal;
-    return v != null ? (items.find((i) => i.value === v)?.label ?? "") : "";
+    return v != null ? (items.find((i) => i.value === v)?.label ?? '') : '';
   }, [value, internal, items]);
 
   useEffect(() => {
@@ -44,8 +44,8 @@ export default function TeamDropdown({
       if (!rootRef.current) return;
       if (!rootRef.current.contains(e.target as Node)) setOpen(false);
     };
-    document.addEventListener("mousedown", onClickAway);
-    return () => document.removeEventListener("mousedown", onClickAway);
+    document.addEventListener('mousedown', onClickAway);
+    return () => document.removeEventListener('mousedown', onClickAway);
   }, []);
 
   const select = (val: string | number) => {
@@ -59,7 +59,7 @@ export default function TeamDropdown({
   return (
     <div
       ref={rootRef}
-      className={clsx(fitContent ? "relative inline-block" : "relative w-full", className)}
+      className={clsx(fitContent ? 'relative inline-block' : 'relative w-full', className)}
     >
       <button
         type="button"
@@ -69,16 +69,16 @@ export default function TeamDropdown({
         onClick={() => !disabled && setOpen((v) => !v)}
         style={widthStyle}
         className={clsx(
-          "h-14 px-5 inline-flex items-center justify-between rounded-2xl border border-zinc-200 bg-neutral-50",
-          fitContent ? "w-auto whitespace-nowrap" : "w-full",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300",
-          disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+          'h-14 px-5 inline-flex items-center justify-between rounded-2xl border border-zinc-200 bg-neutral-50',
+          fitContent ? 'w-auto whitespace-nowrap' : 'w-full',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300',
+          disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
         )}
       >
         <span
           className={clsx(
             "text-lg leading-relaxed font-['Pretendard']",
-            selectedLabel ? "text-black" : "text-neutral-400"
+            selectedLabel ? 'text-black' : 'text-neutral-400',
           )}
         >
           {selectedLabel || placeholder}
@@ -98,7 +98,7 @@ export default function TeamDropdown({
         <div
           role="listbox"
           style={widthStyle}
-          className={clsx("absolute left-0 top-full z-50 mt-5", fitContent ? "w-auto" : "w-full")}
+          className={clsx('absolute left-0 top-full z-50 mt-5', fitContent ? 'w-auto' : 'w-full')}
         >
           <div className="max-h-72 overflow-auto rounded-2xl border border-zinc-200 bg-white shadow-[0_4px_32px_0_rgb(0_0_0/0.05),_4px_0_32px_0_rgb(0_0_0/0.05)]">
             {items.map((item) => {
@@ -110,9 +110,9 @@ export default function TeamDropdown({
                   onClick={() => select(item.value)}
                   aria-selected={isSelected}
                   className={clsx(
-                    "relative h-14 w-full px-5 text-left",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300",
-                    isSelected ? "bg-neutral-50" : "hover:bg-neutral-50"
+                    'relative h-14 w-full px-5 text-left',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300',
+                    isSelected ? 'bg-neutral-50' : 'hover:bg-neutral-50',
                   )}
                 >
                   <span className="text-lg leading-relaxed font-['Pretendard'] text-neutral-700">
