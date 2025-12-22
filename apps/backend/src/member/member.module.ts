@@ -8,9 +8,9 @@ import { PaginationService } from '../common/service';
 import { WarnModule } from '../warn/warn.module';
 
 @Module({
-    imports: [DbModule, ReportModule, WarnModule],
-    providers: [MemberService, MemberRepository, PaginationService],
-    exports: [MemberService, MemberRepository],
-    controllers: [MemberController],
+  imports: [DbModule, ReportModule, WarnModule],
+  providers: [MemberService, MemberRepository, PaginationService],
+  exports: [MemberService, MemberRepository],
+  controllers: [MemberController],
 })
 export class MemberModule {}
