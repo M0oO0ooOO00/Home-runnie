@@ -7,11 +7,32 @@
     "dev:stream": "turbo run dev --ui=stream",
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "clean": "turbo run clean"
+    "clean": "turbo run clean",
+    "prepare": "husky"
   },
   "devDependencies": {
     "globals": "^16.5.0",
-    "turbo": "^2.3.3"
+    "turbo": "^2.3.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5",
+    "prettier": "^3.6.2"
+  },
+  "lint-staged": {
+    "apps/backend/**/*.{ts,js}": [
+      "pnpm --filter @homerunnie/backend exec eslint --fix",
+      "pnpm exec prettier --write"
+    ],
+    "apps/frontend/**/*.{js,jsx,ts,tsx}": [
+      "pnpm --filter @homerunnie/frontend exec eslint --fix",
+      "pnpm exec prettier --write"
+    ],
+    "packages/**/*.{ts,js,tsx}": [
+      "pnpm --filter @homerunnie/shared exec eslint --fix",
+      "pnpm exec prettier --write"
+    ],
+    "*.{json,md,css,scss}": [
+      "pnpm exec prettier --write"
+    ]
   },
   "packageManager": "pnpm@10.16.0"
 }
