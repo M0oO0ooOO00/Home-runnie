@@ -7,7 +7,7 @@ on:
 
 jobs:
   sync:
-    if: github.repository == 'M0oO0ooOO00/MooClient'
+    if: github.repository == 'M0oO0ooOO00/homerunnie'
     runs-on: ubuntu-latest
 
     steps:
@@ -22,11 +22,11 @@ jobs:
           git config user.email "actions@github.com"
 
       - name: Add Fork as Remote
-        run: git remote add fork https://github.com/cywin1018/MooClient.git
+        run: git remote add fork https://github.com/cywin1018/Home-runnie.git
 
       - name: Push changes to Fork
         env:
           GITHUB_USERNAME: cywin1018
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          git push -f https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/cywin1018/MooClient.git main
+          git push -f https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/cywin1018/Home-runnie.git main
