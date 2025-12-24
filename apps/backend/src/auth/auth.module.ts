@@ -8,6 +8,7 @@ import { AuthController } from './auth.controller';
 import { KakaoStrategy } from './strategies/kakao.strategy';
 import { TokenService } from './service/token.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CookieService } from './service/cookie.service';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
     MemberModule,
   ],
-  providers: [JwtStrategy, JwtAuthGuard, AuthService, KakaoStrategy, TokenService],
+  providers: [JwtStrategy, JwtAuthGuard, AuthService, KakaoStrategy, TokenService, CookieService],
   exports: [JwtAuthGuard],
   controllers: [AuthController],
 })

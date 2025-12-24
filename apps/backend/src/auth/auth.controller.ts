@@ -4,12 +4,15 @@ import { AuthService } from './service/auth.service';
 import * as process from 'node:process';
 import { SignUpCompleteRequestDto } from './dto/request/sign-up.complete.request';
 import { TokenService } from './service/token.service';
+import { Response } from 'express';
+import { CookieService } from './service/cookie.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly tokenService: TokenService,
+    private readonly cookieService: CookieService,
   ) {}
 
   @Get('kakao')
@@ -18,28 +21,53 @@ export class AuthController {
 
   @Get('kakao/callback')
   @UseGuards(AuthGuard('kakao'))
-  async kakaoCallback(@Req() req, @Res() res) {
+  async kakaoCallback(@Req() req, @Res() res: Response) {
     const user = req.user;
     const member = await this.authService.validateKakaoLogin(user);
 
     if (member.signUpStatus === false) {
-      // 최종 회원가입 안된 경우
       res.redirect(`${process.env.LOCAL_FRONT}/signup?memberId=${member.id}`);
     } else {
-      // 이미 회원가입이 완료된 계정의 경우
-      // 토큰 만들고
-      // 홈페이지 리다이렉트
       const token = this.tokenService.generateToken(member);
-      console.log(token);
+
+      const accessCookie = this.cookieService.buildCookie('accessToken', token.accessToken, {
+        maxAge: 24 * 60 * 60 * 1000,
+      });
+      const refreshCookie = this.cookieService.buildCookie('accessToken', token.refreshToken, {
+        maxAge: 24 * 60 * 60 * 1000 * 7,
+      });
+
+      res.cookie(accessCookie.name, accessCookie.value, accessCookie.options);
+      res.cookie(refreshCookie.name, refreshCookie.value, refreshCookie.options);
+      res.redirect(`${process.env.LOCAL_FRONT}/home`);
     }
   }
 
   @Post('signup')
-  async completeSignUp(@Body() signUpCompleteRequestDto: SignUpCompleteRequestDto) {
+  async completeSignUp(
+    @Body() signUpCompleteRequestDto: SignUpCompleteRequestDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const member = await this.authService.completeSignUp(signUpCompleteRequestDto);
-    console.log('회원 가입 완료');
-    // 추후 쿠키 등등으로 변경
+
     const token = this.tokenService.generateToken(member);
-    console.log(token);
+
+    res.cookie('accessToken', token.accessToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax' as const,
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24,
+    });
+
+    res.cookie('refreshToken', token.refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax' as const,
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
+
+    res.redirect(`${process.env.LOCAL_FRONT}/home`);
   }
 }
