@@ -1,4 +1,4 @@
-import baseConfig from '../jest.config.base.js';
+import baseConfig from '../../jest.config.base.js';
 
 export default {
   ...baseConfig, // 공통 설정 재사용
