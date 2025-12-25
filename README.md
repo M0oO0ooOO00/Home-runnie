@@ -492,7 +492,7 @@ pnpm test:watch
 
 ## 🤝 기여 가이드
 
-1. 새 브랜치 생성: `git checkout -b feature/your-feature-name`
+1. 새 브랜치 생성: `git checkout -b feature/[your-feature-name]-[issue-number]`
 2. 변경사항 커밋: `git commit -m "feat: your feature description"`
 3. 브랜치 푸시: `git push origin feature/your-feature-name`
 4. Pull Request 생성
