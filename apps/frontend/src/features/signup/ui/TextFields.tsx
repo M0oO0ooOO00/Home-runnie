@@ -4,7 +4,7 @@ import { useState, ReactNode } from 'react';
 import { TextField } from '@/shared/ui/input/text-field';
 import { FormLabel } from './FormLabel';
 import { Dropdown } from '@/shared/ui/dropdown/dropdown';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/ui/primitives/button';
 import Image from 'next/image';
 import { DEFAULT_PROFILE_IMAGE, TEAM_ASSETS } from '@homerunnie/shared';
 

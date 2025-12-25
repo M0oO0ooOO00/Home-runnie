@@ -1,22 +1,22 @@
-import { Button } from "@/components/ui/button";
+import { Button } from '@/shared/ui/primitives/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from "@/components/ui/dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+} from '@/shared/ui/primitives/dialog';
+import { RadioGroup, RadioGroupItem } from '@/shared/ui/primitives/radio-group';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import Image from "next/image";
+} from '@/shared/ui/primitives/select';
+import { Textarea } from '@/shared/ui/primitives/textarea';
+import { Label } from '@/shared/ui/primitives/label';
+import Image from 'next/image';
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -25,7 +25,7 @@ interface ReportModalProps {
 }
 
 const ReportModal = ({ isOpen, onClose, participants }: ReportModalProps) => {
-  const reportReasons = ["욕설/비방", "스팸/홍보성 메시지", "불법 정보", "음란물/선정성", "기타"];
+  const reportReasons = ['욕설/비방', '스팸/홍보성 메시지', '불법 정보', '음란물/선정성', '기타'];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

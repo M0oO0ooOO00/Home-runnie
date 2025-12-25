@@ -1,16 +1,16 @@
 'use client';
 
 import Image from 'next/image';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/shared/ui/primitives/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/shared/ui/primitives/select';
 import { baseBallTeamItems } from '@homerunnie/shared';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/ui/primitives/button';
 
 export default function Edit() {
   return (
