@@ -1,12 +1,12 @@
-import Link from "next/link";
-import MateItem from "@/features/home/mate-item";
+import Link from 'next/link';
+import MateItem from './MateItem';
 
 const dummyMateList = [
-  { id: 1, match: "한화 vs 두산", title: "나랑 직관 갈 사람", date: "7/28" },
-  { id: 2, match: "롯데 vs LG", title: "사직에서 같이 응원해요", date: "7/29" },
-  { id: 3, match: "KIA vs 삼성", title: "광주 챔피언스 필드 동행 구함", date: "7/30" },
-  { id: 4, match: "SSG vs 키움", title: "고척돔에서 만나요!", date: "7/31" },
-  { id: 5, match: "NC vs KT", title: "수원 경기 보러 갈 분", date: "8/1" },
+  { id: 1, match: '한화 vs 두산', title: '나랑 직관 갈 사람', date: '7/28' },
+  { id: 2, match: '롯데 vs LG', title: '사직에서 같이 응원해요', date: '7/29' },
+  { id: 3, match: 'KIA vs 삼성', title: '광주 챔피언스 필드 동행 구함', date: '7/30' },
+  { id: 4, match: 'SSG vs 키움', title: '고척돔에서 만나요!', date: '7/31' },
+  { id: 5, match: 'NC vs KT', title: '수원 경기 보러 갈 분', date: '8/1' },
 ];
 
 export default function MateListBanner() {

@@ -1,5 +1,5 @@
-import ChatBox from "@/features/chat/components/ChatBox";
-import ChatList from "@/features/chat/components/ChatList";
+import ChatBox from '../components/ChatBox';
+import ChatList from '../components/ChatList';
 
 interface ChatRoomPageProps {
   params: {
@@ -9,24 +9,24 @@ interface ChatRoomPageProps {
 
 const sampleChatRooms = [
   {
-    id: "1",
-    title: "서울우유 공지방",
-    participants: ["수비니", "수미니", "누누", "호호", "용용", "실버", "창창"],
-    lastMessage: "우리 지금 도착했음",
+    id: '1',
+    title: '서울우유 공지방',
+    participants: ['수비니', '수미니', '누누', '호호', '용용', '실버', '창창'],
+    lastMessage: '우리 지금 도착했음',
     unreadCount: 3,
   },
   {
-    id: "2",
-    title: "Moo",
-    participants: ["수비니", "수미니", "누누", "호호", "용용", "실버", "창창"],
-    lastMessage: "다들 어디세요 이거 글자 넘어가면 그냥 점점으로 사라지게..",
+    id: '2',
+    title: 'Moo',
+    participants: ['수비니', '수미니', '누누', '호호', '용용', '실버', '창창'],
+    lastMessage: '다들 어디세요 이거 글자 넘어가면 그냥 점점으로 사라지게..',
     unreadCount: 0,
   },
   {
-    id: "3",
-    title: "서울우유 공지방",
-    participants: ["수비니", "수미니", "누누", "호호", "용용", "실버", "창창"],
-    lastMessage: "우리 지금 도착했음",
+    id: '3',
+    title: '서울우유 공지방',
+    participants: ['수비니', '수미니', '누누', '호호', '용용', '실버', '창창'],
+    lastMessage: '우리 지금 도착했음',
     unreadCount: 3,
   },
 ];

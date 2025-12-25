@@ -1,4 +1,4 @@
-import TextFields from '@/features/signup/ui/TextFields';
+import TextFields from './TextFields';
 import { baseBallTeamItems } from '@homerunnie/shared';
 import Header from '@/shared/ui/header/header';
 

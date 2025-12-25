@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 
 interface ChatListItem {
   id: string;
@@ -29,7 +29,7 @@ const ChatList = ({ chatRooms, activeChatId }: ChatListProps) => {
           key={room.id}
           onClick={() => handleChatRoomClick(room.id)}
           className={`p-4 cursor-pointer border-b border-gray-100 ${
-            room.id === activeChatId ? "bg-gray-100" : "hover:bg-gray-50"
+            room.id === activeChatId ? 'bg-gray-100' : 'hover:bg-gray-50'
           }`}
         >
           <div className="flex justify-between items-start">
@@ -40,7 +40,7 @@ const ChatList = ({ chatRooms, activeChatId }: ChatListProps) => {
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 truncate mb-1">{room.participants.join(", ")}</p>
+          <p className="text-sm text-gray-500 truncate mb-1">{room.participants.join(', ')}</p>
           <p className="text-sm text-gray-700 truncate">{room.lastMessage}</p>
         </div>
       ))}

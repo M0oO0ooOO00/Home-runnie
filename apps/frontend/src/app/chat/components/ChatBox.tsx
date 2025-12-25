@@ -1,14 +1,14 @@
-import ChatInfo from "./ChatInfo";
-import ChatInput from "./ChatInput";
-import ChatReport from "./ChatReport";
+import ChatInfo from './ChatInfo';
+import ChatInput from './ChatInput';
+import ChatReport from './ChatReport';
 
 const ChatBox = () => {
   // 임시 데이터
   const messages = [
-    { id: 1, text: "저도 낄래요", sender: "other" },
-    { id: 2, text: "안된다면?", sender: "me" },
-    { id: 3, text: "쩔 수다", sender: "other" },
-    { id: 4, text: "100만원 준비하면 껴줌", sender: "me" },
+    { id: 1, text: '저도 낄래요', sender: 'other' },
+    { id: 2, text: '안된다면?', sender: 'me' },
+    { id: 3, text: '쩔 수다', sender: 'other' },
+    { id: 4, text: '100만원 준비하면 껴줌', sender: 'me' },
   ];
 
   return (
@@ -27,15 +27,15 @@ const ChatBox = () => {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"}`}
+              className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
             >
               <div
                 className={[
-                  "rounded-2xl px-4 py-2 max-w-xs lg:max-w-md",
-                  msg.sender === "me"
-                    ? "bg-green-500 text-white rounded-br-none"
-                    : "bg-white text-black rounded-bl-none",
-                ].join(" ")}
+                  'rounded-2xl px-4 py-2 max-w-xs lg:max-w-md',
+                  msg.sender === 'me'
+                    ? 'bg-green-500 text-white rounded-br-none'
+                    : 'bg-white text-black rounded-bl-none',
+                ].join(' ')}
               >
                 {msg.text}
               </div>

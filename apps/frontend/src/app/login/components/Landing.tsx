@@ -1,4 +1,4 @@
-import KakaoLoginButton from "@/features/landing/ui/kakao-login-button";
+import KakaoLoginButton from './KakaoLoginButton';
 
 export default function Landing() {
   return (

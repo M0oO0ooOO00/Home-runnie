@@ -1,14 +1,14 @@
-import ChatCard from "@/features/chat/components/ChatCard";
-import ChatTable from "@/features/chat/components/ChatTable";
-import Image from "next/image";
+import ChatCard from './components/ChatCard';
+import ChatTable from './components/ChatTable';
+import Image from 'next/image';
 
 export default function ChatPage() {
   const chatListData = [
-    { id: 1, game: "한화 vs 두산", title: "직관 갈 사람 제발제발", date: "7/28" },
-    { id: 2, game: "한화 vs 두산", title: "직관 갈 사람 제발제발", date: "7/28" },
-    { id: 3, game: "한화 vs 두산", title: "직관 갈 사람 제발제발", date: "7/28" },
-    { id: 4, game: "한화 vs 두산", title: "직관 갈 사람 제발제발", date: "7/28" },
-    { id: 5, game: "한화 vs 두산", title: "직관 갈 사람 제발제발", date: "7/28" },
+    { id: 1, game: '한화 vs 두산', title: '직관 갈 사람 제발제발', date: '7/28' },
+    { id: 2, game: '한화 vs 두산', title: '직관 갈 사람 제발제발', date: '7/28' },
+    { id: 3, game: '한화 vs 두산', title: '직관 갈 사람 제발제발', date: '7/28' },
+    { id: 4, game: '한화 vs 두산', title: '직관 갈 사람 제발제발', date: '7/28' },
+    { id: 5, game: '한화 vs 두산', title: '직관 갈 사람 제발제발', date: '7/28' },
   ];
 
   return (

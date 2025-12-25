@@ -9,7 +9,7 @@ export default function MateItem({
   date: string;
   isLast: boolean;
 }>) {
-  const roundedClass = isLast ? "rounded-b-2xl" : "";
+  const roundedClass = isLast ? 'rounded-b-2xl' : '';
 
   return (
     <div className={`px-[40px] py-[20px] bg-white ${roundedClass}`}>
