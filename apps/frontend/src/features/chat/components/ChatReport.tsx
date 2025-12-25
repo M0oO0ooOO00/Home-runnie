@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useState } from "react";
-import ReportModal from "@/components/common/ReportModal";
+import Image from 'next/image';
+import { useState } from 'react';
+import ReportModal from '@/shared/ui/modal/ReportModal';
 
 const ChatReport = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 임시 참여자 데이터
-  const participants = ["가나다", "이승현", "김민우", "박준"];
+  const participants = ['가나다', '이승현', '김민우', '박준'];
 
   return (
     <>
