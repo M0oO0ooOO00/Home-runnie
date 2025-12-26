@@ -1,4 +1,4 @@
-import Edit from "@/features/my/ui/Edit";
+import Edit from './components/Edit';
 
 export default function Page() {
   return (

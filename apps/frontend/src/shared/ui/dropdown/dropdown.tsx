@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 import {
   Select,
   SelectContent,
@@ -10,68 +10,68 @@ import {
   SelectTrigger,
   SelectValue,
   SelectSeparator,
-} from "@/components/ui/select";
-import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronUp } from "lucide-react";
+} from '@/shared/ui/primitives/select';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const triggerVariants = cva(
-  "w-full rounded-2xl bg-background text-foreground border transition-all duration-200 " +
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring " +
-    "data-[state=open]:ring-2 data-[state=open]:ring-ring " +
-    "placeholder:text-muted-foreground flex items-center justify-between",
+  'w-full rounded-2xl bg-background text-foreground border transition-all duration-200 ' +
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
+    'data-[state=open]:ring-2 data-[state=open]:ring-ring ' +
+    'placeholder:text-muted-foreground flex items-center justify-between',
   {
     variants: {
       tone: {
-        default: "border-border shadow-01",
-        error: "border-[var(--destructive)] focus-visible:ring-[var(--destructive)]",
+        default: 'border-border shadow-01',
+        error: 'border-[var(--destructive)] focus-visible:ring-[var(--destructive)]',
       },
       fieldSize: {
-        sm: "h-10 px-4",
-        md: "h-[4.375rem] px-5",
-        lg: "h-12 px-6",
+        sm: 'h-10 px-4',
+        md: 'h-[4.375rem] px-5',
+        lg: 'h-12 px-6',
       },
       state: {
-        enabled: "",
-        disabled: "bg-muted text-muted-foreground border-gray-200 shadow-none cursor-not-allowed",
+        enabled: '',
+        disabled: 'bg-muted text-muted-foreground border-gray-200 shadow-none cursor-not-allowed',
       },
     },
     defaultVariants: {
-      tone: "default",
-      fieldSize: "md",
-      state: "enabled",
+      tone: 'default',
+      fieldSize: 'md',
+      state: 'enabled',
     },
-  }
+  },
 );
 
 //드롭다운 아이템 스타일
 const itemVariants = cva(
-  "rounded-lg transition-colors cursor-pointer flex items-center justify-between",
+  'rounded-lg transition-colors cursor-pointer flex items-center justify-between',
   {
     variants: {
       size: {
-        sm: "px-3 py-2 text-sm",
-        md: "px-4 py-3 text-base",
-        lg: "px-5 py-4 text-lg",
+        sm: 'px-3 py-2 text-sm',
+        md: 'px-4 py-3 text-base',
+        lg: 'px-5 py-4 text-lg',
       },
       weight: {
-        normal: "font-normal",
-        medium: "font-medium",
-        semibold: "font-semibold",
-        bold: "font-bold",
+        normal: 'font-normal',
+        medium: 'font-medium',
+        semibold: 'font-semibold',
+        bold: 'font-bold',
       },
       state: {
-        default: "text-foreground hover:bg-accent hover:text-accent-foreground",
-        selected: "bg-accent text-accent-foreground font-medium",
-        disabled: "opacity-40 pointer-events-none text-muted-foreground",
+        default: 'text-foreground hover:bg-accent hover:text-accent-foreground',
+        selected: 'bg-accent text-accent-foreground font-medium',
+        disabled: 'opacity-40 pointer-events-none text-muted-foreground',
       },
     },
     defaultVariants: {
-      size: "md",
-      weight: "normal",
-      state: "default",
+      size: 'md',
+      weight: 'normal',
+      state: 'default',
     },
-  }
+  },
 );
 
 //드롭다운 옵션 아이템 타입
@@ -81,7 +81,7 @@ export interface DropdownOption {
   disabled?: boolean;
   icon?: React.ReactNode;
   description?: string;
-  weight?: "normal" | "medium" | "semibold" | "bold";
+  weight?: 'normal' | 'medium' | 'semibold' | 'bold';
 }
 
 //드롭다운 그룹 타입
@@ -92,13 +92,13 @@ export interface DropdownGroup {
 }
 
 //드롭다운 아이템 스타일 타입
-export type ItemSize = "sm" | "md" | "lg";
-export type ItemWeight = "normal" | "medium" | "semibold" | "bold";
-export type ItemState = "default" | "selected" | "disabled";
+export type ItemSize = 'sm' | 'md' | 'lg';
+export type ItemWeight = 'normal' | 'medium' | 'semibold' | 'bold';
+export type ItemState = 'default' | 'selected' | 'disabled';
 
 export interface DropdownProps
   extends
-    Omit<React.ComponentProps<typeof Select>, "children">,
+    Omit<React.ComponentProps<typeof Select>, 'children'>,
     VariantProps<typeof triggerVariants> {
   placeholder?: string;
   label?: string;
@@ -120,7 +120,7 @@ export interface DropdownProps
 }
 
 export function Dropdown({
-  placeholder = "dropdown",
+  placeholder = 'dropdown',
   label,
   items,
   tone,
@@ -129,8 +129,8 @@ export function Dropdown({
   errorMessage,
   helperText,
   className,
-  itemSize = "md",
-  itemWeight = "normal",
+  itemSize = 'md',
+  itemWeight = 'normal',
   showChevron = true,
   chevronIcon,
   contentClassName,
@@ -155,7 +155,7 @@ export function Dropdown({
 
   // 아이템 렌더링 함수
   const renderItem = (option: DropdownOption, isSelected: boolean = false) => {
-    const itemState: ItemState = option.disabled ? "disabled" : isSelected ? "selected" : "default";
+    const itemState: ItemState = option.disabled ? 'disabled' : isSelected ? 'selected' : 'default';
     const finalWeight = option.weight || itemWeight;
 
     return (
@@ -165,7 +165,7 @@ export function Dropdown({
             size: itemSize,
             weight: finalWeight,
             state: itemState,
-          })
+          }),
         )}
       >
         <div className="flex items-center gap-2">
@@ -186,12 +186,12 @@ export function Dropdown({
       {label ? (
         <div
           className={cn(
-            "text-foreground",
-            fieldSize === "sm"
-              ? "text-sm font-medium"
-              : fieldSize === "md"
-                ? "text-base font-medium"
-                : "text-lg font-medium"
+            'text-foreground',
+            fieldSize === 'sm'
+              ? 'text-sm font-medium'
+              : fieldSize === 'md'
+                ? 'text-base font-medium'
+                : 'text-lg font-medium',
           )}
         >
           {label}
@@ -200,7 +200,7 @@ export function Dropdown({
 
       <Select
         {...selectProps}
-        disabled={state === "disabled" || selectProps.disabled}
+        disabled={state === 'disabled' || selectProps.disabled}
         onOpenChange={setIsOpen}
       >
         <SelectTrigger
@@ -228,9 +228,9 @@ export function Dropdown({
 
         <SelectContent
           className={cn(
-            "rounded-xl border border-border bg-popover text-popover-foreground shadow-03",
-            "p-1 min-w-[200px]",
-            contentClassName
+            'rounded-xl border border-border bg-popover text-popover-foreground shadow-03',
+            'p-1 min-w-[200px]',
+            contentClassName,
           )}
           style={contentHeight ? { height: contentHeight } : undefined}
           position="popper"
@@ -240,8 +240,8 @@ export function Dropdown({
               {group.label && (
                 <SelectLabel
                   className={cn(
-                    "text-muted-foreground px-2 py-1",
-                    itemSize === "sm" ? "text-xs" : itemSize === "md" ? "text-sm" : "text-base"
+                    'text-muted-foreground px-2 py-1',
+                    itemSize === 'sm' ? 'text-xs' : itemSize === 'md' ? 'text-sm' : 'text-base',
                   )}
                 >
                   {group.label}

@@ -1,4 +1,4 @@
-import My from "@/features/my/ui/My";
+import My from './components/My';
 
 export default function Page() {
   return (

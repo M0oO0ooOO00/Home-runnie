@@ -1,6 +1,6 @@
-@import "./tokens.css";
-@import "tailwindcss";
-@import "tw-animate-css";
+@import './tokens.css';
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 /* dark variant (was in globals.css) */
 @custom-variant dark (&:is(.dark *));

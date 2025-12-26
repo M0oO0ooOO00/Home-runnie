@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { Button as ShadButton } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { cva, type VariantProps } from "class-variance-authority";
+import * as React from 'react';
+import { Button as ShadButton } from '@/shared/ui/primitives/button';
+import { cn } from '@/lib/utils';
+import { cva, type VariantProps } from 'class-variance-authority';
 // import { Filter } from "lucide-react";
 
 /**
@@ -38,28 +38,28 @@ const FilterIcon = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
  * ※ 필터 아이콘과 "필터" 텍스트가 포함된 작은 버튼
  */
 const ctaSmallVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-lg transition-colors select-none " +
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring " +
-    "disabled:cursor-not-allowed b03-r",
+  'inline-flex items-center justify-center gap-2 rounded-lg transition-colors select-none ' +
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' +
+    'disabled:cursor-not-allowed b03-r',
   {
     variants: {
       variant: {
-        primary: "bg-gray-900 text-white hover:bg-gray-800",
-        secondary: "bg-gray-600 text-gray-200 hover:bg-gray-500",
-        subtle: "bg-gray-200 text-gray-600 hover:bg-gray-300",
-        outline: "bg-white border border-gray-900 text-gray-900 hover:bg-gray-50",
+        primary: 'bg-gray-900 text-white hover:bg-gray-800',
+        secondary: 'bg-gray-600 text-gray-200 hover:bg-gray-500',
+        subtle: 'bg-gray-200 text-gray-600 hover:bg-gray-300',
+        outline: 'bg-white border border-gray-900 text-gray-900 hover:bg-gray-50',
       },
       size: {
-        sm: "h-8 px-3",
-        md: "h-10 px-4",
-        lg: "h-12 px-5",
+        sm: 'h-8 px-3',
+        md: 'h-10 px-4',
+        lg: 'h-12 px-5',
       },
     },
     defaultVariants: {
-      variant: "primary",
-      size: "md",
+      variant: 'primary',
+      size: 'md',
     },
-  }
+  },
 );
 
 export interface CtaSmallProps
@@ -76,14 +76,14 @@ export interface CtaSmallProps
  * - 4가지 변형 지원
  */
 export const CtaSmall = React.forwardRef<HTMLButtonElement, CtaSmallProps>(
-  ({ className, variant, size, icon, text = "필터", disabled, ...props }, ref) => {
+  ({ className, variant, size, icon, text = '필터', disabled, ...props }, ref) => {
     return (
       <ShadButton
         ref={ref}
         className={cn(
           ctaSmallVariants({ variant, size }),
-          disabled && "opacity-50 cursor-not-allowed",
-          className
+          disabled && 'opacity-50 cursor-not-allowed',
+          className,
         )}
         disabled={disabled}
         {...props}
@@ -92,8 +92,8 @@ export const CtaSmall = React.forwardRef<HTMLButtonElement, CtaSmallProps>(
         <span className="font-medium">{text}</span>
       </ShadButton>
     );
-  }
+  },
 );
-CtaSmall.displayName = "CtaSmall";
+CtaSmall.displayName = 'CtaSmall';
 
 export { ctaSmallVariants };

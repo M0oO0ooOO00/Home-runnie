@@ -1,5 +1,5 @@
-import MainBanner from "@/features/home/main-banner";
-import MateListBanner from "@/features/home/mate-list-banner";
+import MainBanner from './components/MainBanner';
+import MateListBanner from './components/MateListBanner';
 
 export default function Page() {
   return (
