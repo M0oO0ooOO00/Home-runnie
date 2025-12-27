@@ -1,4 +1,3 @@
-export * from './gender.enum';
 export * from './prefer-gender.enum';
 export * from './recruitment-role.enum';
 export * from './report-type.enum';
@@ -7,6 +6,5 @@ export * from './stadium.enum';
 export * from './post-status.enum';
 export * from './team.enum';
 export * from './ticketing-type.enum';
-export * from './post-type.enum';
 export * from './oauth.enum';
 export * from './account-status.enum';

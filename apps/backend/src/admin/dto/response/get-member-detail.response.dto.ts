@@ -1,56 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Member } from '../../../member/domain';
-import { Profile } from '../../../member/domain';
+import { Profile, Member } from '../../../member/domain';
 import { Warn } from '../../domain';
 import { Report } from '../../../report/domain';
 import { Post } from '../../../post/domain';
 import {
-  Team,
-  TeamDescription,
   Gender,
   GenderDescription,
+  MemberDetailInfo,
+  MemberStatistics,
   PostType,
   PostTypeDescription,
-} from '../../../common';
+  ReportRecord,
+  Team,
+  TeamDescription,
+  WarnRecord,
+} from '@homerunnie/shared';
 
-interface MemberDetailInfo {
-  id: number;
-  name: string;
-  nickname: string | null;
-  supportTeam: Team | null;
-  supportTeamName: string | null;
-  gender: string | null;
-  age: number | null;
-  phoneNumber: string | null;
-  joinedAt: Date;
-  accountStatus: string;
-}
-
-interface WarnRecord {
-  reason: string;
-  postType: string | null;
-  postTitle: string | null;
-  postId: number | null;
-  warnedAt: Date;
-}
-
-interface ReportRecord {
-  reportType: string | null;
-  postType: string | null;
-  postTitle: string | null;
-  postId: number | null;
-  reportedMemberName: string | null;
-  reporterName: string | null;
-  reportedAt: Date;
-}
-
-interface MemberStatistics {
-  totalWarnCount: number;
-  totalReportingCount: number;
-  totalReportedCount: number;
-}
-
-export class WarnRecordResponse implements WarnRecord {
+export class WarnRecordResponseDto implements WarnRecord {
   @ApiProperty({
     description: '경고 사유',
     type: 'string',
@@ -105,7 +71,7 @@ export class WarnRecordResponse implements WarnRecord {
   }
 }
 
-export class ReportRecordResponse implements ReportRecord {
+export class ReportRecordResponseDto implements ReportRecord {
   @ApiProperty({
     description: '신고 사유',
     type: 'string',
@@ -181,7 +147,7 @@ export class ReportRecordResponse implements ReportRecord {
   }
 }
 
-export class MemberDetailResponse implements MemberDetailInfo, MemberStatistics {
+export class MemberDetailResponseDto implements MemberDetailInfo, MemberStatistics {
   @ApiProperty({
     description: '회원 ID',
     type: 'integer',
@@ -282,21 +248,21 @@ export class MemberDetailResponse implements MemberDetailInfo, MemberStatistics 
 
   @ApiProperty({
     description: '상위 3개 경고 기록',
-    type: [WarnRecordResponse],
+    type: [WarnRecordResponseDto],
   })
-  recentWarns: WarnRecordResponse[];
+  recentWarns: WarnRecordResponseDto[];
 
   @ApiProperty({
     description: '상위 3개 신고한 기록',
-    type: [ReportRecordResponse],
+    type: [ReportRecordResponseDto],
   })
-  recentReporting: ReportRecordResponse[];
+  recentReporting: ReportRecordResponseDto[];
 
   @ApiProperty({
     description: '상위 3개 신고당한 기록',
-    type: [ReportRecordResponse],
+    type: [ReportRecordResponseDto],
   })
-  recentReported: ReportRecordResponse[];
+  recentReported: ReportRecordResponseDto[];
 
   constructor() {
     this.recentWarns = [];
@@ -322,8 +288,8 @@ export class MemberDetailResponse implements MemberDetailInfo, MemberStatistics 
       post: (typeof Post.$inferSelect & { postType: PostType }) | null;
     }>,
     statistics: MemberStatistics,
-  ): MemberDetailResponse {
-    const dto = new MemberDetailResponse();
+  ): MemberDetailResponseDto {
+    const dto = new MemberDetailResponseDto();
 
     // 기본 회원 정보
     dto.id = member.id;
@@ -334,7 +300,7 @@ export class MemberDetailResponse implements MemberDetailInfo, MemberStatistics 
       ? TeamDescription[profile.supportTeam as Team]
       : null;
     dto.gender = member.gender ? GenderDescription[member.gender as Gender] : null;
-    dto.age = member.birthDate ? MemberDetailResponse.calculateAge(member.birthDate) : null;
+    dto.age = member.birthDate ? MemberDetailResponseDto.calculateAge(member.birthDate) : null;
     dto.phoneNumber = member.phoneNumber;
     dto.joinedAt = member.createdAt;
     dto.accountStatus = member.accountStatus;
@@ -349,7 +315,7 @@ export class MemberDetailResponse implements MemberDetailInfo, MemberStatistics 
       .slice(0, 3)
       .map(
         (record) =>
-          new WarnRecordResponse(
+          new WarnRecordResponseDto(
             record.warn.reason,
             record.post ? PostTypeDescription[record.post.postType] : null,
             record.post?.title || null,
@@ -361,7 +327,7 @@ export class MemberDetailResponse implements MemberDetailInfo, MemberStatistics 
     // 신고한 기록 (상위 3개)
     dto.recentReporting = reportingRecords.slice(0, 3).map(
       (record) =>
-        new ReportRecordResponse(
+        new ReportRecordResponseDto(
           record.report.reportType,
           record.post ? PostTypeDescription[record.post.postType] : null,
           record.post?.title || null,
@@ -375,7 +341,7 @@ export class MemberDetailResponse implements MemberDetailInfo, MemberStatistics 
     // 신고당한 기록 (상위 3개)
     dto.recentReported = reportedRecords.slice(0, 3).map(
       (record) =>
-        new ReportRecordResponse(
+        new ReportRecordResponseDto(
           record.report.reportType,
           record.post ? PostTypeDescription[record.post.postType] : null,
           record.post?.title || null,
