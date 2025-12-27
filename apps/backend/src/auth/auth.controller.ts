@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './service/auth.service';
 import * as process from 'node:process';
-import { SignUpCompleteRequestDto } from './dto/request/sign-up.complete.request';
+import { SignUpCompleteRequestDto } from './dto/request/sign-up.complete.request.dto';
 import { TokenService } from './service/token.service';
 import { Response } from 'express';
 import { CookieService } from './service/cookie.service';

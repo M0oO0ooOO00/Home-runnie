@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { TokenResponse } from '../dto/response/token.response';
+import { TokenResponseDto } from '../dto/response/token.response.dto';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class TokenService {
     private readonly configService: ConfigService,
   ) {}
 
-  generateToken(member): TokenResponse {
+  generateToken(member): TokenResponseDto {
     const payload = { id: member.id, role: member.role };
 
     const accessToken = this.jwtService.sign(payload, {
@@ -26,6 +26,6 @@ export class TokenService {
       },
     );
 
-    return TokenResponse.of(accessToken, refreshToken);
+    return TokenResponseDto.of(accessToken, refreshToken);
   }
 }

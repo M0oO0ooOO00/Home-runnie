@@ -1,6 +1,7 @@
 // dto
 export * from './dto/common';
 export * from './dto/admin';
+export * from './dto/auth';
 
 // Entities
 export * from './entities/team/team';

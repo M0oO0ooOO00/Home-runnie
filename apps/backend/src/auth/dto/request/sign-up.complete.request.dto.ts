@@ -1,9 +1,9 @@
 import { Team } from '../../../common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsNotEmpty, IsString } from 'class-validator';
-import { Gender } from '@homerunnie/shared';
+import { Gender, SignupCompleteRequest } from '@homerunnie/shared';
 
-export class SignUpCompleteRequestDto {
+export class SignUpCompleteRequestDto implements SignupCompleteRequest {
   @ApiProperty({ description: '회원 ID', type: 'integer', example: 1 })
   @IsInt()
   @IsNotEmpty()

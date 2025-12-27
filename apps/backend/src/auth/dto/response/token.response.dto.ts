@@ -1,4 +1,6 @@
-export class TokenResponse {
+import { TokenResponse } from '@homerunnie/shared';
+
+export class TokenResponseDto implements TokenResponse {
   accessToken: string;
   refreshToken: string;
 
@@ -8,6 +10,6 @@ export class TokenResponse {
   }
 
   public static of(accessToken: string, refreshToken: string) {
-    return new TokenResponse(accessToken, refreshToken);
+    return new TokenResponseDto(accessToken, refreshToken);
   }
 }
