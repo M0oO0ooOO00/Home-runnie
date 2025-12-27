@@ -33,7 +33,7 @@ export class AuthController {
       const accessCookie = this.cookieService.buildCookie('accessToken', token.accessToken, {
         maxAge: 24 * 60 * 60 * 1000,
       });
-      const refreshCookie = this.cookieService.buildCookie('accessToken', token.refreshToken, {
+      const refreshCookie = this.cookieService.buildCookie('refreshToken', token.refreshToken, {
         maxAge: 24 * 60 * 60 * 1000 * 7,
       });
 
@@ -52,21 +52,15 @@ export class AuthController {
 
     const token = this.tokenService.generateToken(member);
 
-    res.cookie('accessToken', token.accessToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax' as const,
-      path: '/',
-      maxAge: 1000 * 60 * 60 * 24,
+    const accessCookie = this.cookieService.buildCookie('accessToken', token.accessToken, {
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    const refreshCookie = this.cookieService.buildCookie('refreshToken', token.refreshToken, {
+      maxAge: 24 * 60 * 60 * 1000 * 7,
     });
 
-    res.cookie('refreshToken', token.refreshToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax' as const,
-      path: '/',
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    });
+    res.cookie(accessCookie.name, accessCookie.value, accessCookie.options);
+    res.cookie(refreshCookie.name, refreshCookie.value, refreshCookie.options);
 
     res.redirect(`${process.env.LOCAL_FRONT}/home`);
   }
