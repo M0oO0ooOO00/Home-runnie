@@ -1,7 +1,4 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { Gender } from '../../enums';
+import { Gender } from '@homerunnie/shared';
 
-export const genderPgEnum = pgEnum(
-    'gender',
-    Object.values(Gender) as [string, ...string[]],
-);
+export const genderPgEnum = pgEnum('gender', Object.values(Gender) as [string, ...string[]]);

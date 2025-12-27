@@ -1,2 +1,2 @@
-export * from './create-member.request';
-export * from './update-my-profile.request';
+export * from './create-member.request.dto';
+export * from './update-my-profile.request.dto';
