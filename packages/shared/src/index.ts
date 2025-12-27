@@ -1,3 +1,6 @@
+// dto
+export * from './dto/common';
+
 // Entities
 export * from './entities/team/team';
 export * from './entities/team/stadium';
