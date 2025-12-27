@@ -1,7 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { PagePaginationResponseDto } from '../../common';
-import { RecruitmentSummaryResponse } from '../dto';
+import { RecruitmentSummaryResponseDto } from '../dto';
 
 export const GetWrittenRecruitmentsSwagger = applyDecorators(
   ApiOperation({
@@ -25,6 +25,6 @@ export const GetWrittenRecruitmentsSwagger = applyDecorators(
   ApiResponse({
     status: 200,
     description: '작성한 모집글 목록 조회 성공',
-    type: PagePaginationResponseDto<RecruitmentSummaryResponse[]>,
+    type: PagePaginationResponseDto<RecruitmentSummaryResponseDto[]>,
   }),
 );

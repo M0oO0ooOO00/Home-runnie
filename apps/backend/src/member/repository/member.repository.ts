@@ -10,7 +10,7 @@ import { Post, RecruitmentDetail } from '../../post/domain';
 import { Scrap } from '../../scrap/domain';
 import { Participation } from '../../participation/domain';
 import { RecruitmentQueryResult } from '../type';
-import { UpdateMyProfileRequest } from '../dto';
+import { UpdateMyProfileRequestDto } from '../dto';
 import { Gender } from '@homerunnie/shared';
 
 type MemberType = typeof Member.$inferSelect;
@@ -253,7 +253,7 @@ export class MemberRepository {
     return result[0]?.count || 0;
   }
 
-  async updateProfile(memberId: number, updateData: UpdateMyProfileRequest) {
+  async updateProfile(memberId: number, updateData: UpdateMyProfileRequestDto) {
     const updateFields: Partial<typeof Profile.$inferSelect> = {};
 
     if (updateData.nickname !== undefined) {
