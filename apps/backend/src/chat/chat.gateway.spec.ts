@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChatGateway } from './chat.gateway';
 
-describe('ChatGateWay', () => {
+describe('ChatGateway', () => {
   let gateway: ChatGateway;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

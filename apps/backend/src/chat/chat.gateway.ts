@@ -8,15 +8,10 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-
-interface JoinRoomDto {
-  nickname: string;
-}
-
-interface MessageDto {
-  message: string;
-}
-
+import { JoinRoomDto } from './dto/room-join.dto';
+import { CreateMessageDto } from './dto/create-message.dto';
+import { Logger } from '@nestjs/common';
+// origin *은 보안에 취약하기 때문에, 나중에 환경변수로 배포된 링크로 변경해야함
 @WebSocketGateway({
   namespace: 'chat',
   cors: {
@@ -27,59 +22,54 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  // 사용자별 닉네임 저장
+  private readonly logger = new Logger(ChatGateway.name);
+
   private users: Map<string, string> = new Map();
 
   handleConnection(socket: Socket) {
-    console.log('client connected', socket.id);
+    this.logger.log('client connected', socket.id);
   }
 
   handleDisconnect(socket: Socket) {
     const nickname = this.users.get(socket.id);
     if (nickname) {
-      // 퇴장 알림
       socket.broadcast.emit('user_left', {
         nickname,
         message: `${nickname}님이 퇴장하셨습니다.`,
       });
       this.users.delete(socket.id);
     }
-    console.log('client disconnected', socket.id);
+    this.logger.log('client disconnected', socket.id);
   }
 
   @SubscribeMessage('join_room')
   handleJoinRoom(@MessageBody() data: JoinRoomDto, @ConnectedSocket() socket: Socket) {
     const { nickname } = data;
 
-    // 닉네임 저장
     this.users.set(socket.id, nickname);
 
-    // 본인에게 입장 성공 알림
     socket.emit('join_success', {
       message: `${nickname}님, 채팅방에 입장하셨습니다.`,
     });
 
-    // 다른 사용자들에게 입장 알림
     socket.broadcast.emit('user_joined', {
       nickname,
       message: `${nickname}님이 입장하셨습니다.`,
     });
 
-    console.log(`${nickname} joined the chat room`);
+    this.logger.log(`${nickname} joined the chat room`);
   }
 
   @SubscribeMessage('message')
-  handleMessage(@MessageBody() data: MessageDto, @ConnectedSocket() socket: Socket) {
+  handleMessage(@MessageBody() data: CreateMessageDto, @ConnectedSocket() socket: Socket) {
     const nickname = this.users.get(socket.id) || '익명';
 
-    // 다른 사용자들에게 메시지 전송
     socket.broadcast.emit('received_message', {
       nickname,
       message: data.message,
       isOwn: false,
     });
 
-    // 본인에게 메시지 전송
     socket.emit('received_message', {
       nickname: '나',
       message: data.message,
