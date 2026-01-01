@@ -11,8 +11,8 @@ interface ChatListItem {
 }
 
 interface ChatListProps {
-  chatRooms: ChatListItem[];
-  activeChatId: string;
+  chatRooms?: ChatListItem[];
+  activeChatId?: string;
 }
 
 const ChatList = ({ chatRooms, activeChatId }: ChatListProps) => {
@@ -24,7 +24,7 @@ const ChatList = ({ chatRooms, activeChatId }: ChatListProps) => {
 
   return (
     <div className="flex flex-col w-full h-full bg-white overflow-y-auto">
-      {chatRooms.map((room) => (
+      {chatRooms?.map((room) => (
         <div
           key={room.id}
           onClick={() => handleChatRoomClick(room.id)}
