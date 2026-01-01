@@ -39,7 +39,7 @@ export default function Header() {
         {/* 나중에 링크 바꾸기 */}
         {isLogged && (
           <>
-            <Link className="cursor-pointer" href="/">
+            <Link className="cursor-pointer" href="/chat">
               <div className="px-[10px] py-[15px] justify-start rounded-[10px] text-gray-600 b02-m hover:bg-gray-50">
                 채팅
               </div>
