@@ -20,6 +20,11 @@
 
 /* Typography utilities (T/B/C) */
 @layer components {
+  .text-t00 {
+    font-size: var(--text-t00);
+    line-height: var(--leading-140);
+    font-weight: var(--font-weight-b);
+  }
   /* Title 140% */
   .text-t01-b {
     font-size: var(--text-t01);
