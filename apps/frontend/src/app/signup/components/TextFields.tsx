@@ -40,11 +40,9 @@ const FormField = ({ label, children }: { label: string; children: ReactNode }) 
 export default function TextFields({
   genderItems,
   baseBallTeamItems,
-  memberId,
 }: Readonly<{
   genderItems: { value: string; label: string }[];
   baseBallTeamItems: { value: string; label: string }[];
-  memberId?: number;
 }>) {
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -100,14 +98,9 @@ export default function TextFields({
   const router = useRouter();
 
   const handleSignUp = async () => {
-    if (!memberId) {
-      alert('회원 정보가 없습니다. 다시 로그인해주세요.');
-      return;
-    }
-
     try {
       await completeSignUp({
-        memberId: memberId,
+        memberId: 0,
         nickName: formData.name,
         birthDate: formData.birthDate,
         phoneNumber: formData.phoneNumber,

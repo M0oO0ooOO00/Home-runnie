@@ -8,8 +8,11 @@ export const completeSignUp = async (data: SignupCompleteRequest) => {
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include',
     body: JSON.stringify(data),
   });
+
+  console.log(response);
 
   if (!response.ok) {
     throw new Error('Signup failed');

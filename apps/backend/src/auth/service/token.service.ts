@@ -28,4 +28,20 @@ export class TokenService {
 
     return TokenResponseDto.of(accessToken, refreshToken);
   }
+
+  generateSignUpToken(memberId: number): string {
+    return this.jwtService.sign(
+      { memberId },
+      {
+        secret: this.configService.get<string>('JWT_SECRET'),
+        expiresIn: '10m', // 10분 동안 유효
+      },
+    );
+  }
+
+  verifyToken(token: string): any {
+    return this.jwtService.verify(token, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+    });
+  }
 }

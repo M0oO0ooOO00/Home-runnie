@@ -28,7 +28,14 @@ export class AuthController {
     if (member.signUpStatus === false) {
       res.clearCookie('accessToken', { path: '/' });
       res.clearCookie('refreshToken', { path: '/' });
-      res.redirect(`${process.env.LOCAL_FRONT}/signup?memberId=${member.id}`);
+
+      const signUpToken = this.tokenService.generateSignUpToken(member.id);
+      const signUpCookie = this.cookieService.buildCookie('signUpToken', signUpToken, {
+        maxAge: 10 * 60 * 1000, // 10분
+      });
+      res.cookie(signUpCookie.name, signUpCookie.value, signUpCookie.options);
+
+      res.redirect(`${process.env.LOCAL_FRONT}/signup`);
     } else {
       const token = this.tokenService.generateToken(member);
 
@@ -48,12 +55,23 @@ export class AuthController {
   @Post('signup')
   async completeSignUp(
     @Body() signUpCompleteRequestDto: SignUpCompleteRequestDto,
+    @Req() req,
     @Res({ passthrough: true }) res: Response,
   ) {
-    console.log('Received signUp request');
-    console.log('DTO:', JSON.stringify(signUpCompleteRequestDto, null, 2));
+    const signUpToken = req.cookies['signUpToken'];
+
+    if (!signUpToken) {
+      throw new Error('회원가입 토큰이 없습니다.');
+    }
+
+    const payload = this.tokenService.verifyToken(signUpToken);
+    const memberId = payload.memberId;
+
+    signUpCompleteRequestDto.memberId = memberId;
 
     const member = await this.authService.completeSignUp(signUpCompleteRequestDto);
+
+    res.clearCookie('signUpToken', { path: '/' });
 
     const token = this.tokenService.generateToken(member);
 
