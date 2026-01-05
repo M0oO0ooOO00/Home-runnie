@@ -15,14 +15,14 @@ export class TokenService {
 
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_SECRET'),
-      expiresIn: '1d',
+      expiresIn: this.configService.get<number>('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
     });
 
     const refreshToken = this.jwtService.sign(
       { id: payload.id },
       {
         secret: this.configService.get<string>('JWT_SECRET'),
-        expiresIn: '7d',
+        expiresIn: this.configService.get<number>('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
       },
     );
 
@@ -34,7 +34,7 @@ export class TokenService {
       { memberId },
       {
         secret: this.configService.get<string>('JWT_SECRET'),
-        expiresIn: '10m', // 10분 동안 유효
+        expiresIn: this.configService.get<number>('JWT_SIGNUP_TOKEN_EXPIRATION_TIME'),
       },
     );
   }

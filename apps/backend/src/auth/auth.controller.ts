@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthService } from './service/auth.service';
-import * as process from 'node:process';
-import { SignUpCompleteRequestDto } from './dto/request/sign-up.complete.request.dto';
-import { TokenService } from './service/token.service';
 import { Response } from 'express';
+import { SignUpCompleteRequestDto } from './dto/request/sign-up.complete.request.dto';
+import { AuthService } from './service/auth.service';
 import { CookieService } from './service/cookie.service';
+import { TokenService } from './service/token.service';
 
 @Controller('auth')
 export class AuthController {
@@ -13,6 +13,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly tokenService: TokenService,
     private readonly cookieService: CookieService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Get('kakao')
@@ -24,31 +25,20 @@ export class AuthController {
   async kakaoCallback(@Req() req, @Res() res: Response) {
     const user = req.user;
     const member = await this.authService.validateKakaoLogin(user);
+    const frontUrl = this.configService.get<string>('LOCAL_FRONT');
 
     if (member.signUpStatus === false) {
-      res.clearCookie('accessToken', { path: '/' });
-      res.clearCookie('refreshToken', { path: '/' });
+      this.clearAuthCookies(res);
 
       const signUpToken = this.tokenService.generateSignUpToken(member.id);
-      const signUpCookie = this.cookieService.buildCookie('signUpToken', signUpToken, {
-        maxAge: 10 * 60 * 1000, // 10분
-      });
-      res.cookie(signUpCookie.name, signUpCookie.value, signUpCookie.options);
+      const signUpCookie = this.cookieService.createSignUpTokenCookie(signUpToken);
 
-      res.redirect(`${process.env.LOCAL_FRONT}/signup`);
+      res.cookie(signUpCookie.name, signUpCookie.value, signUpCookie.options);
+      res.redirect(`${frontUrl}/signup`);
     } else {
       const token = this.tokenService.generateToken(member);
-
-      const accessCookie = this.cookieService.buildCookie('accessToken', token.accessToken, {
-        maxAge: 24 * 60 * 60 * 1000,
-      });
-      const refreshCookie = this.cookieService.buildCookie('refreshToken', token.refreshToken, {
-        maxAge: 24 * 60 * 60 * 1000 * 7,
-      });
-
-      res.cookie(accessCookie.name, accessCookie.value, accessCookie.options);
-      res.cookie(refreshCookie.name, refreshCookie.value, refreshCookie.options);
-      res.redirect(`${process.env.LOCAL_FRONT}/home`);
+      this.setAuthCookies(res, token);
+      res.redirect(`${frontUrl}/home`);
     }
   }
 
@@ -74,17 +64,21 @@ export class AuthController {
     res.clearCookie('signUpToken', { path: '/' });
 
     const token = this.tokenService.generateToken(member);
+    this.setAuthCookies(res, token);
 
-    const accessCookie = this.cookieService.buildCookie('accessToken', token.accessToken, {
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-    const refreshCookie = this.cookieService.buildCookie('refreshToken', token.refreshToken, {
-      maxAge: 24 * 60 * 60 * 1000 * 7,
-    });
+    return { success: true };
+  }
+
+  private setAuthCookies(res: Response, token: { accessToken: string; refreshToken: string }) {
+    const accessCookie = this.cookieService.createAccessTokenCookie(token.accessToken);
+    const refreshCookie = this.cookieService.createRefreshTokenCookie(token.refreshToken);
 
     res.cookie(accessCookie.name, accessCookie.value, accessCookie.options);
     res.cookie(refreshCookie.name, refreshCookie.value, refreshCookie.options);
+  }
 
-    return { success: true };
+  private clearAuthCookies(res: Response) {
+    res.clearCookie('accessToken', { path: '/' });
+    res.clearCookie('refreshToken', { path: '/' });
   }
 }
