@@ -8,7 +8,7 @@ import { Button } from '@/shared/ui/primitives/button';
 import Image from 'next/image';
 import { DEFAULT_PROFILE_IMAGE, TEAM_ASSETS, Gender, Team } from '@homerunnie/shared';
 import { useRouter } from 'next/navigation';
-import { completeSignUp } from '@/apis/auth';
+import { useCompleteSignUpMutation } from '@/hooks/auth/useAuthMutation';
 
 interface FormData {
   name: string;
@@ -97,21 +97,25 @@ export default function TextFields({
 
   const router = useRouter();
 
-  const handleSignUp = async () => {
-    try {
-      await completeSignUp({
-        memberId: 0,
-        nickName: formData.name,
-        birthDate: formData.birthDate,
-        phoneNumber: formData.phoneNumber,
-        gender: formData.gender.toUpperCase() as Gender,
-        supportTeam: formData.favoriteTeam as Team,
-      });
+  const { mutate: signupMutate } = useCompleteSignUpMutation({
+    onSuccess: () => {
       router.push('/home');
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error(error);
       alert('회원가입에 실패했습니다.');
-    }
+    },
+  });
+
+  const handleSignUp = () => {
+    signupMutate({
+      memberId: 0,
+      nickName: formData.name,
+      birthDate: formData.birthDate,
+      phoneNumber: formData.phoneNumber,
+      gender: formData.gender.toUpperCase() as Gender,
+      supportTeam: formData.favoriteTeam as Team,
+    });
   };
 
   return (

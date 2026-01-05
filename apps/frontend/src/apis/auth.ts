@@ -12,11 +12,9 @@ export const completeSignUp = async (data: SignupCompleteRequest) => {
     body: JSON.stringify(data),
   });
 
-  console.log(response);
-
   if (!response.ok) {
     throw new Error('Signup failed');
   }
 
-  return response;
+  return response.json();
 };
