@@ -2,10 +2,14 @@ import TextFields from './TextFields';
 import { baseBallTeamItems, genderItems } from '@homerunnie/shared';
 import Header from '@/shared/ui/header/header';
 
-export default function SignUpForm() {
+export default function SignUpForm({ memberId }: { memberId?: number }) {
   return (
     <div className="w-[460px] m-auto flex flex-col justify-start items-center gap-14">
-      <TextFields baseBallTeamItems={baseBallTeamItems} genderItems={genderItems} />
+      <TextFields
+        baseBallTeamItems={baseBallTeamItems}
+        genderItems={genderItems}
+        memberId={memberId}
+      />
     </div>
   );
 }

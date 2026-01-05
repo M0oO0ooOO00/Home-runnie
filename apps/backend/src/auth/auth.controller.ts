@@ -26,6 +26,8 @@ export class AuthController {
     const member = await this.authService.validateKakaoLogin(user);
 
     if (member.signUpStatus === false) {
+      res.clearCookie('accessToken', { path: '/' });
+      res.clearCookie('refreshToken', { path: '/' });
       res.redirect(`${process.env.LOCAL_FRONT}/signup?memberId=${member.id}`);
     } else {
       const token = this.tokenService.generateToken(member);
@@ -48,6 +50,9 @@ export class AuthController {
     @Body() signUpCompleteRequestDto: SignUpCompleteRequestDto,
     @Res({ passthrough: true }) res: Response,
   ) {
+    console.log('Received signUp request');
+    console.log('DTO:', JSON.stringify(signUpCompleteRequestDto, null, 2));
+
     const member = await this.authService.completeSignUp(signUpCompleteRequestDto);
 
     const token = this.tokenService.generateToken(member);
@@ -62,6 +67,6 @@ export class AuthController {
     res.cookie(accessCookie.name, accessCookie.value, accessCookie.options);
     res.cookie(refreshCookie.name, refreshCookie.value, refreshCookie.options);
 
-    res.redirect(`${process.env.LOCAL_FRONT}/home`);
+    return { success: true };
   }
 }

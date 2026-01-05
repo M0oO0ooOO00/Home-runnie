@@ -6,7 +6,9 @@ import { FormLabel } from './FormLabel';
 import { Dropdown } from '@/shared/ui/dropdown/dropdown';
 import { Button } from '@/shared/ui/primitives/button';
 import Image from 'next/image';
-import { DEFAULT_PROFILE_IMAGE, TEAM_ASSETS } from '@homerunnie/shared';
+import { DEFAULT_PROFILE_IMAGE, TEAM_ASSETS, Gender, Team } from '@homerunnie/shared';
+import { useRouter } from 'next/navigation';
+import { completeSignUp } from '@/apis/auth';
 
 interface FormData {
   name: string;
@@ -38,9 +40,11 @@ const FormField = ({ label, children }: { label: string; children: ReactNode }) 
 export default function TextFields({
   genderItems,
   baseBallTeamItems,
+  memberId,
 }: Readonly<{
   genderItems: { value: string; label: string }[];
   baseBallTeamItems: { value: string; label: string }[];
+  memberId?: number;
 }>) {
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -55,6 +59,7 @@ export default function TextFields({
 
   const updateField = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
+    console.log(`update form field : ${name} : ${value}`);
   };
 
   const fields: FieldConfig[] = [
@@ -92,6 +97,30 @@ export default function TextFields({
     },
   ];
 
+  const router = useRouter();
+
+  const handleSignUp = async () => {
+    if (!memberId) {
+      alert('회원 정보가 없습니다. 다시 로그인해주세요.');
+      return;
+    }
+
+    try {
+      await completeSignUp({
+        memberId: memberId,
+        nickName: formData.name,
+        birthDate: formData.birthDate,
+        phoneNumber: formData.phoneNumber,
+        gender: formData.gender.toUpperCase() as Gender,
+        supportTeam: formData.favoriteTeam as Team,
+      });
+      router.push('/home');
+    } catch (error) {
+      console.error(error);
+      alert('회원가입에 실패했습니다.');
+    }
+  };
+
   return (
     <div className="gap-12 w-full items-center flex flex-col">
       <Image
@@ -125,7 +154,9 @@ export default function TextFields({
             </FormField>
           ))}
         </div>
-        <Button className="w-full h-16 px-44 py-5 text-b01-sb">회원가입 완료</Button>
+        <Button className="w-full h-16 px-44 py-5 text-b01-sb" onClick={handleSignUp}>
+          회원가입 완료
+        </Button>
       </div>
     </div>
   );

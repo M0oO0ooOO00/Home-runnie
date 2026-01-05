@@ -8,6 +8,11 @@ import { SwaggerConfig } from './common/config/swagger.config';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
   app.useWebSocketAdapter(new IoAdapter(app));
 
   const configService = app.get(ConfigService);
