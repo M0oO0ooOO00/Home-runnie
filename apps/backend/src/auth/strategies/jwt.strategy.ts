@@ -6,23 +6,29 @@ import { JwtPayload } from '../types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor(private readonly configService: ConfigService) {
-        super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            secretOrKey: configService.get<string>('JWT_SECRET') ?? 'SECRET',
-        });
+  constructor(private readonly configService: ConfigService) {
+    super({
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request) => {
+          return request?.cookies?.accessToken;
+        },
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
+      secretOrKey: configService.get<string>('JWT_SECRET') ?? 'SECRET',
+    });
+  }
+
+  validate(jwtPayload: any) {
+    const memberId = jwtPayload.id ?? jwtPayload.memberId;
+    const roles = jwtPayload.role ?? jwtPayload.roles;
+
+    if (!memberId) {
+      throw new UnauthorizedException();
     }
 
-    validate(jwtPayload: JwtPayload) {
-        const { memberId, roles } = jwtPayload;
-
-        if (memberId === null) {
-            throw new UnauthorizedException();
-        }
-
-        return {
-            memberId,
-            roles,
-        };
-    }
+    return {
+      memberId,
+      roles,
+    };
+  }
 }
