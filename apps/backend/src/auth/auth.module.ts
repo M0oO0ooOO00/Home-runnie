@@ -9,6 +9,7 @@ import { KakaoStrategy } from './strategies/kakao.strategy';
 import { TokenService } from './service/token.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CookieService } from './service/cookie.service';
+import { AuthFacade } from './service/auth.facade';
 
 @Module({
   imports: [
@@ -22,7 +23,15 @@ import { CookieService } from './service/cookie.service';
     }),
     MemberModule,
   ],
-  providers: [JwtStrategy, JwtAuthGuard, AuthService, KakaoStrategy, TokenService, CookieService],
+  providers: [
+    JwtStrategy,
+    JwtAuthGuard,
+    AuthService,
+    KakaoStrategy,
+    TokenService,
+    CookieService,
+    AuthFacade,
+  ],
   exports: [JwtAuthGuard],
   controllers: [AuthController],
 })
