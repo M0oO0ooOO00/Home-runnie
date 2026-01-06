@@ -61,7 +61,7 @@ export class AuthController {
 
     let memberId: number;
     try {
-      const payload = this.tokenService.verifyToken(signUpToken);
+      const payload = this.tokenService.verifyAccessToken(signUpToken);
       memberId = payload.memberId;
     } catch (error) {
       throw new UnauthorizedException('회원가입 토큰이 없습니다.');
@@ -73,6 +73,24 @@ export class AuthController {
 
     const token = this.tokenService.generateToken(member);
     this.setAuthCookies(res, token);
+
+    return { success: true };
+  }
+
+  @Post('logout')
+  async logout(@Req() req, @Res({ passthrough: true }) res: Response) {
+    this.clearAuthCookies(res);
+    return { success: true };
+  }
+
+  @Post('/re-issue')
+  async reissueToken(@Req() req, @Res({ passthrough: true }) res: Response) {
+    const refreshToken = req.cookies['refreshToken'];
+
+    const accessToken = await this.tokenService.reissueToken(refreshToken);
+
+    const accessCookie = this.cookieService.createAccessTokenCookie(accessToken);
+    res.cookie(accessCookie.name, accessCookie.value, accessCookie.options);
 
     return { success: true };
   }
