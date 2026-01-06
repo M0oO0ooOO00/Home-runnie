@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
@@ -50,16 +59,15 @@ export class AuthController {
   ) {
     const signUpToken = req.cookies['signUpToken'];
 
-    if (!signUpToken) {
-      throw new Error('회원가입 토큰이 없습니다.');
+    let memberId: number;
+    try {
+      const payload = this.tokenService.verifyToken(signUpToken);
+      memberId = payload.memberId;
+    } catch (error) {
+      throw new UnauthorizedException('회원가입 토큰이 없습니다.');
     }
 
-    const payload = this.tokenService.verifyToken(signUpToken);
-    const memberId = payload.memberId;
-
-    signUpCompleteRequestDto.memberId = memberId;
-
-    const member = await this.authService.completeSignUp(signUpCompleteRequestDto);
+    const member = await this.authService.completeSignUp(memberId, signUpCompleteRequestDto);
 
     res.clearCookie('signUpToken', { path: '/' });
 

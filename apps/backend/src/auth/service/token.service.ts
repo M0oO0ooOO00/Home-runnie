@@ -39,7 +39,7 @@ export class TokenService {
     );
   }
 
-  verifyToken(token: string): any {
+  verifyToken(token: string): { memberId: number; role: string } {
     return this.jwtService.verify(token, {
       secret: this.configService.get<string>('JWT_SECRET'),
     });

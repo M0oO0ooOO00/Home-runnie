@@ -16,6 +16,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 @Controller('member')
 @MemberControllerSwagger
+@UseGuards(JwtAuthGuard)
 export class MemberController {
   constructor(private readonly memberService: MemberService) {}
 
@@ -28,14 +29,12 @@ export class MemberController {
   }
 
   @Get('my')
-  @UseGuards(JwtAuthGuard)
   @GetMyProfileSwagger
   async getMyInfo(@CurrentMember() memberId: number) {
     return await this.memberService.getMyProfile(memberId);
   }
 
   @Put('my')
-  @UseGuards(JwtAuthGuard)
   @UpdateMyProfileSwagger
   async updateMyProfile(
     @CurrentMember() memberId: number,
@@ -45,7 +44,6 @@ export class MemberController {
   }
 
   @Get('my/scrapped-recruitments')
-  @UseGuards(JwtAuthGuard)
   @GetScrappedRecruitmentsSwagger
   async getScrappedRecruitments(
     @CurrentMember() memberId: number,
@@ -59,7 +57,6 @@ export class MemberController {
   }
 
   @Get('my/written-recruitments')
-  @UseGuards(JwtAuthGuard)
   @GetWrittenRecruitmentsSwagger
   async getWrittenRecruitments(
     @CurrentMember() memberId: number,
@@ -73,7 +70,6 @@ export class MemberController {
   }
 
   @Get('my/participated-recruitments')
-  @UseGuards(JwtAuthGuard)
   @GetParticipatedRecruitmentsSwagger
   async getParticipatedRecruitments(
     @CurrentMember() memberId: number,

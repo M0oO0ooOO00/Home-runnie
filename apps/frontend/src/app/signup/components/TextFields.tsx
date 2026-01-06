@@ -57,7 +57,6 @@ export default function TextFields({
 
   const updateField = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
-    console.log(`update form field : ${name} : ${value}`);
   };
 
   const fields: FieldConfig[] = [
@@ -109,7 +108,6 @@ export default function TextFields({
 
   const handleSignUp = () => {
     signupMutate({
-      memberId: 0,
       nickName: formData.name,
       birthDate: formData.birthDate,
       phoneNumber: formData.phoneNumber,

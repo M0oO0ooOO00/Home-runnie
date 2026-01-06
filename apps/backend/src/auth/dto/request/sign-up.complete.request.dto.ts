@@ -4,11 +4,6 @@ import { IsEnum, IsInt, IsNotEmpty, IsString } from 'class-validator';
 import { Gender, SignupCompleteRequest } from '@homerunnie/shared';
 
 export class SignUpCompleteRequestDto implements SignupCompleteRequest {
-  @ApiProperty({ description: '회원 ID', type: 'integer', example: 1 })
-  @IsInt()
-  @IsNotEmpty()
-  memberId: number;
-
   @ApiProperty({
     description: '닉네임',
     type: 'string',
