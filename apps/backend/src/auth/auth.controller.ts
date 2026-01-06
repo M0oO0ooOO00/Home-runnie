@@ -15,7 +15,16 @@ import { SignUpCompleteRequestDto } from './dto/request/sign-up.complete.request
 import { AuthService } from './service/auth.service';
 import { CookieService } from './service/cookie.service';
 import { TokenService } from './service/token.service';
+import {
+  AuthControllerSwagger,
+  CompleteSignUpSwagger,
+  KakaoCallbackSwagger,
+  KakaoLoginSwagger,
+  LogoutSwagger,
+  ReissueTokenSwagger,
+} from './swagger';
 
+@AuthControllerSwagger
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -25,10 +34,12 @@ export class AuthController {
     private readonly configService: ConfigService,
   ) {}
 
+  @KakaoLoginSwagger
   @Get('kakao')
   @UseGuards(AuthGuard('kakao'))
   async kakaoLogin() {}
 
+  @KakaoCallbackSwagger
   @Get('kakao/callback')
   @UseGuards(AuthGuard('kakao'))
   async kakaoCallback(@Req() req, @Res() res: Response) {
@@ -51,6 +62,7 @@ export class AuthController {
     }
   }
 
+  @CompleteSignUpSwagger
   @Post('signup')
   async completeSignUp(
     @Body() signUpCompleteRequestDto: SignUpCompleteRequestDto,
@@ -77,12 +89,14 @@ export class AuthController {
     return { success: true };
   }
 
+  @LogoutSwagger
   @Post('logout')
   async logout(@Req() req, @Res({ passthrough: true }) res: Response) {
     this.clearAuthCookies(res);
     return { success: true };
   }
 
+  @ReissueTokenSwagger
   @Post('/re-issue')
   async reissueToken(@Req() req, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies['refreshToken'];
