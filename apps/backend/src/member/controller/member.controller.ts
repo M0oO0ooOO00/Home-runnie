@@ -11,9 +11,12 @@ import {
   MemberControllerSwagger,
 } from '../swagger';
 import { CurrentMember, PaginationQueryDto } from '../../common';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 @Controller('member')
 @MemberControllerSwagger
+@UseGuards(JwtAuthGuard)
 export class MemberController {
   constructor(private readonly memberService: MemberService) {}
 

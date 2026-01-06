@@ -6,7 +6,9 @@ import { FormLabel } from './FormLabel';
 import { Dropdown } from '@/shared/ui/dropdown/dropdown';
 import { Button } from '@/shared/ui/primitives/button';
 import Image from 'next/image';
-import { DEFAULT_PROFILE_IMAGE, TEAM_ASSETS } from '@homerunnie/shared';
+import { DEFAULT_PROFILE_IMAGE, TEAM_ASSETS, Gender, Team } from '@homerunnie/shared';
+import { useRouter } from 'next/navigation';
+import { useCompleteSignUpMutation } from '@/hooks/auth/useAuthMutation';
 
 interface FormData {
   name: string;
@@ -92,6 +94,28 @@ export default function TextFields({
     },
   ];
 
+  const router = useRouter();
+
+  const { mutate: signupMutate } = useCompleteSignUpMutation({
+    onSuccess: () => {
+      router.push('/home');
+    },
+    onError: (error) => {
+      console.error(error);
+      alert('회원가입에 실패했습니다.');
+    },
+  });
+
+  const handleSignUp = () => {
+    signupMutate({
+      nickName: formData.name,
+      birthDate: formData.birthDate,
+      phoneNumber: formData.phoneNumber,
+      gender: formData.gender.toUpperCase() as Gender,
+      supportTeam: formData.favoriteTeam as Team,
+    });
+  };
+
   return (
     <div className="gap-12 w-full items-center flex flex-col">
       <Image
@@ -125,7 +149,9 @@ export default function TextFields({
             </FormField>
           ))}
         </div>
-        <Button className="w-full h-16 px-44 py-5 text-b01-sb">회원가입 완료</Button>
+        <Button className="w-full h-16 px-44 py-5 text-b01-sb" onClick={handleSignUp}>
+          회원가입 완료
+        </Button>
       </div>
     </div>
   );

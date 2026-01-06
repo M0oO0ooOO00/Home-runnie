@@ -22,22 +22,22 @@ export class AuthService {
     return member;
   }
 
-  async completeSignUp(signUpCompleteRequestDto: SignUpCompleteRequestDto) {
-    const member = await this.memberRepository.findOneById(signUpCompleteRequestDto.memberId);
+  async completeSignUp(memberId: number, signUpCompleteRequestDto: SignUpCompleteRequestDto) {
+    const member = await this.memberRepository.findOneById(memberId);
 
     if (!member) {
       throw new NotFoundException('해당 멤버가 존재하지 않습니다.');
     }
 
     await this.memberRepository.updateTempMemberInfo(
-      signUpCompleteRequestDto.memberId,
+      memberId,
       signUpCompleteRequestDto.birthDate,
       signUpCompleteRequestDto.phoneNumber,
       signUpCompleteRequestDto.gender,
     );
 
     await this.memberRepository.createProfile(
-      signUpCompleteRequestDto.memberId,
+      memberId,
       signUpCompleteRequestDto.nickName,
       signUpCompleteRequestDto.supportTeam,
     );
