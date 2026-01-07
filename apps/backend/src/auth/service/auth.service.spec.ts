@@ -105,7 +105,7 @@ describe('AuthService', () => {
       supportTeam: Team.DOOSAN,
     };
 
-    const test_member = {
+    const testMember = {
       id: 1,
       email: 'test@kakao.com',
       provider: OAuthProvider.KAKAO,
@@ -114,22 +114,22 @@ describe('AuthService', () => {
 
     it('추가정보를 받아 성공적으로 회원가입에 성공한다.', async () => {
       // given
-      mockMemberRepository.findOneById.mockResolvedValue(test_member);
+      mockMemberRepository.findOneById.mockResolvedValue(testMember);
       mockMemberRepository.updateTempMemberInfo.mockResolvedValue(undefined); // void 리턴
       mockMemberRepository.createProfile.mockResolvedValue(undefined); // void 리턴
 
       // when
-      const result = await service.completeSignUp(test_member.id, completeSignUpRequestDto);
+      const result = await service.completeSignUp(testMember.id, completeSignUpRequestDto);
 
       // then
-      expect(result).toEqual(test_member);
+      expect(result).toEqual(testMember);
 
       // 1. findOneById가 올바른 ID로 호출되었는지 확인
-      expect(memberRepository.findOneById).toHaveBeenCalledWith(test_member.id);
+      expect(memberRepository.findOneById).toHaveBeenCalledWith(testMember.id);
 
       // 2. updateTempMemberInfo가 올바른 인자들로 호출되었는지 확인
       expect(memberRepository.updateTempMemberInfo).toHaveBeenCalledWith(
-        test_member.id,
+        testMember.id,
         completeSignUpRequestDto.birthDate,
         completeSignUpRequestDto.phoneNumber,
         completeSignUpRequestDto.gender,
@@ -137,7 +137,7 @@ describe('AuthService', () => {
 
       // 3. createProfile이 DTO 전체가 아니라 필드별로 호출되었는지 확인 (서비스 코드 구현에 맞춤)
       expect(memberRepository.createProfile).toHaveBeenCalledWith(
-        test_member.id,
+        testMember.id,
         completeSignUpRequestDto.nickName,
         completeSignUpRequestDto.supportTeam,
       );
@@ -148,7 +148,7 @@ describe('AuthService', () => {
       mockMemberRepository.findOneById.mockResolvedValue(null);
 
       // when & then
-      expect(service.completeSignUp(test_member.id, completeSignUpRequestDto)).rejects.toThrow(
+      expect(service.completeSignUp(testMember.id, completeSignUpRequestDto)).rejects.toThrow(
         '해당 멤버가 존재하지 않습니다.',
       );
     });

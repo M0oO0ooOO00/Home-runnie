@@ -14,7 +14,7 @@ describe('AuthFacade', () => {
   let authFacade: AuthFacade;
   let authService: AuthService;
   let tokenService: TokenService;
-  let cookieSerivce: CookieService;
+  let cookieService: CookieService;
 
   const mockAuthService = {
     validateKakaoLogin: jest.fn(),
@@ -26,6 +26,7 @@ describe('AuthFacade', () => {
     generateSignUpToken: jest.fn(),
     verifyAccessToken: jest.fn(),
     verifyRefreshToken: jest.fn(),
+    verifySignUpToken: jest.fn(),
   };
 
   const mockCookieService = {
@@ -52,7 +53,7 @@ describe('AuthFacade', () => {
     authFacade = module.get<AuthFacade>(AuthFacade);
     authService = module.get<AuthService>(AuthService);
     tokenService = module.get<TokenService>(TokenService);
-    cookieSerivce = module.get<CookieService>(CookieService);
+    cookieService = module.get<CookieService>(CookieService);
   });
 
   afterEach(() => {
@@ -149,7 +150,7 @@ describe('AuthFacade', () => {
       const mockTokens = { accessToken: 'access', refreshToken: 'refresh' };
       const mockCookies = { access: 'access-cookie', refresh: 'refresh-cookie' };
 
-      mockTokenService.verifyAccessToken.mockReturnValue(signUpTokenPayload);
+      mockTokenService.verifySignUpToken.mockReturnValue(signUpTokenPayload);
       mockAuthService.completeSignUp.mockResolvedValue(mockMember);
       mockTokenService.generateToken.mockReturnValue(mockTokens);
       mockCookieService.createAccessTokenCookie.mockReturnValue(mockCookies.access);
@@ -185,7 +186,7 @@ describe('AuthFacade', () => {
 
     it('유효하지 않은 signUpToken인 경우 UnauthorizedException을 던진다', async () => {
       // given
-      mockTokenService.verifyAccessToken.mockImplementation(() => {
+      mockTokenService.verifySignUpToken.mockImplementation(() => {
         throw new Error('invalid token');
       });
 
@@ -196,6 +197,14 @@ describe('AuthFacade', () => {
           mockSignUpRequestDto as SignUpCompleteRequestDto,
         ),
       ).rejects.toThrow('유효하지 않은 회원가입 토큰입니다.');
+    });
+  });
+
+  describe('handleLogout', () => {
+    it('로그아웃 시 제거해야 할 쿠키 이름을 반환한다', () => {
+      const result = authFacade.handleLogout();
+      expect(result.clearCookies).toContain('accessToken');
+      expect(result.clearCookies).toContain('refreshToken');
     });
   });
 });

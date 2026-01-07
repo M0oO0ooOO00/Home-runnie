@@ -55,7 +55,7 @@ export class AuthFacade {
 
     let memberId: number;
     try {
-      const payload = this.tokenService.verifyAccessToken(signUpToken);
+      const payload = this.tokenService.verifySignUpToken(signUpToken);
       memberId = payload.memberId;
     } catch (error) {
       throw new UnauthorizedException('유효하지 않은 회원가입 토큰입니다.');
@@ -80,5 +80,14 @@ export class AuthFacade {
   async handleReissueToken(refreshToken: string) {
     const accessToken = await this.tokenService.reissueToken(refreshToken);
     return this.cookieService.createAccessTokenCookie(accessToken);
+  }
+
+  /**
+   * 로그아웃 시 제거해야 할 쿠키 정보를 반환합니다.
+   */
+  handleLogout() {
+    return {
+      clearCookies: ['accessToken', 'refreshToken'],
+    };
   }
 }

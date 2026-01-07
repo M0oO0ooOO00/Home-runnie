@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { MemberRepository } from 'src/member/repository';
 import { MemberType } from 'src/member/domain';
 import { Role } from 'src/common';
-import { JwtPayload, RefreshTokenPayload } from '../types';
+import { JwtPayload, RefreshTokenPayload, SignUpTokenPayload } from '../types';
 
 @Injectable()
 export class TokenService {
@@ -52,6 +52,12 @@ export class TokenService {
 
   verifyRefreshToken(refreshToken: string): RefreshTokenPayload {
     return this.jwtService.verify(refreshToken, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+    });
+  }
+
+  verifySignUpToken(token: string): SignUpTokenPayload {
+    return this.jwtService.verify(token, {
       secret: this.configService.get<string>('JWT_SECRET'),
     });
   }

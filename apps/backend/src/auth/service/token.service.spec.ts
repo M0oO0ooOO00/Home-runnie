@@ -86,7 +86,7 @@ describe('TokenService', () => {
     });
   });
 
-  describe('genrateSignUpToken', () => {
+  describe('generateSignUpToken', () => {
     const mockMemberId = 1;
 
     it('성공적으로 회원가입을 위한 토큰을 생성하여야 한다', () => {

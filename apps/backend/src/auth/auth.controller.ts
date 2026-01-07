@@ -29,7 +29,7 @@ export class AuthController {
     const result = await this.authFacade.handleKakaoLogin(req.user);
 
     if (result.type === 'SIGN_UP_REQUIRED') {
-      this.clearAuthCookies(res);
+      result.clearCookies.forEach((cookieName) => res.clearCookie(cookieName, { path: '/' }));
       res.cookie(result.cookie.name, result.cookie.value, result.cookie.options);
       return res.redirect(result.redirectUrl);
     }
@@ -51,7 +51,7 @@ export class AuthController {
       signUpCompleteRequestDto,
     );
 
-    res.clearCookie('signUpToken', { path: '/' });
+    result.clearCookies.forEach((cookieName) => res.clearCookie(cookieName, { path: '/' }));
     result.cookies.forEach((c) => res.cookie(c.name, c.value, c.options));
 
     return { success: true };
@@ -60,12 +60,13 @@ export class AuthController {
   @LogoutSwagger
   @Post('logout')
   async logout(@Res({ passthrough: true }) res: Response) {
-    this.clearAuthCookies(res);
+    const result = this.authFacade.handleLogout();
+    result.clearCookies.forEach((cookieName) => res.clearCookie(cookieName, { path: '/' }));
     return { success: true };
   }
 
   @ReissueTokenSwagger
-  @Post('/re-issue')
+  @Post('re-issue')
   async reissueToken(@Req() req, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies['refreshToken'];
     const accessCookie = await this.authFacade.handleReissueToken(refreshToken);
@@ -73,10 +74,5 @@ export class AuthController {
     res.cookie(accessCookie.name, accessCookie.value, accessCookie.options);
 
     return { success: true };
-  }
-
-  private clearAuthCookies(res: Response) {
-    res.clearCookie('accessToken', { path: '/' });
-    res.clearCookie('refreshToken', { path: '/' });
   }
 }
