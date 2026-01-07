@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { TokenResponseDto } from '../dto/response/token.response.dto';
 import { ConfigService } from '@nestjs/config';
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { MemberRepository } from 'src/member/repository';
 import { MemberType } from 'src/member/domain';
 import { Role } from 'src/common';
@@ -62,24 +61,26 @@ export class TokenService {
       throw new UnauthorizedException('리프레시 토큰이 없습니다.');
     }
 
+    let payload: RefreshTokenPayload;
+
     try {
-      const payload = this.verifyRefreshToken(refreshToken);
-      const memberId = payload.memberId;
-
-      const member = await this.memberRepository.findOneById(memberId);
-      if (!member) {
-        throw new NotFoundException('회원 정보를 찾을 수 없습니다.');
-      }
-
-      const newPayload = { memberId: member.id, role: member.role };
-      const accessToken = this.jwtService.sign(newPayload, {
-        secret: this.configService.get<string>('JWT_SECRET'),
-        expiresIn: this.configService.get<number>('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
-      });
-
-      return accessToken;
+      payload = this.verifyRefreshToken(refreshToken);
     } catch (error) {
       throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
     }
+
+    const memberId = payload.memberId;
+    const member = await this.memberRepository.findOneById(memberId);
+    if (!member) {
+      throw new NotFoundException('회원 정보를 찾을 수 없습니다.');
+    }
+
+    const newPayload = { memberId: member.id, role: member.role };
+    const accessToken = this.jwtService.sign(newPayload, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+      expiresIn: this.configService.get<number>('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
+    });
+
+    return accessToken;
   }
 }
