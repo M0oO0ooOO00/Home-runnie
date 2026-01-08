@@ -1,7 +1,4 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { Stadium } from '../../enums/stadium.enum';
+import { Stadium } from '@/common/enums/stadium.enum';
 
-export const stadiumPgEnum = pgEnum(
-    'stadium',
-    Object.values(Stadium) as [string, ...string[]],
-);
+export const stadiumPgEnum = pgEnum('stadium', Object.values(Stadium) as [string, ...string[]]);

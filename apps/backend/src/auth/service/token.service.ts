@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { TokenResponseDto } from '../dto/response/token.response.dto';
+import { TokenResponseDto } from '@/auth/dto/response/token.response.dto';
 import { ConfigService } from '@nestjs/config';
-import { MemberRepository } from 'src/member/repository';
-import { MemberType } from 'src/member/domain';
-import { Role } from 'src/common';
-import { JwtPayload, RefreshTokenPayload, SignUpTokenPayload } from '../types';
+import { MemberRepository } from '@/member/repository';
+import { MemberType } from '@/member/domain';
+import { Role } from '@/common';
+import { JwtPayload, RefreshTokenPayload, SignUpTokenPayload } from '@/auth/types';
 
 @Injectable()
 export class TokenService {

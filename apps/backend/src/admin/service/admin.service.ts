@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { MemberService } from '../../member/service';
-import { MemberDetailResponseDto } from '../dto';
+import { MemberService } from '@/member/service';
+import { MemberDetailResponseDto } from '@/admin/dto';
 import { PostType } from '@homerunnie/shared';
 
 @Injectable()

@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
-import { SignUpCompleteRequestDto } from './dto/request/sign-up.complete.request.dto';
-import { AuthFacade } from './service/auth.facade';
+import { SignUpCompleteRequestDto } from '@/auth/dto/request/sign-up.complete.request.dto';
+import { AuthFacade } from '@/auth/service/auth.facade';
 import {
   AuthControllerSwagger,
   CompleteSignUpSwagger,
@@ -10,7 +10,7 @@ import {
   KakaoLoginSwagger,
   LogoutSwagger,
   ReissueTokenSwagger,
-} from './swagger';
+} from '@/auth/swagger';
 
 @AuthControllerSwagger
 @Controller('auth')

@@ -1,8 +1,8 @@
 import { Test } from '@nestjs/testing';
-import { MemberService } from '../service';
-import { MemberRepository } from '../repository';
-import { PaginationService } from '../../common/service/pagination.service';
-import { WarnService } from '../../warn/service/warn.service';
+import { MemberService } from '@/member/service';
+import { MemberRepository } from '@/member/repository';
+import { PaginationService } from '@/common/service/pagination.service';
+import { WarnService } from '@/warn/service/warn.service';
 
 describe('MemberService', () => {
   let service: MemberService;

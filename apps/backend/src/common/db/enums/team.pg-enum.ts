@@ -1,7 +1,4 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { Team } from '../../enums/team.enum';
+import { Team } from '@/common/enums/team.enum';
 
-export const teamPgEnum = pgEnum(
-    'team',
-    Object.values(Team) as [string, ...string[]],
-);
+export const teamPgEnum = pgEnum('team', Object.values(Team) as [string, ...string[]]);

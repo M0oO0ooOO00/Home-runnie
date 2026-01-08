@@ -1,4 +1,4 @@
-import { Role } from '../../common';
+import { Role } from '@/common';
 
 export interface JwtPayload {
   memberId: number;

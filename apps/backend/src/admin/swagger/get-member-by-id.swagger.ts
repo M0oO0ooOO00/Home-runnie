@@ -1,6 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
-import { MemberDetailResponseDto } from '../dto';
+import { MemberDetailResponseDto } from '@/admin/dto';
 
 export const GetMemberByIdSwagger = applyDecorators(
   ApiOperation({

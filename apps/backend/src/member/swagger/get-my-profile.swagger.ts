@@ -7,8 +7,8 @@ import {
   ApiInternalServerErrorResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { GetMyProfileResponseDto } from '../dto';
-import { ErrorResponseDto } from '../../common';
+import { GetMyProfileResponseDto } from '@/member/dto';
+import { ErrorResponseDto } from '@/common';
 
 export const GetMyProfileSwagger = applyDecorators(
   ApiOperation({

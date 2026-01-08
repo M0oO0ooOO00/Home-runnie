@@ -1,10 +1,10 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { MemberRepository } from 'src/member/repository';
-import { TokenService } from './token.service';
+import { MemberRepository } from '@/member/repository';
+import { TokenService } from '@/auth/service/token.service';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Role } from 'src/common';
-import { MemberType } from 'src/member/domain';
+import { Role } from '@/common';
+import { MemberType } from '@/member/domain';
 
 describe('TokenService', () => {
   let tokenService: TokenService;

@@ -2,8 +2,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { IoAdapter } from '@nestjs/platform-socket.io';
-import { AppModule } from './app.module';
-import { SwaggerConfig } from './common/config/swagger.config';
+import { AppModule } from '@/app.module';
+import { SwaggerConfig } from '@/common/config/swagger.config';
 import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {

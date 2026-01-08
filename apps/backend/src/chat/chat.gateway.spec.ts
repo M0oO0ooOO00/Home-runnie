@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Socket } from 'socket.io';
-import { ChatGateway } from './chat.gateway';
+import { ChatGateway } from '@/chat/chat.gateway';
 
 type MockSocket = {
   id: string;

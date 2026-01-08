@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService, KakaoOAuthMember } from './auth.service';
-import { MemberRepository } from 'src/member/repository';
-import { OAuthProvider, Role } from '../../common';
-import { SignUpCompleteRequestDto } from '../dto/request/sign-up.complete.request.dto';
+import { AuthService, KakaoOAuthMember } from '@/auth/service/auth.service';
+import { MemberRepository } from '@/member/repository';
+import { OAuthProvider, Role } from '@/common';
+import { SignUpCompleteRequestDto } from '@/auth/dto/request/sign-up.complete.request.dto';
 import { Gender, Team } from '@homerunnie/shared';
 
 describe('AuthService', () => {
