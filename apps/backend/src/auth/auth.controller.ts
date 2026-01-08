@@ -1,56 +1,44 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Req,
-  Res,
-  UnauthorizedException,
-  UseGuards,
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 import { SignUpCompleteRequestDto } from './dto/request/sign-up.complete.request.dto';
-import { AuthService } from './service/auth.service';
-import { CookieService } from './service/cookie.service';
-import { TokenService } from './service/token.service';
+import { AuthFacade } from './service/auth.facade';
+import {
+  AuthControllerSwagger,
+  CompleteSignUpSwagger,
+  KakaoCallbackSwagger,
+  KakaoLoginSwagger,
+  LogoutSwagger,
+  ReissueTokenSwagger,
+} from './swagger';
 
+@AuthControllerSwagger
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly tokenService: TokenService,
-    private readonly cookieService: CookieService,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly authFacade: AuthFacade) {}
 
+  @KakaoLoginSwagger
   @Get('kakao')
   @UseGuards(AuthGuard('kakao'))
   async kakaoLogin() {}
 
+  @KakaoCallbackSwagger
   @Get('kakao/callback')
   @UseGuards(AuthGuard('kakao'))
   async kakaoCallback(@Req() req, @Res() res: Response) {
-    const user = req.user;
-    const member = await this.authService.validateKakaoLogin(user);
-    const frontUrl = this.configService.get<string>('LOCAL_FRONT');
+    const result = await this.authFacade.handleKakaoLogin(req.user);
 
-    if (member.signUpStatus === false) {
-      this.clearAuthCookies(res);
-
-      const signUpToken = this.tokenService.generateSignUpToken(member.id);
-      const signUpCookie = this.cookieService.createSignUpTokenCookie(signUpToken);
-
-      res.cookie(signUpCookie.name, signUpCookie.value, signUpCookie.options);
-      res.redirect(`${frontUrl}/signup`);
-    } else {
-      const token = this.tokenService.generateToken(member);
-      this.setAuthCookies(res, token);
-      res.redirect(`${frontUrl}/home`);
+    if (result.type === 'SIGN_UP_REQUIRED') {
+      result.clearCookies.forEach((cookieName) => res.clearCookie(cookieName, { path: '/' }));
+      res.cookie(result.cookie.name, result.cookie.value, result.cookie.options);
+      return res.redirect(result.redirectUrl);
     }
+
+    result.cookies.forEach((c) => res.cookie(c.name, c.value, c.options));
+    return res.redirect(result.redirectUrl);
   }
 
+  @CompleteSignUpSwagger
   @Post('signup')
   async completeSignUp(
     @Body() signUpCompleteRequestDto: SignUpCompleteRequestDto,
@@ -58,35 +46,33 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const signUpToken = req.cookies['signUpToken'];
+    const result = await this.authFacade.handleCompleteSignUp(
+      signUpToken,
+      signUpCompleteRequestDto,
+    );
 
-    let memberId: number;
-    try {
-      const payload = this.tokenService.verifyToken(signUpToken);
-      memberId = payload.memberId;
-    } catch (error) {
-      throw new UnauthorizedException('회원가입 토큰이 없습니다.');
-    }
-
-    const member = await this.authService.completeSignUp(memberId, signUpCompleteRequestDto);
-
-    res.clearCookie('signUpToken', { path: '/' });
-
-    const token = this.tokenService.generateToken(member);
-    this.setAuthCookies(res, token);
+    result.clearCookies.forEach((cookieName) => res.clearCookie(cookieName, { path: '/' }));
+    result.cookies.forEach((c) => res.cookie(c.name, c.value, c.options));
 
     return { success: true };
   }
 
-  private setAuthCookies(res: Response, token: { accessToken: string; refreshToken: string }) {
-    const accessCookie = this.cookieService.createAccessTokenCookie(token.accessToken);
-    const refreshCookie = this.cookieService.createRefreshTokenCookie(token.refreshToken);
-
-    res.cookie(accessCookie.name, accessCookie.value, accessCookie.options);
-    res.cookie(refreshCookie.name, refreshCookie.value, refreshCookie.options);
+  @LogoutSwagger
+  @Post('logout')
+  async logout(@Res({ passthrough: true }) res: Response) {
+    const result = this.authFacade.handleLogout();
+    result.clearCookies.forEach((cookieName) => res.clearCookie(cookieName, { path: '/' }));
+    return { success: true };
   }
 
-  private clearAuthCookies(res: Response) {
-    res.clearCookie('accessToken', { path: '/' });
-    res.clearCookie('refreshToken', { path: '/' });
+  @ReissueTokenSwagger
+  @Post('re-issue')
+  async reissueToken(@Req() req, @Res({ passthrough: true }) res: Response) {
+    const refreshToken = req.cookies['refreshToken'];
+    const accessCookie = await this.authFacade.handleReissueToken(refreshToken);
+
+    res.cookie(accessCookie.name, accessCookie.value, accessCookie.options);
+
+    return { success: true };
   }
 }

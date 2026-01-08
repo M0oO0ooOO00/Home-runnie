@@ -1,6 +1,1 @@
-import { Role } from '../../common';
-
-export type JwtPayload = {
-    memberId: number;
-    roles: Role[];
-};
+export * from './token-payload.interface';

@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { JwtPayload } from '../types';
 import { Role } from 'src/common';
 
 @Injectable()
@@ -18,8 +19,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(jwtPayload: { id: number; role: string }) {
-    const { id: memberId, role: roles } = jwtPayload;
+  validate(jwtPayload: JwtPayload) {
+    const { memberId, role: roles } = jwtPayload;
 
     if (!memberId) {
       throw new UnauthorizedException('JWT 토큰 파싱 에러 - memberId 파싱 실패');
