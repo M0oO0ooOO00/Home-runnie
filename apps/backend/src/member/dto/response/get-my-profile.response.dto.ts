@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Member, Profile } from '../../domain';
-import { Warn } from '../../../admin/domain';
+import { Member, Profile } from '@/member/domain';
+import { Warn } from '@/admin/domain';
 import { GetMyProfileResponse } from '@homerunnie/shared';
 
 export class GetMyProfileResponseDto implements GetMyProfileResponse {

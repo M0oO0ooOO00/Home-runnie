@@ -1,9 +1,9 @@
 import { Controller, Get, Param, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AdminService } from '../service';
-import { MemberService } from '../../member/service';
-import { PaginationQueryDto, RolesGuard, Roles, Role } from '../../common';
-import { GetMemberByIdSwagger, GetMembersByPageSwagger } from '../swagger';
+import { AdminService } from '@/admin/service';
+import { MemberService } from '@/member/service';
+import { PaginationQueryDto, RolesGuard, Roles, Role } from '@/common';
+import { GetMemberByIdSwagger, GetMembersByPageSwagger } from '@/admin/swagger';
 
 @ApiTags('관리자')
 @Controller('admin')

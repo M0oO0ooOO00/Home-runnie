@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Member } from '../../domain';
+import { Member } from '@/member/domain';
 import { GetMemberResponse, GetMembersResponse } from '@homerunnie/shared';
-import { GetMemberResponseDto } from './get-member.response.dto';
+import { GetMemberResponseDto } from '@/member/dto/response/get-member.response.dto';
 
 export class GetMembersResponseDto implements GetMembersResponse {
   @ApiProperty({ type: [GetMemberResponseDto] })

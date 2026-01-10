@@ -1,7 +1,4 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { Role } from '../../enums';
+import { Role } from '@/common/enums';
 
-export const rolePgEnum = pgEnum(
-    'role',
-    Object.values(Role) as [string, ...string[]],
-);
+export const rolePgEnum = pgEnum('role', Object.values(Role) as [string, ...string[]]);

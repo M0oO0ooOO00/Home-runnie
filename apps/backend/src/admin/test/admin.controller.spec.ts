@@ -1,24 +1,24 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AdminController } from '../controller/admin.controller';
-import { AdminService } from '../service/admin.service';
-import { MemberService } from '../../member/service/member.service';
+import { AdminController } from '@/admin/controller/admin.controller';
+import { AdminService } from '@/admin/service/admin.service';
+import { MemberService } from '@/member/service/member.service';
 
 describe('AdminController', () => {
-    let controller: AdminController;
+  let controller: AdminController;
 
-    beforeEach(async () => {
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [AdminController],
-            providers: [
-                { provide: AdminService, useValue: {} },
-                { provide: MemberService, useValue: {} },
-            ],
-        }).compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AdminController],
+      providers: [
+        { provide: AdminService, useValue: {} },
+        { provide: MemberService, useValue: {} },
+      ],
+    }).compile();
 
-        controller = module.get<AdminController>(AdminController);
-    });
+    controller = module.get<AdminController>(AdminController);
+  });
 
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
-    });
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
 });

@@ -1,9 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AuthService, KakaoOAuthMember } from './auth.service';
-import { TokenService } from './token.service';
-import { CookieService } from './cookie.service';
-import { SignUpCompleteRequestDto } from '../dto/request/sign-up.complete.request.dto';
+import { AuthService, KakaoOAuthMember } from '@/auth/service/auth.service';
+import { TokenService } from '@/auth/service/token.service';
+import { CookieService } from '@/auth/service/cookie.service';
+import { SignUpCompleteRequestDto } from '@/auth/dto/request/sign-up.complete.request.dto';
 
 @Injectable()
 export class AuthFacade {

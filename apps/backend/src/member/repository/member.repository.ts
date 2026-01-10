@@ -1,16 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { eq, count, sql, desc, and } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { Member } from '../domain';
-import { Profile } from '../domain';
-import { DATABASE_CONNECTION, OAuthProvider, Role, Team } from '../../common';
-import { Report, ReportCount } from '../../report/domain';
-import { Warn } from '../../admin/domain';
-import { Post, RecruitmentDetail } from '../../post/domain';
-import { Scrap } from '../../scrap/domain';
-import { Participation } from '../../participation/domain';
-import { RecruitmentQueryResult } from '../type';
-import { UpdateMyProfileRequestDto } from '../dto';
+import { Member } from '@/member/domain';
+import { Profile } from '@/member/domain';
+import { DATABASE_CONNECTION, OAuthProvider, Role, Team } from '@/common';
+import { Report, ReportCount } from '@/report/domain';
+import { Warn } from '@/admin/domain';
+import { Post, RecruitmentDetail } from '@/post/domain';
+import { Scrap } from '@/scrap/domain';
+import { Participation } from '@/participation/domain';
+import { RecruitmentQueryResult } from '@/member/type';
+import { UpdateMyProfileRequestDto } from '@/member/dto';
 import { Gender } from '@homerunnie/shared';
 
 type MemberType = typeof Member.$inferSelect;

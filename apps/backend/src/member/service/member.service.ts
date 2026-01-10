@@ -1,14 +1,14 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { MemberRepository } from '../repository';
-import { PagePaginationResponseDto, PaginationService } from '../../common';
+import { MemberRepository } from '@/member/repository';
+import { PagePaginationResponseDto, PaginationService } from '@/common';
 import {
   GetMemberListResponseDto,
   GetMyProfileResponseDto,
   RecruitmentSummaryResponseDto,
   UpdateMyProfileRequestDto,
-} from '../dto';
-import { RecruitmentQueryResult } from '../type';
-import { WarnService } from '../../warn/service';
+} from '@/member/dto';
+import { RecruitmentQueryResult } from '@/member/type';
+import { WarnService } from '@/warn/service';
 
 @Injectable()
 export class MemberService {

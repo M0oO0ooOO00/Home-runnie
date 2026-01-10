@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CookieService } from './cookie.service';
+import { CookieService } from '@/auth/service/cookie.service';
 import { ConfigService } from '@nestjs/config';
 
 describe('CookieService', () => {

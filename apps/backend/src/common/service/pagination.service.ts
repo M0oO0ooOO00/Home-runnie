@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PagePaginationResponseDto } from '../dto/page-pagination.response.dto';
+import { PagePaginationResponseDto } from '@/common/dto/page-pagination.response.dto';
 
 @Injectable()
 export class PaginationService {

@@ -8,8 +8,8 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { JoinRoomDto } from './dto/room-join.dto';
-import { CreateMessageDto } from './dto/create-message.dto';
+import { JoinRoomDto } from '@/chat/dto/room-join.dto';
+import { CreateMessageDto } from '@/chat/dto/create-message.dto';
 import { Logger } from '@nestjs/common';
 // origin *은 보안에 취약하기 때문에, 나중에 환경변수로 배포된 링크로 변경해야함
 @WebSocketGateway({

@@ -1,7 +1,7 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { PreferGender } from '../../enums';
+import { PreferGender } from '@/common/enums';
 
 export const preferGenderPgEnum = pgEnum(
-    'prefer_gender',
-    Object.values(PreferGender) as [string, ...string[]],
+  'prefer_gender',
+  Object.values(PreferGender) as [string, ...string[]],
 );

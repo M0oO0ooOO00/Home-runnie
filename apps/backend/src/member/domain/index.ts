@@ -1,2 +1,2 @@
-export * from './member.entity';
-export * from './profile.entity';
+export * from '@/member/domain/member.entity';
+export * from '@/member/domain/profile.entity';

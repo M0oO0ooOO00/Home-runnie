@@ -1,14 +1,14 @@
 import { Test } from '@nestjs/testing';
-import { AuthFacade } from './auth.facade';
-import { AuthService } from './auth.service';
-import { CookieService } from './cookie.service';
-import { TokenService } from './token.service';
+import { AuthFacade } from '@/auth/service/auth.facade';
+import { AuthService } from '@/auth/service/auth.service';
+import { CookieService } from '@/auth/service/cookie.service';
+import { TokenService } from '@/auth/service/token.service';
 import { ConfigService } from '@nestjs/config';
-import { OAuthProvider, Role, Team } from '../../common';
-import { MemberType } from '../../member/domain';
+import { OAuthProvider, Role, Team } from '@/common';
+import { MemberType } from '@/member/domain';
 import { Gender, SignupCompleteRequest } from '@homerunnie/shared';
-import { SignUpCompleteRequestDto } from '../dto/request/sign-up.complete.request.dto';
-import { SignUpTokenPayload } from '../types';
+import { SignUpCompleteRequestDto } from '@/auth/dto/request/sign-up.complete.request.dto';
+import { SignUpTokenPayload } from '@/auth/types';
 
 describe('AuthFacade', () => {
   let authFacade: AuthFacade;

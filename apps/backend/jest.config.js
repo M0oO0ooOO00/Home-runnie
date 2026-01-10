@@ -5,6 +5,7 @@ export default {
   rootDir: 'src',
   moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/$1',
+    '^@/(.*)$': '<rootDir>/$1',
   },
   testRegex: '.*\\.spec\\.ts$',
   coverageDirectory: '../coverage',

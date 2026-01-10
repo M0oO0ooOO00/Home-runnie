@@ -1,1 +1,1 @@
-export * from './get-member-detail.response.dto';
+export * from '@/admin/dto/response/get-member-detail.response.dto';

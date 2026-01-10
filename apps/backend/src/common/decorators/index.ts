@@ -1,3 +1,3 @@
-export * from './roles.decorator';
-export * from './user.decorator';
-export * from './current-member.decorator';
+export * from '@/common/decorators/roles.decorator';
+export * from '@/common/decorators/user.decorator';
+export * from '@/common/decorators/current-member.decorator';

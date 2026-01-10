@@ -1,4 +1,4 @@
-import { Team } from '../../../common';
+import { Team } from '@/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsNotEmpty, IsString } from 'class-validator';
 import { Gender, SignupCompleteRequest } from '@homerunnie/shared';
