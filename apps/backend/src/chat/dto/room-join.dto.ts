@@ -4,4 +4,8 @@ export class JoinRoomDto {
   @IsString()
   @IsNotEmpty()
   nickname: string;
+
+  @IsString()
+  @IsNotEmpty()
+  roomId: string;
 }

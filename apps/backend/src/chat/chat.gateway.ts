@@ -11,6 +11,12 @@ import { Server, Socket } from 'socket.io';
 import { JoinRoomDto } from '@/chat/dto/room-join.dto';
 import { CreateMessageDto } from '@/chat/dto/create-message.dto';
 import { Logger } from '@nestjs/common';
+
+interface UserInfo {
+  nickname: string;
+  roomId: Set<string>;
+}
+
 // origin *은 보안에 취약하기 때문에, 나중에 환경변수로 배포된 링크로 변경해야함
 @WebSocketGateway({
   namespace: 'chat',
@@ -24,7 +30,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private readonly logger = new Logger(ChatGateway.name);
 
-  private users: Map<string, string> = new Map();
+  private users: Map<string, UserInfo> = new Map();
 
   handleConnection(socket: Socket) {
     this.logger.log('client connected', socket.id);
@@ -44,20 +50,24 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('join_room')
   handleJoinRoom(@MessageBody() data: JoinRoomDto, @ConnectedSocket() socket: Socket) {
-    const { nickname } = data;
+    const { nickname, roomId } = data;
 
-    this.users.set(socket.id, nickname);
+    // 기존 유저 정보 가져오기 또는 새로 생성
+    let userInfo = this.users.get(socket.id);
+    if (!userInfo) {
+      userInfo = {
+        nickname,
+        roomId: new Set<string>(),
+      };
+      this.users.set(socket.id, userInfo);
+    }
 
-    socket.emit('join_success', {
-      message: `${nickname}님, 채팅방에 입장하셨습니다.`,
-    });
+    // TODO(human): 여기에 실제 room join 로직을 구현하세요
+    // Socket.IO의 socket.join()을 사용하여 특정 방에 입장하고,
+    // userInfo.roomId Set에 roomId를 추가한 후,
+    // 해당 방에만 입장 메시지를 전송하는 로직이 필요합니다
 
-    socket.broadcast.emit('user_joined', {
-      nickname,
-      message: `${nickname}님이 입장하셨습니다.`,
-    });
-
-    this.logger.log(`${nickname} joined the chat room`);
+    this.logger.log(`${nickname} joined room ${roomId}`);
   }
 
   @SubscribeMessage('message')
