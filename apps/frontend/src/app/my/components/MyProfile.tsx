@@ -5,22 +5,18 @@ import Image from 'next/image';
 import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
 import { Team, TeamDescription } from '@homerunnie/shared';
 
-export default function My() {
+export default function MyProfile() {
   const { data: myProfile, isLoading } = useMyProfileQuery();
 
-  if (isLoading) {
-    return (
-      <div className="bg-gray-100 min-h-screen w-full flex items-center justify-center">
-        로딩 중...
-      </div>
-    );
-  }
-
   return (
-    <>
-      <div className="bg-gray-100 min-h-screen w-full flex flex-col items-center px-40 pt-15 pb-20">
-        <h1 className="text-t01 font-bold w-full pb-15">마이페이지</h1>
-        <div className="flex flex-col rounded-[20px] border p-[30px] gap-[10px] bg-white shadow-md w-full mb-10">
+    <div className="flex flex-col rounded-[20px] border p-[30px] gap-[10px] bg-white shadow-md w-full mb-10 min-h-[220px] justify-center">
+      {isLoading ? (
+        <div className="flex items-center justify-center text-gray-400 font-medium">
+          {/* 추후 로딩 스피너 or 스켈레톤 ui 입히기 */}
+          로딩 중...
+        </div>
+      ) : (
+        <>
           <div className="flex justify-between mt-0 mb-4 border-b">
             <div className="flex items-center gap-4 mb-6">
               {/* 프로필 이미지 */}
@@ -31,7 +27,6 @@ export default function My() {
                   width={68}
                   height={68}
                   className="cursor-pointer"
-                  // onClick={() => {/* 클릭 핸들러 */}}
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -47,15 +42,6 @@ export default function My() {
             {/*응원하는 팀, 로그인 방법, 누적 경고 횟수, 활동상태*/}
             <div className="flex-1 flex flex-col items-center gap-2">
               <p className="text-b01 text-gray-600 font-weight-r">응원하는 팀</p>
-              {/* TODO: 각 야구팀의 사진과 이름 불러오기 */}
-              {/*<Image*/}
-              {/*    src="/icons/kakao_icon.svg"*/}
-              {/*    alt="카카오"*/}
-              {/*    width={68}*/}
-              {/*    height={68}*/}
-              {/*    className="cursor-pointer p-4"*/}
-              {/*    // onClick={() => /!* 클릭 핸들러 *!/}*/}
-              {/*/>*/}
               <div className="w-18 h-18 bg-gray-200 rounded-2xl"></div>
               <p className="font-weight-r text-b01 leading-150">
                 {myProfile?.supportTeam ? TeamDescription[myProfile.supportTeam] : '-'}
@@ -63,14 +49,12 @@ export default function My() {
             </div>
             <div className="flex-1 flex flex-col items-center gap-2">
               <p className="text-b01 text-gray-600 font-weight-r">로그인 방법</p>
-              {/* TODO: 추후 카카오 이미지 수정 */}
               <Image
                 src="/icons/kakao_login.svg"
                 alt="로그인 방법"
                 width={68}
                 height={68}
                 className="cursor-pointer"
-                // onClick={() => {/* 클릭 핸들러 */}}
               />
             </div>
             <div className="flex-1 flex flex-col items-center gap-2">
@@ -84,29 +68,8 @@ export default function My() {
               </p>
             </div>
           </div>
-        </div>
-        <div className="flex flex-col rounded-[20px] border py-[30px] px-[6px] gap-[10px] bg-white shadow-md w-full mb-10">
-          {/* 콘텐츠 */}
-          <div className="flex flex-row gap-3 py-[4px] px-[30px] hover:bg-gray-50 cursor-pointer">
-            <Image src="/icons/bookmark.svg" alt="스크랩 한 모집글" width={30} height={30} />
-            <p className="font-weight-m text-b01 leading-150">스크랩 한 모집글</p>
-          </div>
-          <div className="flex flex-row  gap-3 py-[4px] px-[30px] hover:bg-gray-50 cursor-pointer">
-            <Image src="/icons/pen.svg" alt="내가 작성한 모집글" width={30} height={30} />
-            <p className="font-weight-m text-b01 leading-150">내가 작성한 모집글</p>
-          </div>
-          <div className="flex flex-row  gap-3 py-[4px] px-[30px] hover:bg-gray-50 cursor-pointer">
-            <Image
-              src="/images/default.png"
-              alt="내가 참여한 글"
-              width={30}
-              height={30}
-              // onClick={() => {/* 클릭 핸들러 */}}
-            />
-            <p className="font-weight-m text-b01 leading-150">내가 참여한 글</p>
-          </div>
-        </div>
-      </div>
-    </>
+        </>
+      )}
+    </div>
   );
 }

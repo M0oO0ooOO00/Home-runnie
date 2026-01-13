@@ -1,9 +1,12 @@
-import My from './components/My';
+import MyProfile from './components/MyProfile';
+import MyContents from './components/MyContents';
 
 export default function Page() {
   return (
-    <div className="flex flex-col gap-[56px]">
-      <My />
+    <div className="bg-gray-100 min-h-screen w-full flex flex-col items-center px-40 pt-15 pb-20">
+      <h1 className="text-t01 font-bold w-full pb-15">마이페이지</h1>
+      <MyProfile />
+      <MyContents />
     </div>
   );
 }
