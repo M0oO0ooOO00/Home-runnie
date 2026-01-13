@@ -1,7 +1,21 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
+import { Team, TeamDescription } from '@homerunnie/shared';
 
 export default function My() {
+  const { data: myProfile, isLoading } = useMyProfileQuery();
+
+  if (isLoading) {
+    return (
+      <div className="bg-gray-100 min-h-screen w-full flex items-center justify-center">
+        로딩 중...
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="bg-gray-100 min-h-screen w-full flex flex-col items-center px-40 pt-15 pb-20">
@@ -22,7 +36,7 @@ export default function My() {
               </div>
               <div className="flex flex-col gap-2">
                 <span className="text-sm text-gray-500">닉네임</span>
-                <span className="text-lg font-semibold">윤창현</span>
+                <span className="text-lg font-semibold">{myProfile?.nickname || '-'}</span>
               </div>
             </div>
             <Link href="/edit-profile" className="text-gray-700">
@@ -43,7 +57,9 @@ export default function My() {
               {/*    // onClick={() => /!* 클릭 핸들러 *!/}*/}
               {/*/>*/}
               <div className="w-18 h-18 bg-gray-200 rounded-2xl"></div>
-              <p className="font-weight-r text-b01 leading-150">한화 이글스</p>
+              <p className="font-weight-r text-b01 leading-150">
+                {myProfile?.supportTeam ? TeamDescription[myProfile.supportTeam] : '-'}
+              </p>
             </div>
             <div className="flex-1 flex flex-col items-center gap-2">
               <p className="text-b01 text-gray-600 font-weight-r">로그인 방법</p>
@@ -59,11 +75,13 @@ export default function My() {
             </div>
             <div className="flex-1 flex flex-col items-center gap-2">
               <p className="text-b01 text-gray-600 font-weight-r">누적 경고 횟수</p>
-              <p className="text-t04 font-weight-r leading-140">03</p>
+              <p className="text-t04 font-weight-r leading-140">{myProfile?.warnCount || 0}</p>
             </div>
             <div className="flex-1 flex flex-col items-center gap-2">
               <p className="text-b01 text-gray-600 font-weight-r">활동상태</p>
-              <p className="text-t04 font-weight-r leading-140 text-main-green">활동중</p>
+              <p className="text-t04 font-weight-r leading-140 text-main-green">
+                {myProfile?.accountStatus === 'ACTIVE' ? '활동중' : '활동중지'}
+              </p>
             </div>
           </div>
         </div>
