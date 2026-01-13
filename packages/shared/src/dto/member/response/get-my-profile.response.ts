@@ -1,6 +1,8 @@
+import { Team } from '../../../entities/team/team';
+
 export interface GetMyProfileResponse {
   nickname: string;
-  supportTeam: string | null;
+  supportTeam: Team | null;
   oauthProvider: string;
   accountStatus: string;
   warnCount: number;
