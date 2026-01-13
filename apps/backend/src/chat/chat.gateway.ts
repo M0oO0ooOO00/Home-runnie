@@ -62,10 +62,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.users.set(socket.id, userInfo);
     }
 
-    // TODO(human): 여기에 실제 room join 로직을 구현하세요
-    // Socket.IO의 socket.join()을 사용하여 특정 방에 입장하고,
-    // userInfo.roomId Set에 roomId를 추가한 후,
-    // 해당 방에만 입장 메시지를 전송하는 로직이 필요합니다
+    socket.join(roomId);
+
+    userInfo.roomId.add(roomId);
+
+    this.server.to(roomId).emit('user_joined', {
+      nickname,
+      message: `${nickname}님이 입장하셨습니다.`,
+    });
 
     this.logger.log(`${nickname} joined room ${roomId}`);
   }
