@@ -6,6 +6,7 @@ import DateSelect from '@/shared/ui/write/date-select';
 import { RadioGroup } from '@/shared/ui/radio';
 import { BgmTag } from '@/shared/ui/tag/bgm-tag';
 import TeamDropdown from '@/shared/ui/dropdown/team-dropdown';
+import { CtaButton } from '@/shared/ui/button/cta-button';
 import { baseBallTeamItems, baseBallStadiumItems } from '@homerunnie/shared';
 
 export default function Page() {
@@ -47,7 +48,7 @@ export default function Page() {
     setPicked((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]));
 
   return (
-    <main className="min-h-screen bg-gray-200">
+    <main className="min-h-screen">
       <div className="mx-auto max-w-[1207px] px-4 py-10 lg:px-0">
         <div className="mb-8 flex items-center gap-3">
           <Image src="/icons/pencil.svg" alt="연필" width={36} height={36} />
@@ -232,6 +233,12 @@ export default function Page() {
             className="h-52 w-full resize-none rounded-2xl border border-zinc-200 bg-neutral-50 px-5 py-4 text-lg placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
           />
         </section>
+
+        <div className="mt-12 flex justify-end">
+          <CtaButton variant="primary" size="default" type="button">
+            <div className="text-white text-lg font-semibold leading-7">업로드하기</div>
+          </CtaButton>
+        </div>
       </div>
     </main>
   );
