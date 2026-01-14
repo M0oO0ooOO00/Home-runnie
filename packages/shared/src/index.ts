@@ -7,6 +7,7 @@ export * from './dto/member';
 // Entities
 export * from './entities/team/team';
 export * from './entities/team/stadium';
+export { baseBallStadiumItems, type Stadium } from './entities/team/stadium';
 export * from './entities/team/teamAssets';
 export * from './entities/gender/gender';
 export * from './entities/post-type/post-type';
