@@ -9,7 +9,7 @@ export const getMyProfile = async (): Promise<GetMyProfileResponse> => {
   });
 
   if (!response.ok) {
-    throw new Error('Failed to fetch my profile');
+    throw new Error('멤버 정보를 불러오는것에 실패했습니다.');
   }
 
   return response.json();

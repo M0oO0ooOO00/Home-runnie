@@ -1,6 +1,8 @@
-import { UpdateMyProfileRequest } from '@homerunnie/shared';
+import { GetMyProfileResponse, UpdateMyProfileRequest } from '@homerunnie/shared';
 
-export const updateProfile = async (updateMyProfileRequest: UpdateMyProfileRequest) => {
+export const updateProfile = async (
+  updateMyProfileRequest: UpdateMyProfileRequest,
+): Promise<GetMyProfileResponse> => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3030';
   const response = await fetch(`${apiUrl}/member/my`, {
     method: 'PUT',
