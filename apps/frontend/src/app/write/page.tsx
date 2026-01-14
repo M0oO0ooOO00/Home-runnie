@@ -38,11 +38,7 @@ export default function Page() {
     ],
     [],
   );
-  const [picked, setPicked] = useState<string[]>([
-    '응원가 부르는거 좋아해요',
-    '응원석이 가까이 있는게 좋아요',
-    '햇빛 싫어요',
-  ]);
+  const [picked, setPicked] = useState<string[]>([]);
 
   const toggleTag = (t: string) =>
     setPicked((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]));
