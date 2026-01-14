@@ -37,11 +37,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(socket: Socket) {
-    const nickname = this.users.get(socket.id);
-    if (nickname) {
+    const userInfo = this.users.get(socket.id);
+    if (userInfo) {
       socket.broadcast.emit('user_left', {
-        nickname,
-        message: `${nickname}님이 퇴장하셨습니다.`,
+        nickname: userInfo.nickname,
+        message: `${userInfo.nickname}님이 퇴장하셨습니다.`,
       });
       this.users.delete(socket.id);
     }
