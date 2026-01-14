@@ -1,3 +1,5 @@
+'use client';
+
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { getMyProfile } from '@/apis/my/member';
 import { GetMyProfileResponse } from '@homerunnie/shared';
