@@ -76,17 +76,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('message')
   handleMessage(@MessageBody() data: CreateMessageDto, @ConnectedSocket() socket: Socket) {
-    const nickname = this.users.get(socket.id) || '익명';
+    const userInfo = this.users.get(socket.id);
+    const nickname = userInfo?.nickname || '익명';
+    const { message, roomId } = data;
 
-    socket.broadcast.emit('received_message', {
-      nickname,
-      message: data.message,
+    socket.to(roomId).emit('received_message', {
+      nickname: nickname,
+      message: message,
       isOwn: false,
     });
 
     socket.emit('received_message', {
-      nickname: '나',
-      message: data.message,
+      nickname: nickname,
+      message: message,
       isOwn: true,
     });
   }
