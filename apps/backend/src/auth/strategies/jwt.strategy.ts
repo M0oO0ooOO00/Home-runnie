@@ -2,27 +2,33 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { JwtPayload } from '../types';
+import { JwtPayload } from '@/auth/types';
+import { Role } from '@/common';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor(private readonly configService: ConfigService) {
-        super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            secretOrKey: configService.get<string>('JWT_SECRET') ?? 'SECRET',
-        });
+  constructor(private readonly configService: ConfigService) {
+    super({
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request) => {
+          return request?.cookies?.accessToken;
+        },
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
+      secretOrKey: configService.get<string>('JWT_SECRET') ?? 'SECRET',
+    });
+  }
+
+  validate(jwtPayload: JwtPayload) {
+    const { memberId, role: roles } = jwtPayload;
+
+    if (!memberId) {
+      throw new UnauthorizedException('JWT 토큰 파싱 에러 - memberId 파싱 실패');
     }
 
-    validate(jwtPayload: JwtPayload) {
-        const { memberId, roles } = jwtPayload;
-
-        if (memberId === null) {
-            throw new UnauthorizedException();
-        }
-
-        return {
-            memberId,
-            roles,
-        };
-    }
+    return {
+      memberId,
+      roles,
+    };
+  }
 }

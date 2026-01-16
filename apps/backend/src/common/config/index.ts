@@ -1,3 +1,3 @@
-export * from './swagger.config';
-export * from './drizzle.config';
-export * from './database.config';
+export * from '@/common/config/swagger.config';
+export * from '@/common/config/drizzle.config';
+export * from '@/common/config/database.config';

@@ -1,1 +1,1 @@
-export * from './domain.exception';
+export * from '@/common/exceptions/domain.exception';

@@ -1,2 +1,2 @@
-export * from './request';
-export * from './response';
+export * from '@/member/dto/request';
+export * from '@/member/dto/response';

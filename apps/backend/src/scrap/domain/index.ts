@@ -1,1 +1,1 @@
-export * from './scrap.entity';
+export * from '@/scrap/domain/scrap.entity';

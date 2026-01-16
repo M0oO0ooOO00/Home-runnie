@@ -1,11 +1,11 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { Member, Profile } from '../../../member/domain';
-import { Report, ReportCount } from '../../../report/domain';
-import { Warn } from '../../../admin/domain';
-import { Post, RecruitmentDetail } from '../../../post/domain';
-import { Scrap } from '../../../scrap/domain';
-import { Participation } from '../../../participation/domain';
+import { Member, Profile } from '@/member/domain';
+import { Report, ReportCount } from '@/report/domain';
+import { Warn } from '@/admin/domain';
+import { Post, RecruitmentDetail } from '@/post/domain';
+import { Scrap } from '@/scrap/domain';
+import { Participation } from '@/participation/domain';
 import {
   OAuthProvider,
   RecruitmentRoleEnum,
@@ -13,7 +13,7 @@ import {
   Role,
   PostStatusEnum,
   Team,
-} from '../../enums';
+} from '@/common/enums';
 import type { InferInsertModel } from 'drizzle-orm';
 import { Gender, PostType } from '@homerunnie/shared';
 

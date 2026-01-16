@@ -1,1 +1,1 @@
-export * from './participation.entity';
+export * from '@/participation/domain/participation.entity';

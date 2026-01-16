@@ -8,8 +8,8 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { JoinRoomDto } from './dto/room-join.dto';
-import { CreateMessageDto } from './dto/create-message.dto';
+import { JoinRoomDto } from '@/chat/dto/room-join.dto';
+import { CreateMessageDto } from '@/chat/dto/create-message.dto';
 import { Logger } from '@nestjs/common';
 
 interface UserInfo {

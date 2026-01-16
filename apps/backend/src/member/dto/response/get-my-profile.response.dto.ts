@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Member, Profile } from '../../domain';
-import { Warn } from '../../../admin/domain';
+import { Member, Profile } from '@/member/domain';
+import { Warn } from '@/admin/domain';
 import { GetMyProfileResponse } from '@homerunnie/shared';
+import { Team } from '@homerunnie/shared';
 
 export class GetMyProfileResponseDto implements GetMyProfileResponse {
   @ApiProperty({
@@ -17,7 +18,7 @@ export class GetMyProfileResponseDto implements GetMyProfileResponse {
     nullable: true,
     example: 'LG',
   })
-  supportTeam: string | null;
+  supportTeam: Team | null;
 
   @ApiProperty({
     description: '로그인 방법 (OAuth 제공자)',
@@ -47,7 +48,7 @@ export class GetMyProfileResponseDto implements GetMyProfileResponse {
   ): GetMyProfileResponseDto {
     const response = new GetMyProfileResponseDto();
     response.nickname = profile.nickname;
-    response.supportTeam = profile.supportTeam;
+    response.supportTeam = profile.supportTeam as Team;
     response.oauthProvider = member.oauthProvider;
     response.accountStatus = member.accountStatus;
     response.warnCount = warns.length;

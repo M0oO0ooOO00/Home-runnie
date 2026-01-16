@@ -1,67 +1,78 @@
 import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthService } from './service/auth.service';
-import * as process from 'node:process';
-import { SignUpCompleteRequestDto } from './dto/request/sign-up.complete.request.dto';
-import { TokenService } from './service/token.service';
 import { Response } from 'express';
-import { CookieService } from './service/cookie.service';
+import { SignUpCompleteRequestDto } from '@/auth/dto/request/sign-up.complete.request.dto';
+import { AuthFacade } from '@/auth/service/auth.facade';
+import {
+  AuthControllerSwagger,
+  CompleteSignUpSwagger,
+  KakaoCallbackSwagger,
+  KakaoLoginSwagger,
+  LogoutSwagger,
+  ReissueTokenSwagger,
+} from '@/auth/swagger';
 
+@AuthControllerSwagger
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly tokenService: TokenService,
-    private readonly cookieService: CookieService,
-  ) {}
+  constructor(private readonly authFacade: AuthFacade) {}
 
+  @KakaoLoginSwagger
   @Get('kakao')
   @UseGuards(AuthGuard('kakao'))
   async kakaoLogin() {}
 
+  @KakaoCallbackSwagger
   @Get('kakao/callback')
   @UseGuards(AuthGuard('kakao'))
   async kakaoCallback(@Req() req, @Res() res: Response) {
-    const user = req.user;
-    const member = await this.authService.validateKakaoLogin(user);
+    const result = await this.authFacade.handleKakaoLogin(req.user);
 
-    if (member.signUpStatus === false) {
-      res.redirect(`${process.env.LOCAL_FRONT}/signup?memberId=${member.id}`);
-    } else {
-      const token = this.tokenService.generateToken(member);
-
-      const accessCookie = this.cookieService.buildCookie('accessToken', token.accessToken, {
-        maxAge: 24 * 60 * 60 * 1000,
-      });
-      const refreshCookie = this.cookieService.buildCookie('refreshToken', token.refreshToken, {
-        maxAge: 24 * 60 * 60 * 1000 * 7,
-      });
-
-      res.cookie(accessCookie.name, accessCookie.value, accessCookie.options);
-      res.cookie(refreshCookie.name, refreshCookie.value, refreshCookie.options);
-      res.redirect(`${process.env.LOCAL_FRONT}/home`);
+    if (result.type === 'SIGN_UP_REQUIRED') {
+      result.clearCookies.forEach((cookieName) => res.clearCookie(cookieName, { path: '/' }));
+      res.cookie(result.cookie.name, result.cookie.value, result.cookie.options);
+      return res.redirect(result.redirectUrl);
     }
+
+    result.cookies.forEach((c) => res.cookie(c.name, c.value, c.options));
+    return res.redirect(result.redirectUrl);
   }
 
+  @CompleteSignUpSwagger
   @Post('signup')
   async completeSignUp(
     @Body() signUpCompleteRequestDto: SignUpCompleteRequestDto,
+    @Req() req,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const member = await this.authService.completeSignUp(signUpCompleteRequestDto);
+    const signUpToken = req.cookies['signUpToken'];
+    const result = await this.authFacade.handleCompleteSignUp(
+      signUpToken,
+      signUpCompleteRequestDto,
+    );
 
-    const token = this.tokenService.generateToken(member);
+    result.clearCookies.forEach((cookieName) => res.clearCookie(cookieName, { path: '/' }));
+    result.cookies.forEach((c) => res.cookie(c.name, c.value, c.options));
 
-    const accessCookie = this.cookieService.buildCookie('accessToken', token.accessToken, {
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-    const refreshCookie = this.cookieService.buildCookie('refreshToken', token.refreshToken, {
-      maxAge: 24 * 60 * 60 * 1000 * 7,
-    });
+    return { success: true };
+  }
+
+  @LogoutSwagger
+  @Post('logout')
+  async logout(@Res({ passthrough: true }) res: Response) {
+    const result = this.authFacade.handleLogout();
+    result.clearCookies.forEach((cookieName) => res.clearCookie(cookieName, { path: '/' }));
+    return { success: true };
+  }
+
+  @ReissueTokenSwagger
+  @Post('re-issue')
+  async reissueToken(@Req() req, @Res({ passthrough: true }) res: Response) {
+    const refreshToken = req.cookies['refreshToken'];
+    const accessCookie = await this.authFacade.handleReissueToken(refreshToken);
 
     res.cookie(accessCookie.name, accessCookie.value, accessCookie.options);
-    res.cookie(refreshCookie.name, refreshCookie.value, refreshCookie.options);
 
-    res.redirect(`${process.env.LOCAL_FRONT}/home`);
+    return { success: true };
   }
 }
