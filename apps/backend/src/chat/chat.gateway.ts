@@ -14,7 +14,7 @@ import { Logger } from '@nestjs/common';
 
 interface UserInfo {
   nickname: string;
-  roomId: Set<string>;
+  roomIds: Set<string>;
 }
 
 // origin *은 보안에 취약하기 때문에, 나중에 환경변수로 배포된 링크로 변경해야함
@@ -39,9 +39,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleDisconnect(socket: Socket) {
     const userInfo = this.users.get(socket.id);
     if (userInfo) {
-      socket.broadcast.emit('user_left', {
-        nickname: userInfo.nickname,
-        message: `${userInfo.nickname}님이 퇴장하셨습니다.`,
+      const { nickname, roomIds } = userInfo;
+      roomIds.forEach((room) => {
+        socket.to(room).emit('user_left', {
+          nickname,
+          message: `${nickname}님이 퇴장하셨습니다.`,
+        });
       });
       this.users.delete(socket.id);
     }
@@ -57,14 +60,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!userInfo) {
       userInfo = {
         nickname,
-        roomId: new Set<string>(),
+        roomIds: new Set<string>(),
       };
       this.users.set(socket.id, userInfo);
     }
 
     socket.join(roomId);
 
-    userInfo.roomId.add(roomId);
+    userInfo.roomIds.add(roomId);
 
     this.server.to(roomId).emit('user_joined', {
       nickname,
@@ -77,9 +80,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('message')
   handleMessage(@MessageBody() data: CreateMessageDto, @ConnectedSocket() socket: Socket) {
     const userInfo = this.users.get(socket.id);
-    const nickname = userInfo?.nickname || '익명';
     const { message, roomId } = data;
 
+    if (!userInfo || !userInfo.roomIds.has(roomId)) {
+      return;
+    }
+    const { nickname } = userInfo;
     socket.to(roomId).emit('received_message', {
       nickname: nickname,
       message: message,
