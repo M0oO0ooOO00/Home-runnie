@@ -7,4 +7,5 @@ export * from '@/post/domain';
 export * from '@/comment/domain';
 export * from '@/participation/domain';
 export * from '@/scrap/domain';
+export * from '@/chat/domain';
 export * from '@/common/db/enums';
