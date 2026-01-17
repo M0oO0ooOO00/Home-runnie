@@ -8,3 +8,4 @@ export * from '@/common/enums/team.enum';
 export * from '@/common/enums/ticketing-type.enum';
 export * from '@/common/enums/oauth.enum';
 export * from '@/common/enums/account-status.enum';
+export * from '@/common/enums/chat-room-member-role.enum';
