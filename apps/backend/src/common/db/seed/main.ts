@@ -6,6 +6,7 @@ import { Warn } from '@/admin/domain';
 import { Post, RecruitmentDetail } from '@/post/domain';
 import { Scrap } from '@/scrap/domain';
 import { Participation } from '@/participation/domain';
+import { ChatRoom, ChatRoomMember, ChatMessage } from '@/chat/domain';
 import {
   OAuthProvider,
   RecruitmentRoleEnum,
@@ -15,7 +16,7 @@ import {
   Team,
 } from '@/common/enums';
 import type { InferInsertModel } from 'drizzle-orm';
-import { Gender, PostType } from '@homerunnie/shared';
+import { Gender, PostType, ChatRoomMemberRole } from '@homerunnie/shared';
 
 const REPORT_TYPES = [
   ReportType.SPAM,
@@ -80,6 +81,9 @@ export async function seeding() {
 
   // Clear all existing data first
   console.log('🧹 Clearing existing data...');
+  await db.delete(ChatMessage);
+  await db.delete(ChatRoomMember);
+  await db.delete(ChatRoom);
   await db.delete(Participation);
   await db.delete(Scrap);
   await db.delete(RecruitmentDetail);
@@ -328,6 +332,101 @@ export async function seeding() {
     .returning();
   console.log(`✅ Created ${insertedParticipations.length} participations`);
 
+  // 10. 채팅방 생성 (각 Post마다 하나씩)
+  const chatRoomData: InferInsertModel<typeof ChatRoom>[] = insertedPosts.map((post) => ({
+    postId: post.id,
+    createdAt: post.createdAt,
+    updatedAt: post.updatedAt,
+  }));
+
+  const insertedChatRooms = await db.insert(ChatRoom).values(chatRoomData).returning();
+  console.log(`✅ Created ${insertedChatRooms.length} chat rooms`);
+
+  // 11. 채팅방 멤버 생성
+  const chatRoomMemberData: InferInsertModel<typeof ChatRoomMember>[] = [];
+
+  // 각 채팅방에 대해 멤버 추가
+  for (const chatRoom of insertedChatRooms) {
+    const post = insertedPosts.find((p) => p.id === chatRoom.postId);
+    if (!post) continue;
+
+    // 1) 게시글 작성자를 HOST로 추가
+    chatRoomMemberData.push({
+      role: ChatRoomMemberRole.HOST,
+      chatRoomId: chatRoom.id,
+      memberId: post.authorId,
+      createdAt: chatRoom.createdAt,
+      updatedAt: chatRoom.updatedAt,
+    });
+
+    // 2) 해당 게시글의 RecruitmentDetail 찾기
+    const recruitmentDetail = insertedRecruitmentDetails.find((rd) => rd.postId === post.id);
+    if (!recruitmentDetail) continue;
+
+    // 3) 해당 모집글에 참여한 멤버들을 MEMBER로 추가
+    const participations = insertedParticipations.filter(
+      (p) => p.recruitmentDetailId === recruitmentDetail.id,
+    );
+
+    for (const participation of participations) {
+      // 작성자는 이미 HOST로 추가했으므로 제외
+      if (participation.memberId === post.authorId) continue;
+
+      chatRoomMemberData.push({
+        role: ChatRoomMemberRole.MEMBER,
+        chatRoomId: chatRoom.id,
+        memberId: participation.memberId,
+        createdAt: chatRoom.createdAt,
+        updatedAt: chatRoom.updatedAt,
+      });
+    }
+  }
+
+  const insertedChatRoomMembers = await db
+    .insert(ChatRoomMember)
+    .values(chatRoomMemberData)
+    .returning();
+  console.log(`✅ Created ${insertedChatRoomMembers.length} chat room members`);
+
+  // 12. 채팅 메시지 생성 (각 채팅방에 2-5개씩)
+  const chatMessageData: InferInsertModel<typeof ChatMessage>[] = [];
+
+  const SAMPLE_MESSAGES = [
+    '안녕하세요! 같이 야구 보러 가요!',
+    '저도 참여하고 싶습니다!',
+    '몇 시에 만날까요?',
+    '경기장 앞에서 만나는 게 어떨까요?',
+    '응원 도구 챙겨가세요!',
+    '날씨가 좋네요 ☀️',
+    '기대됩니다!',
+    '혹시 주차는 어디에 하시나요?',
+    '같이 치맥 어때요?',
+    '홈팀 응원석 앉으시나요?',
+  ];
+
+  for (const chatRoom of insertedChatRooms) {
+    // 해당 채팅방의 멤버들 가져오기
+    const roomMembers = insertedChatRoomMembers.filter((m) => m.chatRoomId === chatRoom.id);
+
+    if (roomMembers.length === 0) continue;
+
+    // 2-5개의 메시지 생성
+    const messageCount = Math.floor(Math.random() * 4) + 2;
+    for (let i = 0; i < messageCount; i++) {
+      const sender = getRandomElement(roomMembers);
+      chatMessageData.push({
+        content: getRandomElement(SAMPLE_MESSAGES),
+        chatRoomId: chatRoom.id,
+        senderId: sender.memberId,
+        createdAt: getRandomDate(chatRoom.createdAt!, new Date()),
+        updatedAt: getRandomDate(chatRoom.createdAt!, new Date()),
+      });
+    }
+  }
+
+  const insertedChatMessages = await db.insert(ChatMessage).values(chatMessageData).returning();
+  console.log(`✅ Created ${insertedChatMessages.length} chat messages`);
+
   console.log('🎉 Seeding completed successfully!');
   console.log(`📊 Summary:`);
   console.log(
@@ -341,6 +440,9 @@ export async function seeding() {
   console.log(`   - Recruitment Details: ${insertedRecruitmentDetails.length}`);
   console.log(`   - Scraps: ${insertedScraps.length}`);
   console.log(`   - Participations: ${insertedParticipations.length}`);
+  console.log(`   - Chat Rooms: ${insertedChatRooms.length}`);
+  console.log(`   - Chat Room Members: ${insertedChatRoomMembers.length}`);
+  console.log(`   - Chat Messages: ${insertedChatMessages.length}`);
   console.log(`🧪 Test User1 has:`);
   console.log(`   - Scrapped ${scrapData.filter((s) => s.memberId === testUser.id).length} posts`);
   console.log(
@@ -348,6 +450,9 @@ export async function seeding() {
   );
   console.log(
     `   - Written ${insertedPosts.filter((p) => p.authorId === testUser.id).length} posts`,
+  );
+  console.log(
+    `   - Joined ${insertedChatRoomMembers.filter((m) => m.memberId === testUser.id).length} chat rooms`,
   );
 
   // 데이터베이스 연결 종료
