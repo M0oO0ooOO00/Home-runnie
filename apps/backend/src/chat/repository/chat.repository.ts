@@ -1,38 +1,38 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq, and, desc, count } from 'drizzle-orm';
 import { DATABASE_CONNECTION } from '@/common';
 import { ChatRoom, ChatRoomMember, ChatMessage } from '@/chat/domain';
 import { ChatRoomMemberRole } from '@homerunnie/shared';
+import * as schema from '@/common/db/schema';
 
 type ChatRoomType = typeof ChatRoom.$inferSelect;
 type ChatRoomMemberType = typeof ChatRoomMember.$inferSelect;
+type DbType = NodePgDatabase<typeof schema>;
+type DbTransaction = Parameters<Parameters<DbType['transaction']>[0]>[0];
 
 @Injectable()
 export class ChatRepository {
   constructor(
     @Inject(DATABASE_CONNECTION)
-    private readonly db: ReturnType<typeof drizzle>,
+    private readonly db: DbType,
   ) {}
 
-  /**
-   * 채팅방 생성
-   */
-  async createChatRoom(postId: number): Promise<ChatRoomType> {
-    const [chatRoom] = await this.db.insert(ChatRoom).values({ postId }).returning();
+  async createChatRoom(postId: number, tx?: DbTransaction): Promise<ChatRoomType> {
+    const executor = tx || this.db;
+    const [chatRoom] = await executor.insert(ChatRoom).values({ postId }).returning();
 
     return chatRoom;
   }
 
-  /**
-   * 채팅방 멤버 추가
-   */
   async createChatRoomMember(
     chatRoomId: number,
     memberId: number,
     role: ChatRoomMemberRole,
+    tx?: DbTransaction,
   ): Promise<ChatRoomMemberType> {
-    const [member] = await this.db
+    const executor = tx || this.db;
+    const [member] = await executor
       .insert(ChatRoomMember)
       .values({ chatRoomId, memberId, role })
       .returning();
@@ -40,9 +40,6 @@ export class ChatRepository {
     return member;
   }
 
-  /**
-   * 특정 멤버가 참여한 채팅방 목록 조회 (페이지네이션)
-   */
   async findChatRoomsByMemberId(
     memberId: number,
     page: number,
@@ -68,9 +65,6 @@ export class ChatRepository {
     return chatRooms;
   }
 
-  /**
-   * 특정 멤버가 참여한 채팅방 총 개수
-   */
   async countChatRoomsByMemberId(memberId: number): Promise<number> {
     const result = await this.db
       .select({ count: count() })
@@ -81,9 +75,6 @@ export class ChatRepository {
     return result[0]?.count || 0;
   }
 
-  /**
-   * 채팅방 ID로 조회
-   */
   async findChatRoomById(chatRoomId: number): Promise<ChatRoomType | null> {
     const [chatRoom] = await this.db
       .select()
