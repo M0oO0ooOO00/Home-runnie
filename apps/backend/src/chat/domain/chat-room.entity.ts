@@ -7,9 +7,9 @@ import { ChatRoomMember } from '@/chat/domain/chat-room-member.entity';
 
 export const ChatRoom = pgTable('chat_room', {
   ...baseColumns,
-  postId: integer('post_id')
-    .notNull()
-    .references(() => Post.id),
+  postId: integer('post_id').notNull(),
+  // TODO: Post 관련 기능 구현 후 외래 키 제약 조건 추가
+  // .references(() => Post.id),
 });
 
 export const chatRoomRelations = relations(ChatRoom, ({ one, many }) => ({
