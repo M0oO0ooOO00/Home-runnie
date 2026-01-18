@@ -77,7 +77,7 @@ describe('ChatGateway', () => {
     const userInfo = gateway['users'].get('user-1');
     expect(userInfo).toBeDefined();
     expect(userInfo!.nickname).toBe('테스터');
-    expect(userInfo!.roomId.has('room1')).toBe(true);
+    expect(userInfo!.roomIds.has('room1')).toBe(true);
     expect(mockSocket.join).toHaveBeenCalledWith('room1');
   });
 
@@ -110,7 +110,7 @@ describe('ChatGateway', () => {
 
     gateway['users'].set('user-1', {
       nickname: '테스터',
-      roomId: new Set(['room1']),
+      roomIds: new Set(['room1']),
     });
 
     gateway.handleDisconnect(mockSocket as unknown as Socket);
@@ -127,7 +127,7 @@ describe('ChatGateway', () => {
 
       gateway['users'].set('user-1', {
         nickname: '테스터',
-        roomId: new Set(['room1']),
+        roomIds: new Set(['room1']),
       });
 
       gateway.handleMessage(
@@ -150,7 +150,7 @@ describe('ChatGateway', () => {
 
       gateway['users'].set('user-1', {
         nickname: '테스터',
-        roomId: new Set(['room1']),
+        roomIds: new Set(['room1']),
       });
 
       gateway.handleMessage(
