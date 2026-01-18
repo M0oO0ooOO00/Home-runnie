@@ -15,7 +15,7 @@ export class ChatController {
     @CurrentMember() memberId: number,
     @Body() createChatRoomDto: CreateChatRoomRequestDto,
   ): Promise<ChatRoomResponseDto> {
-    return await this.chatService.createChatRoom(createChatRoomDto.postId, memberId);
+    return this.chatService.createChatRoom(createChatRoomDto.postId, memberId);
   }
 
   @Get('rooms')
@@ -23,6 +23,6 @@ export class ChatController {
     @CurrentMember() memberId: number,
     @Query() query: GetChatRoomsRequestDto,
   ): Promise<GetChatRoomsResponseDto> {
-    return await this.chatService.getMyChatRooms(memberId, query.page, query.limit);
+    return this.chatService.getMyChatRooms(memberId, query.page, query.limit);
   }
 }
