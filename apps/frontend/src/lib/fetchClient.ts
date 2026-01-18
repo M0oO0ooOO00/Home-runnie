@@ -54,6 +54,8 @@ class FetchClient {
       // [SSR Support] 서버 사이드에서는 재발급 로직 대신 바로 리다이렉트 처리
       if (isServer) {
         const { redirect } = await import('next/navigation');
+        // TODO: alert를 모달로 변경
+        alert('재로그인이 필요합니다');
         redirect('/');
       }
 
@@ -71,9 +73,7 @@ class FetchClient {
         // 토큰 갱신이 성공적으로 완료되면, 원래 실패했던 요청을 새로운 토큰(쿠키)으로 재시도합니다.
         response = await this.fetchWithRetry(url, fetchConfig);
       } catch (error) {
-        // 토큰 갱신 자체가 실패했다면, 대기 중이던 Promise를 초기화하고 에러를 밖으로 던집니다.
         // 이 에러는 호출자에게 전달되어, 필요한 경우 로그인 페이지 리다이렉트 등의 처리가 이루어집니다.
-        this.refreshPromise = null;
         throw error;
       } finally {
         // 성공하든 실패하든, 현재 진행 중인 갱신 작업 표시(Promise)를 제거합니다.
@@ -95,7 +95,7 @@ class FetchClient {
       return {} as T;
     }
 
-    return response.json().catch(() => ({}));
+    return response.json();
   }
 
   private async fetchWithRetry(url: string, config: RequestConfig): Promise<Response> {
@@ -165,8 +165,7 @@ class FetchClient {
     return this.request<T>(endpoint, { ...config, method: 'GET' });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  post<T>(endpoint: string, body?: any, config?: RequestConfig) {
+  post<T>(endpoint: string, body?: unknown, config?: RequestConfig) {
     return this.request<T>(endpoint, {
       ...config,
       method: 'POST',
@@ -195,5 +194,5 @@ class FetchClient {
   }
 }
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3030';
-export const apiClient = new FetchClient(apiBaseUrl);
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3030';
+export const apiClient = new FetchClient(API_BASE_URL);
