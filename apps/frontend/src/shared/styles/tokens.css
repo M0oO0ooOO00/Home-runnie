@@ -97,7 +97,7 @@
   --radius: 0.625rem;
 
   /* Light theme using your Gray palette */
-  --background: var(--color-white);
+  --background: var(--color-gray-50);
   --foreground: var(--color-gray-950);
 
   --card: var(--color-white);
