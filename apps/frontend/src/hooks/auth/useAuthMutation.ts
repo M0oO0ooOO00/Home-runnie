@@ -1,5 +1,5 @@
 import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { completeSignUp } from '@/apis/auth';
+import { completeSignUp } from '@/apis/auth/auth';
 import { SignupCompleteRequest } from '@homerunnie/shared';
 
 export const useCompleteSignUpMutation = (
