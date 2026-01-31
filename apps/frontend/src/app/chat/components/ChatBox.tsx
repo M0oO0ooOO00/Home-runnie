@@ -6,6 +6,7 @@ import ChatReport from './ChatReport';
 import ChatInfoSidebar from './ChatInfoSidebar';
 import { useChatRooms } from '@/stores/ChatRoomsContext';
 import { getMyChatRooms } from '@/apis/chat/chat';
+import { ChatRoomResponse } from '@homerunnie/shared';
 import { useState, useEffect } from 'react';
 
 interface Message {
@@ -26,6 +27,29 @@ interface RoomData {
   messages: Message[];
 }
 
+const formatKoreanDate = (date: Date): string => {
+  return date
+    .toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    .replace(/\./g, '/')
+    .replace(/\s/g, '');
+};
+
+const createRoomData = (room: ChatRoomResponse): RoomData => {
+  return {
+    info: {
+      title: `게시글 ${room.postId} 채팅방`,
+      participants: '나, 상대방 02명',
+      matchDate: formatKoreanDate(new Date()),
+      matchTeam: `게시글 ${room.postId} 모임`,
+    },
+    messages: [{ id: 1, text: '채팅방이 생성되었습니다.', sender: 'other' }],
+  };
+};
+
 const ChatBox = ({ roomId }: { roomId: string }) => {
   const chatRoomsMap = useChatRooms();
   const [roomData, setRoomData] = useState<RoomData | null>(null);
@@ -39,54 +63,18 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
       // Context에서 채팅방 정보 찾기
       const roomInfo = chatRoomsMap.get(roomId);
       if (roomInfo) {
-        const today = new Date();
-        const formattedDate = today
-          .toLocaleDateString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-          })
-          .replace(/\./g, '/')
-          .replace(/\s/g, '');
-
-        setRoomData({
-          info: {
-            title: `게시글 ${roomInfo.postId} 채팅방`,
-            participants: '나, 상대방 02명',
-            matchDate: formattedDate,
-            matchTeam: `게시글 ${roomInfo.postId} 모임`,
-          },
-          messages: [{ id: 1, text: '채팅방이 생성되었습니다.', sender: 'other' }],
-        });
+        setRoomData(createRoomData(roomInfo));
         return;
       }
 
       // Context에 없으면 API로 채팅방 목록 조회해서 찾기
       setLoading(true);
       try {
-        const response = await getMyChatRooms(1, 100); // 충분히 많은 수 조회
+        const response = await getMyChatRooms(1, 100);
         const foundRoom = response.data.find((room) => String(room.id) === roomId);
 
         if (foundRoom) {
-          const today = new Date();
-          const formattedDate = today
-            .toLocaleDateString('ko-KR', {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit',
-            })
-            .replace(/\./g, '/')
-            .replace(/\s/g, '');
-
-          setRoomData({
-            info: {
-              title: `게시글 ${foundRoom.postId} 채팅방`,
-              participants: '나, 상대방 02명',
-              matchDate: formattedDate,
-              matchTeam: `게시글 ${foundRoom.postId} 모임`,
-            },
-            messages: [{ id: 1, text: '채팅방이 생성되었습니다.', sender: 'other' }],
-          });
+          setRoomData(createRoomData(foundRoom));
         } else {
           // 찾지 못한 경우
           setRoomData({
@@ -159,7 +147,7 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
             onCloseModal={() => setIsReportModalOpen(false)}
           />
 
-          <div className="flex-grow flex flex-col justify-end gap-4 overflow-y-auto mb-6">
+          <div className="grow flex flex-col justify-end gap-4 overflow-y-auto mb-6">
             {currentRoomData.messages.map((msg) => (
               <div
                 key={msg.id}
@@ -179,7 +167,7 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
             ))}
           </div>
 
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <ChatInput />
           </div>
         </section>
