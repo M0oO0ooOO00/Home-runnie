@@ -1,6 +1,12 @@
+'use client';
+
 import ChatInfo from './ChatInfo';
 import ChatInput from './ChatInput';
 import ChatReport from './ChatReport';
+import ChatInfoSidebar from './ChatInfoSidebar';
+import { useChatRooms } from '@/stores/ChatRoomsContext';
+import { getMyChatRooms } from '@/apis/chat/chat';
+import { useState, useEffect } from 'react';
 
 interface Message {
   id: number;
@@ -21,77 +27,174 @@ interface RoomData {
 }
 
 const ChatBox = ({ roomId }: { roomId: string }) => {
-  // (테스트용) 방 번호에 따라 다른 데이터를 보여주기 위한 더미 데이터 객체
-  const DUMMY_DB: Record<string, RoomData> = {
-    '1': {
-      info: {
-        title: '한화 vs 두산 직관 모임',
-        participants: '김이글, 박곰돌, 최수리 03명',
-        matchDate: '2025/03/02',
-        matchTeam: '한화이글스 VS 두산베어스',
-      },
-      messages: [
-        { id: 1, text: '오늘 경기장 앞에서 5시에 봐요!', sender: 'other' },
-        { id: 2, text: '네 알겠습니다~', sender: 'me' },
-      ],
-    },
-    '2': {
-      info: {
-        title: '개발자 스터디',
-        participants: '홍길동, 김철수 02명',
-        matchDate: '2025/03/05',
-        matchTeam: '스터디 모임',
-      },
-      messages: [
-        { id: 1, text: 'PR 올렸습니다.', sender: 'other' },
-        { id: 2, text: '확인해볼게요!', sender: 'me' },
-      ],
-    },
-  };
-  const currentRoomData = DUMMY_DB[roomId] || {
-    info: {
-      title: '알 수 없는 방',
-      participants: '-',
-      matchDate: '-',
-      matchTeam: '-',
-    },
-    messages: [],
-  };
+  const chatRoomsMap = useChatRooms();
+  const [roomData, setRoomData] = useState<RoomData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+
+  // 채팅방 정보를 API에서 가져오기
+  useEffect(() => {
+    const fetchRoomData = async () => {
+      // Context에서 채팅방 정보 찾기
+      const roomInfo = chatRoomsMap.get(roomId);
+      if (roomInfo) {
+        const today = new Date();
+        const formattedDate = today
+          .toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+          })
+          .replace(/\./g, '/')
+          .replace(/\s/g, '');
+
+        setRoomData({
+          info: {
+            title: `게시글 ${roomInfo.postId} 채팅방`,
+            participants: '나, 상대방 02명',
+            matchDate: formattedDate,
+            matchTeam: `게시글 ${roomInfo.postId} 모임`,
+          },
+          messages: [{ id: 1, text: '채팅방이 생성되었습니다.', sender: 'other' }],
+        });
+        return;
+      }
+
+      // Context에 없으면 API로 채팅방 목록 조회해서 찾기
+      setLoading(true);
+      try {
+        const response = await getMyChatRooms(1, 100); // 충분히 많은 수 조회
+        const foundRoom = response.data.find((room) => String(room.id) === roomId);
+
+        if (foundRoom) {
+          const today = new Date();
+          const formattedDate = today
+            .toLocaleDateString('ko-KR', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+            })
+            .replace(/\./g, '/')
+            .replace(/\s/g, '');
+
+          setRoomData({
+            info: {
+              title: `게시글 ${foundRoom.postId} 채팅방`,
+              participants: '나, 상대방 02명',
+              matchDate: formattedDate,
+              matchTeam: `게시글 ${foundRoom.postId} 모임`,
+            },
+            messages: [{ id: 1, text: '채팅방이 생성되었습니다.', sender: 'other' }],
+          });
+        } else {
+          // 찾지 못한 경우
+          setRoomData({
+            info: {
+              title: '알 수 없는 방',
+              participants: '-',
+              matchDate: '-',
+              matchTeam: '-',
+            },
+            messages: [],
+          });
+        }
+      } catch (error) {
+        console.error('채팅방 정보 조회 실패:', error);
+        setRoomData({
+          info: {
+            title: '알 수 없는 방',
+            participants: '-',
+            matchDate: '-',
+            matchTeam: '-',
+          },
+          messages: [],
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoomData();
+  }, [roomId, chatRoomsMap]);
+
+  if (loading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <p className="text-gray-400">로딩 중...</p>
+      </div>
+    );
+  }
+
+  if (!roomData) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <p className="text-gray-400">채팅방 정보를 불러오는 중...</p>
+      </div>
+    );
+  }
+
+  const currentRoomData = roomData;
 
   return (
-    <div className="flex flex-col h-full w-full bg-gray-100 p-6">
-      <section className="flex flex-col h-full px-[120px] py-[24px]">
-        <ChatReport />
-
+    <div className="flex flex-row h-full w-full bg-gray-100 relative">
+      {/* 채팅 영역 */}
+      <div className="flex flex-col h-full flex-1 min-w-0 transition-all duration-300 ease-in-out">
         <ChatInfo
           title={currentRoomData.info.title}
           participants={currentRoomData.info.participants}
           matchDate={currentRoomData.info.matchDate}
           matchTeam={currentRoomData.info.matchTeam}
+          onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+          isSidebarOpen={isSidebarOpen}
         />
+        <section
+          className={`flex flex-col h-full py-6 transition-all duration-300 ease-in-out ${
+            isSidebarOpen ? 'px-[30px]' : 'px-[120px]'
+          }`}
+        >
+          <ChatReport
+            isModalOpen={isReportModalOpen}
+            onOpenModal={() => setIsReportModalOpen(true)}
+            onCloseModal={() => setIsReportModalOpen(false)}
+          />
 
-        <div className="flex-grow flex flex-col justify-end gap-4 overflow-y-auto">
-          {currentRoomData.messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
-            >
+          <div className="flex-grow flex flex-col justify-end gap-4 overflow-y-auto mb-6">
+            {currentRoomData.messages.map((msg) => (
               <div
-                className={[
-                  'rounded-2xl px-4 py-2 max-w-xs lg:max-w-md',
-                  msg.sender === 'me'
-                    ? 'bg-green-500 text-white rounded-br-none'
-                    : 'bg-white text-black rounded-bl-none',
-                ].join(' ')}
+                key={msg.id}
+                className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
               >
-                {msg.text}
+                <div
+                  className={[
+                    'rounded-2xl px-4 py-2 max-w-xs lg:max-w-md',
+                    msg.sender === 'me'
+                      ? 'bg-green-500 text-white rounded-br-none'
+                      : 'bg-white text-black rounded-bl-none',
+                  ].join(' ')}
+                >
+                  {msg.text}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        <ChatInput />
-      </section>
+          <div className="flex-shrink-0">
+            <ChatInput />
+          </div>
+        </section>
+      </div>
+
+      {/* 사이드바 */}
+      <ChatInfoSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onReport={() => setIsReportModalOpen(true)}
+        title={currentRoomData.info.title}
+        participants={currentRoomData.info.participants}
+        matchDate={currentRoomData.info.matchDate}
+        matchTeam={currentRoomData.info.matchTeam}
+      />
     </div>
   );
 };

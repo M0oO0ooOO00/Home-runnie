@@ -8,7 +8,7 @@ interface ChatRoomPageProps {
 
 export default function ChatRoomPage({ params }: ChatRoomPageProps) {
   return (
-    <section className="flex flex-col w-full ">
+    <section className="flex flex-col w-full h-full">
       <ChatBox roomId={params.id} />
     </section>
   );
