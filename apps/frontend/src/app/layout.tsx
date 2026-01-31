@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Providers from './providers';
 import '@/shared/styles/index.css';
 import Header from '@/shared/ui/header/header';
+import '@/mocks'; // MSW 초기화 (브라우저 환경에서만 동작)
 
 export const metadata: Metadata = {
   title: 'Create Next',
