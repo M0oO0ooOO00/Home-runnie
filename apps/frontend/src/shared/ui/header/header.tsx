@@ -23,47 +23,97 @@ export default function Header() {
   };
 
   return (
-    <header className="w-full h-[84px] bg-white flex items-center justify-between z-9999">
-      <div className="flex items-center pt-[29px] pb-[33px] md:pl-[120px] pl-4">
-        <Image
-          src="/images/typo-default.png"
-          alt="로고 위치"
-          width={128}
-          height={22}
-          onClick={onClickHome}
-          className="cursor-pointer"
-        />
+    <header className="w-screen h-20 bg-neutral-50 overflow-hidden">
+      <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between px-4 md:px-[120px]">
+        {/* 로고 */}
+        <div className="w-32 h-5 hidden md:block">
+          <Image
+            src="/images/typo-default.png"
+            alt="로고"
+            width={128}
+            height={20}
+            onClick={onClickHome}
+            className="cursor-pointer"
+          />
+        </div>
+        {/* 모바일 로고 */}
+        <div className="md:hidden">
+          <Image
+            src="/images/typo-default.png"
+            alt="로고"
+            width={128}
+            height={20}
+            onClick={onClickHome}
+            className="cursor-pointer"
+          />
+        </div>
+        {/* 오른쪽 메뉴 */}
+        <nav className="hidden md:inline-flex justify-start items-center gap-5">
+          {isLogged && (
+            <>
+              <Link href="/chat">
+                <div className="px-3.5 py-2.5 rounded-[10px] flex justify-center items-center gap-2.5 hover:bg-gray-100 transition-colors">
+                  <div className="justify-start text-zinc-500 text-base font-medium leading-6">
+                    채팅
+                  </div>
+                </div>
+              </Link>
+              <Link href="/">
+                <div className="px-3.5 py-2.5 rounded-[10px] flex justify-center items-center gap-2.5 hover:bg-gray-100 transition-colors">
+                  <div className="justify-start text-zinc-500 text-base font-medium leading-6">
+                    마이페이지
+                  </div>
+                </div>
+              </Link>
+              <Link href="/" onClick={onClickLogout}>
+                <div className="px-3.5 py-2.5 rounded-[10px] flex justify-center items-center gap-2.5 hover:bg-gray-100 transition-colors">
+                  <div className="justify-start text-neutral-400 text-base font-medium leading-6">
+                    로그아웃
+                  </div>
+                </div>
+              </Link>
+            </>
+          )}
+          {!isLogged && (
+            <Link href="/home" onClick={onClickLogin}>
+              <div className="px-3.5 py-2.5 rounded-[10px] flex justify-center items-center gap-2.5 hover:bg-gray-100 transition-colors">
+                <div className="justify-start text-zinc-500 text-base font-medium leading-6">
+                  로그인
+                </div>
+              </div>
+            </Link>
+          )}
+        </nav>
+        {/* 모바일 메뉴 */}
+        <nav className="md:hidden inline-flex justify-start items-center gap-3">
+          {isLogged && (
+            <>
+              <Link href="/chat">
+                <div className="px-3 py-2 rounded-[10px] flex justify-center items-center hover:bg-gray-100 transition-colors">
+                  <div className="text-zinc-500 text-sm font-medium leading-6">채팅</div>
+                </div>
+              </Link>
+              <Link href="/">
+                <div className="px-3 py-2 rounded-[10px] flex justify-center items-center hover:bg-gray-100 transition-colors">
+                  <div className="text-zinc-500 text-sm font-medium leading-6">마이페이지</div>
+                </div>
+              </Link>
+              <Link href="/" onClick={onClickLogout}>
+                <div className="px-3 py-2 rounded-[10px] flex justify-center items-center hover:bg-gray-100 transition-colors">
+                  <div className="text-neutral-400 text-sm font-medium leading-6">로그아웃</div>
+                </div>
+              </Link>
+            </>
+          )}
+          {!isLogged && (
+            <Link href="/home" onClick={onClickLogin}>
+              <div className="px-3 py-2 rounded-[10px] flex justify-center items-center hover:bg-gray-100 transition-colors">
+                <div className="text-zinc-500 text-sm font-medium leading-6">로그인</div>
+              </div>
+            </Link>
+          )}
+        </nav>
       </div>
-      {/* 오른쪽 메뉴 박스 */}
-      <nav className="flex items-center justify-center gap-[20px] rounded-[10px] md:pr-[95px] pr-4">
-        {/* 나중에 링크 바꾸기 */}
-        {isLogged && (
-          <>
-            <Link className="cursor-pointer" href="/chat">
-              <div className="px-[10px] py-[15px] justify-start rounded-[10px] text-gray-600 b02-m hover:bg-gray-50">
-                채팅
-              </div>
-            </Link>
-            <Link className="cursor-pointer" href="/">
-              <div className="px-[10px] py-[15px] justify-start rounded-[10px] text-gray-600 b02-m hover:bg-gray-50">
-                마이페이지
-              </div>
-            </Link>
-            <Link className="cursor-pointer" href="/" onClick={onClickLogout}>
-              <div className="px-[10px] py-[15px] justify-start rounded-[10px] text-gray-600 b02-m hover:bg-gray-50">
-                로그아웃
-              </div>
-            </Link>
-          </>
-        )}
-        {!isLogged && (
-          <Link className="cursor-pointer" href="/home" onClick={onClickLogin}>
-            <div className="px-[10px] py-[15px] justify-start rounded-[10px] text-gray-600 b02-m hover:bg-gray-50">
-              로그인
-            </div>
-          </Link>
-        )}
-      </nav>
     </header>
   );
 }
