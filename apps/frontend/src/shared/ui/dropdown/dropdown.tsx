@@ -213,9 +213,11 @@ export function Dropdown({
           <div className="flex items-center gap-2 flex-1">
             {selectedOption?.icon && <span className="flex-shrink-0">{selectedOption.icon}</span>}
             <SelectValue placeholder={placeholder}>
-              {value && selectedOption && valueDisplay
-                ? valueDisplay(value, selectedOption)
-                : selectedOption?.text}
+              <span>
+                {value && selectedOption && valueDisplay
+                  ? valueDisplay(value, selectedOption)
+                  : selectedOption?.text}
+              </span>
             </SelectValue>
           </div>
           {showChevron && (
