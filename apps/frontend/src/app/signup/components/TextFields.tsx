@@ -158,7 +158,7 @@ export default function TextFields() {
 
         <Button
           type="submit"
-          className="w-full h-16 px-44 py-5 text-[18px] font-semibold leading-[1.5]"
+          className="w-full h-16 text-b01-sb text-white"
           size="lg"
           disabled={!isValid}
         >
