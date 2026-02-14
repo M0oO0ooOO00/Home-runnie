@@ -1,100 +1,100 @@
 'use client';
 
-import { useState, ReactNode } from 'react';
+import { useMemo } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+
 import { TextField } from '@/shared/ui/input/text-field';
-import { FormLabel } from './FormLabel';
 import { Dropdown } from '@/shared/ui/dropdown/dropdown';
 import { Button } from '@/shared/ui/primitives/button';
+import { FormLabel } from './FormLabel';
+
 import Image from 'next/image';
-import { DEFAULT_PROFILE_IMAGE, TEAM_ASSETS, Gender, Team } from '@homerunnie/shared';
-import { useRouter } from 'next/navigation';
+import {
+  DEFAULT_PROFILE_IMAGE,
+  TEAM_ASSETS,
+  GenderDescription,
+  TeamDescription,
+} from '@homerunnie/shared';
 import { useCompleteSignUpMutation } from '@/hooks/auth/useAuthMutation';
 
-interface FormData {
-  name: string;
-  gender: string;
-  birthDate: string;
-  phoneNumber: string;
-  favoriteTeam: string;
-}
+import { signupSchema, SignupFormValues } from '../schema';
 
-type FieldConfig = {
+interface FieldConfig {
+  name: keyof SignupFormValues;
   label: string;
-  name: keyof FormData;
   type: 'text' | 'dropdown';
   placeholder: string;
   items?: { options: { value: string; text: string }[] }[];
-};
+}
 
-const toDropdownFormat = (items: { value: string; label: string }[]) => [
-  { options: items.map(({ value, label }) => ({ value, text: label })) },
-];
+export default function TextFields() {
+  const router = useRouter();
 
-const FormField = ({ label, children }: { label: string; children: ReactNode }) => (
-  <div className="flex flex-col gap-2.5 w-full">
-    <FormLabel>{label}</FormLabel>
-    {children}
-  </div>
-);
-
-export default function TextFields({
-  genderItems,
-  baseBallTeamItems,
-}: Readonly<{
-  genderItems: { value: string; label: string }[];
-  baseBallTeamItems: { value: string; label: string }[];
-}>) {
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    gender: genderItems?.[0]?.value ?? '',
-    birthDate: '',
-    phoneNumber: '',
-    favoriteTeam: baseBallTeamItems?.[0]?.value ?? '',
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors, isValid },
+  } = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    mode: 'onChange',
   });
 
-  const teamAssets = TEAM_ASSETS[formData.favoriteTeam as keyof typeof TEAM_ASSETS];
-  const profileImage = teamAssets?.image ?? DEFAULT_PROFILE_IMAGE;
-
-  const updateField = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const fields: FieldConfig[] = [
+  const toDropdownOptions = (descriptionObj: Record<string, string>) => [
     {
+      options: Object.entries(descriptionObj).map(([key, label]) => ({
+        value: key,
+        text: label,
+      })),
+    },
+  ];
+
+  const genderOptions = useMemo(
+    () =>
+      toDropdownOptions(
+        Object.fromEntries(Object.entries(GenderDescription).filter(([key]) => key !== 'OTHER')),
+      ),
+    [],
+  );
+  const teamOptions = useMemo(() => toDropdownOptions(TeamDescription), []);
+
+  const formFields: FieldConfig[] = [
+    {
+      name: 'nickName',
       label: '이름',
-      name: 'name',
       type: 'text',
       placeholder: '이름을 입력해주세요',
     },
     {
-      label: '성별',
       name: 'gender',
+      label: '성별',
       type: 'dropdown',
       placeholder: '성별을 선택하세요',
-      items: toDropdownFormat(genderItems),
+      items: genderOptions,
     },
     {
-      label: '생년월일',
       name: 'birthDate',
+      label: '생년월일',
       type: 'text',
       placeholder: '0000.00.00',
     },
     {
-      label: '휴대폰 번호',
       name: 'phoneNumber',
+      label: '휴대폰 번호',
       type: 'text',
       placeholder: '010-0000-0000',
     },
     {
+      name: 'supportTeam',
       label: '응원하는 팀',
-      name: 'favoriteTeam',
       type: 'dropdown',
       placeholder: '응원하는 팀을 선택하세요.',
-      items: toDropdownFormat(baseBallTeamItems),
+      items: teamOptions,
     },
   ];
-
-  const router = useRouter();
 
   const { mutate: signupMutate } = useCompleteSignUpMutation({
     onSuccess: () => {
@@ -106,18 +106,16 @@ export default function TextFields({
     },
   });
 
-  const handleSignUp = () => {
-    signupMutate({
-      nickName: formData.name,
-      birthDate: formData.birthDate,
-      phoneNumber: formData.phoneNumber,
-      gender: formData.gender.toUpperCase() as Gender,
-      supportTeam: formData.favoriteTeam as Team,
-    });
+  const onSubmit = (data: SignupFormValues) => {
+    signupMutate(data);
   };
 
+  const selectedTeam = watch('supportTeam');
+  const teamAssets = selectedTeam ? TEAM_ASSETS[selectedTeam] : undefined;
+  const profileImage = teamAssets?.image ?? DEFAULT_PROFILE_IMAGE;
+
   return (
-    <div className="gap-12 w-full items-center flex flex-col">
+    <form onSubmit={handleSubmit(onSubmit)} className="gap-12 w-full items-center flex flex-col">
       <Image
         src={profileImage}
         width={170}
@@ -125,34 +123,48 @@ export default function TextFields({
         className={'rounded-full'}
         alt={'프로필 사진'}
       />
-      <div className="flex flex-col gap-[60px]">
+      <div className="flex flex-col gap-[60px] w-full">
         <div className="flex flex-col justify-start gap-5 w-full">
-          {fields.map(({ label, name, type, placeholder, items }) => (
-            <FormField key={name} label={label}>
-              {type === 'text' ? (
+          {formFields.map((field) => (
+            <div key={field.name} className="flex flex-col gap-2.5 w-full">
+              <FormLabel>{field.label}</FormLabel>
+
+              {field.type === 'text' ? (
                 <TextField
+                  {...register(field.name)}
                   className="h-[60px] px-[22px] py-4 leading-[28px] !text-b02-m placeholder:font-normal font-medium"
-                  name={name}
-                  placeholder={placeholder}
-                  value={formData[name]}
-                  onChange={(e) => updateField(name, e.target.value)}
+                  placeholder={field.placeholder}
+                  errorMessage={errors[field.name]?.message}
                 />
               ) : (
-                <Dropdown
-                  className="!h-[60px] px-[22px] py-4 !text-b02-m"
-                  placeholder={placeholder}
-                  items={items!}
-                  value={formData[name]}
-                  onValueChange={(value) => updateField(name, value)}
+                <Controller
+                  name={field.name}
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <Dropdown
+                      className="!h-[60px] px-[22px] py-4 !text-b02-m"
+                      placeholder={field.placeholder}
+                      items={field.items || []}
+                      value={value || undefined}
+                      onValueChange={onChange}
+                      errorMessage={errors[field.name]?.message}
+                    />
+                  )}
                 />
               )}
-            </FormField>
+            </div>
           ))}
         </div>
-        <Button className="w-full h-16 px-44 py-5 text-b01-sb" onClick={handleSignUp}>
+
+        <Button
+          type="submit"
+          className="w-full h-16 text-b01-sb text-white"
+          size="lg"
+          disabled={!isValid}
+        >
           회원가입 완료
         </Button>
       </div>
-    </div>
+    </form>
   );
 }
