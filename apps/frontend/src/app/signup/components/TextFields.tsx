@@ -20,6 +20,7 @@ import {
 import { useCompleteSignUpMutation } from '@/hooks/auth/useAuthMutation';
 
 import { signupSchema, SignupFormValues } from '../schema';
+import { showToast, ToastIconType } from '@/shared/ui/toast/toast';
 
 interface FieldConfig {
   name: keyof SignupFormValues;
@@ -102,7 +103,7 @@ export default function TextFields() {
     },
     onError: (error) => {
       console.error(error);
-      alert('회원가입에 실패했습니다.');
+      showToast('회원가입에 실패했습니다.', ToastIconType.INFO);
     },
   });
 

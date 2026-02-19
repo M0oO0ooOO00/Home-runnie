@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import { ReactNode, useState } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ReactNode, useState } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Toaster } from '@/shared/ui/toast/toaster';
 
 export default function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -11,6 +12,7 @@ export default function Providers({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       {children}
       <ReactQueryDevtools initialIsOpen={false} />
+      <Toaster position="top-center" />
     </QueryClientProvider>
   );
 }
