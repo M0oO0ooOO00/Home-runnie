@@ -3,6 +3,7 @@ import Providers from './providers';
 import '@/shared/styles/index.css';
 import 'sonner/dist/styles.css';
 import Header from '@/shared/ui/header/header';
+import Footer from '@/shared/ui/footer/footer';
 import '@/mocks'; // MSW 초기화 (브라우저 환경에서만 동작)
 
 export const metadata: Metadata = {
@@ -19,9 +20,12 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Providers>
-          <Header />
-          <div className="max-w-[1440px] mx-auto">
-            <main>{children}</main>
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <div className="max-w-[1440px] mx-auto w-full flex-1">
+              <main>{children}</main>
+            </div>
+            <Footer />
           </div>
         </Providers>
       </body>

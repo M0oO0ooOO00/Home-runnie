@@ -45,7 +45,7 @@ export default function Page() {
 
   return (
     <main className="min-h-screen">
-      <div className="mx-auto max-w-[1207px] px-4 py-10 lg:px-0">
+      <div className="mx-auto max-w-[1440px] px-4 py-10 md:px-[120px]">
         <div className="mb-8 flex items-center gap-3">
           <Image src="/icons/pencil.svg" alt="연필" width={36} height={36} />
           <h1 className="text-4xl font-bold leading-[54.4px] text-stone-950">

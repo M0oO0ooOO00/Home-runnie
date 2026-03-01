@@ -37,7 +37,7 @@ export default function Header() {
 
   return (
     <header className="w-screen h-20 bg-neutral-50 overflow-hidden">
-      <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between px-4 md:px-[120px]">
+      <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between px-4">
         {/* 로고 */}
         <div className="w-32 h-5 hidden md:block">
           <Image
