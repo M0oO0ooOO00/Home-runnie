@@ -8,6 +8,7 @@ import { PreferGender } from '@/common/enums/prefer-gender.enum';
 import { Stadium } from '@/common/enums/stadium.enum';
 import { Team } from '@/common/enums/team.enum';
 import { DATABASE_CONNECTION } from '@/common';
+import { and, count, desc, eq, sql } from 'drizzle-orm';
 
 @Injectable()
 export class PostRepository {
@@ -66,5 +67,61 @@ export class PostRepository {
       post,
       recruitmentDetail,
     };
+  }
+
+  async findRecruitmentPosts(page: number, limit: number) {
+    const offset = (page - 1) * limit;
+
+    const data = await this.db
+      .select({
+        id: Post.id,
+        title: Post.title,
+        gameDate: sql<string>`TO_CHAR(${RecruitmentDetail.gameDate}, 'YYYY-MM-DD')`,
+        teamHome: RecruitmentDetail.teamHome,
+        teamAway: RecruitmentDetail.teamAway,
+        createdAt: Post.createdAt,
+      })
+      .from(Post)
+      .innerJoin(RecruitmentDetail, eq(Post.id, RecruitmentDetail.postId))
+      .where(eq(Post.post_type, PostType.RECRUITMENT))
+      .orderBy(desc(Post.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return data;
+  }
+
+  async countRecruitmentPosts(): Promise<number> {
+    const result = await this.db
+      .select({ count: count() })
+      .from(Post)
+      .where(eq(Post.post_type, PostType.RECRUITMENT));
+
+    return result[0]?.count || 0;
+  }
+
+  async findRecruitmentPostById(postId: number) {
+    const [post] = await this.db
+      .select({
+        id: Post.id,
+        title: Post.title,
+        gameDate: RecruitmentDetail.gameDate,
+        gameTime: RecruitmentDetail.gameTime,
+        stadium: RecruitmentDetail.stadium,
+        teamHome: RecruitmentDetail.teamHome,
+        teamAway: RecruitmentDetail.teamAway,
+        recruitmentLimit: RecruitmentDetail.recruitmentLimit,
+        currentParticipants: RecruitmentDetail.currentParticipants,
+        preferGender: RecruitmentDetail.preferGender,
+        message: RecruitmentDetail.message,
+        ticketingType: RecruitmentDetail.ticketingType,
+        supportTeam: RecruitmentDetail.supportTeam,
+        createdAt: Post.createdAt,
+      })
+      .from(Post)
+      .innerJoin(RecruitmentDetail, eq(Post.id, RecruitmentDetail.postId))
+      .where(and(eq(Post.id, postId), eq(Post.post_type, PostType.RECRUITMENT)));
+
+    return post ?? null;
   }
 }
