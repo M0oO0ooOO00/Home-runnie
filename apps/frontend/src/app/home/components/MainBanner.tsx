@@ -1,8 +1,14 @@
+'use client';
+
 import BannerCard from './BannerCard';
+import { useMemo, useState } from 'react';
+import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
+import { useRouter } from 'next/navigation';
+import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
 
 const bannerItems = [
   {
-    href: '/home',
+    href: '/write',
     bgColor: 'bg-[#0ABF00]',
     title: (
       <>
@@ -32,11 +38,40 @@ const bannerItems = [
 ];
 
 export default function MainBanner() {
+  const router = useRouter();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const { data, isError } = useMyProfileQuery({ retry: false });
+  const isLogged = useMemo(() => !isError && Boolean(data?.nickname), [data?.nickname, isError]);
+
+  const onClickWriteBanner = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isLogged) return;
+    e.preventDefault();
+    setIsLoginModalOpen(true);
+  };
+
   return (
-    <div className="w-full mt-[70px] flex gap-[30px]">
-      {bannerItems.map((item) => (
-        <BannerCard key={item.href} {...item} />
-      ))}
-    </div>
+    <>
+      <div className="w-full mt-[70px] flex gap-[30px]">
+        {bannerItems.map((item, index) => (
+          <BannerCard
+            key={`${item.href}-${index}`}
+            {...item}
+            onClick={item.href === '/write' ? onClickWriteBanner : undefined}
+          />
+        ))}
+      </div>
+
+      <LoginRequiredModal
+        open={isLoginModalOpen}
+        onOpenChange={setIsLoginModalOpen}
+        title="로그인이 필요합니다"
+        description="모집글 작성은 로그인 후 이용할 수 있어요."
+        confirmText="로그인 하러가기"
+        onConfirm={() => {
+          setIsLoginModalOpen(false);
+          router.push('/login');
+        }}
+      />
+    </>
   );
 }

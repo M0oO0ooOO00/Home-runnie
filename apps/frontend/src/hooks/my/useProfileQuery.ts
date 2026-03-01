@@ -9,7 +9,17 @@ export const useMyProfileQuery = (
 ) => {
   return useQuery({
     queryKey: ['my-profile'],
-    queryFn: getMyProfile,
+    queryFn: () => getMyProfile(),
+    ...options,
+  });
+};
+
+export const useMyProfileProtectedQuery = (
+  options?: Omit<UseQueryOptions<GetMyProfileResponse, Error>, 'queryKey' | 'queryFn'>,
+) => {
+  return useQuery({
+    queryKey: ['my-profile-protected'],
+    queryFn: () => getMyProfile({ authRequired: true }),
     ...options,
   });
 };

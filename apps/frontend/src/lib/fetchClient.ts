@@ -2,6 +2,26 @@ interface RequestConfig extends RequestInit {
   headers?: Record<string, string>;
   timeout?: number;
   retries?: number;
+  authRequired?: boolean;
+}
+
+export class ApiError extends Error {
+  status: number;
+  errorCode?: string;
+
+  constructor(message: string, status: number, errorCode?: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.errorCode = errorCode;
+  }
+}
+
+export class AuthenticationError extends ApiError {
+  constructor(message: string = '로그인이 필요합니다.', status: number = 401, errorCode?: string) {
+    super(message, status, errorCode);
+    this.name = 'AuthenticationError';
+  }
 }
 
 class FetchClient {
@@ -39,6 +59,7 @@ class FetchClient {
     const credentials = config.credentials || 'include';
     const timeout = config.timeout ?? 10000;
     const retries = config.retries ?? 5;
+    const authRequired = config.authRequired ?? false;
 
     const fetchConfig: RequestConfig = {
       ...config,
@@ -46,17 +67,16 @@ class FetchClient {
       credentials,
       timeout,
       retries,
+      authRequired,
     };
 
     let response = await this.fetchWithRetry(url, fetchConfig);
 
-    if (response.status === 401 || response.status === 403) {
+    if ((response.status === 401 || response.status === 403) && authRequired) {
       // [SSR Support] 서버 사이드에서는 재발급 로직 대신 바로 리다이렉트 처리
       if (isServer) {
         const { redirect } = await import('next/navigation');
-        // TODO: alert를 모달로 변경
-        alert('재로그인이 필요합니다');
-        redirect('/');
+        redirect('/home');
       }
 
       try {
@@ -87,8 +107,15 @@ class FetchClient {
     }
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `API request failed: ${response.status}`);
+      const errorData = await response.json().catch(() => null);
+      const { message, errorCode } = this.extractErrorMeta(errorData);
+      const fallbackMessage = message || `API request failed: ${response.status}`;
+
+      if (response.status === 401 || response.status === 403) {
+        throw new AuthenticationError(fallbackMessage, response.status, errorCode);
+      }
+
+      throw new ApiError(fallbackMessage, response.status, errorCode);
     }
 
     if (response.status === 204) {
@@ -99,7 +126,7 @@ class FetchClient {
   }
 
   private async fetchWithRetry(url: string, config: RequestConfig): Promise<Response> {
-    const { timeout = 10000, retries = 5, ...fetchOptions } = config;
+    const { timeout = 10000, retries = 5, authRequired: _authRequired, ...fetchOptions } = config;
 
     let lastError: unknown;
 
@@ -154,11 +181,28 @@ class FetchClient {
 
     if (!response.ok) {
       if (typeof window !== 'undefined') {
-        alert('로그인이 필요합니다.');
-        window.location.href = '/';
+        window.location.href = '/home';
       }
-      throw new Error('로그인이 필요합니다.');
+      throw new AuthenticationError('로그인이 필요합니다.', response.status);
     }
+  }
+
+  private extractErrorMeta(errorData: unknown): { message?: string; errorCode?: string } {
+    if (!errorData || typeof errorData !== 'object') {
+      return {};
+    }
+
+    const root = errorData as Record<string, unknown>;
+    const nested =
+      root.data && typeof root.data === 'object' ? (root.data as Record<string, unknown>) : null;
+
+    const messageCandidate = nested?.message ?? root.message;
+    const errorCodeCandidate = nested?.errorCode ?? root.errorCode;
+
+    return {
+      message: typeof messageCandidate === 'string' ? messageCandidate : undefined,
+      errorCode: typeof errorCodeCandidate === 'string' ? errorCodeCandidate : undefined,
+    };
   }
 
   get<T>(endpoint: string, config?: RequestConfig) {

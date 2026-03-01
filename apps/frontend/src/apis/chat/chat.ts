@@ -9,7 +9,7 @@ import { apiClient } from '@/lib/fetchClient';
  */
 export const createChatRoom = async (postId: number): Promise<ChatRoomResponse> => {
   const request: CreateChatRoomRequest = { postId };
-  return apiClient.post<ChatRoomResponse>('/chat/rooms', request);
+  return apiClient.post<ChatRoomResponse>('/chat/rooms', request, { authRequired: true });
 };
 
 /**
@@ -22,5 +22,7 @@ export const getMyChatRooms = async (
   page: number = 1,
   limit: number = 20,
 ): Promise<GetChatRoomsResponse> => {
-  return apiClient.get<GetChatRoomsResponse>(`/chat/rooms?page=${page}&limit=${limit}`);
+  return apiClient.get<GetChatRoomsResponse>(`/chat/rooms?page=${page}&limit=${limit}`, {
+    authRequired: true,
+  });
 };
