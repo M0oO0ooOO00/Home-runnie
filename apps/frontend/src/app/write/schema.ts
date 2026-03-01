@@ -12,10 +12,18 @@ export const writeFormSchema = z.object({
     ),
 
   stadium: z.enum(
-    ['JAMSIL', 'GOCHEOK', 'SUWON', 'MUNHAK', 'DAEGU', 'GWANGJU', 'DAEJEON', 'SAJIK', 'CHANGWON'],
-    {
-      errorMap: () => ({ message: '경기 구장을 선택해주세요.' }),
-    },
+    [
+      'JAMSIL',
+      'GOCHEOK',
+      'SUWON',
+      'MUNHAK',
+      'DAEGU',
+      'GWANGJU',
+      'DAEJEON',
+      'SAJIK',
+      'CHANGWON',
+    ] as const,
+    { message: '경기 구장을 선택해주세요.' },
   ),
 
   teamA: z.nativeEnum(Team),
