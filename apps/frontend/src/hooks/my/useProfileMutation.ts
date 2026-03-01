@@ -10,6 +10,7 @@ export const useMyProfileMutation = () => {
     mutationFn: updateProfile,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['my-profile-protected'] });
     },
   });
 };

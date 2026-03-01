@@ -3,23 +3,36 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
+import { logout } from '@/apis/auth/auth';
 
 export default function Header() {
   const router = useRouter();
-  const [isLogged, setIsLogged] = useState(false);
-
-  // 임시 상태 변화 감지 함수
-  const onClickLogin = () => {
-    setIsLogged(true);
-  };
-
-  const onClickLogout = () => {
-    setIsLogged(false);
-  };
+  const queryClient = useQueryClient();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { data, isLoading, isError } = useMyProfileQuery({
+    retry: false,
+  });
+  const isLogged = useMemo(
+    () => !isLoggingOut && !isError && Boolean(data?.nickname),
+    [data?.nickname, isError, isLoggingOut],
+  );
 
   const onClickHome = () => {
     router.push('/home');
+  };
+
+  const onClickLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+    } finally {
+      queryClient.setQueryData(['my-profile'], undefined);
+      queryClient.removeQueries({ queryKey: ['my-profile-protected'] });
+      router.push('/');
+    }
   };
 
   return (
@@ -49,7 +62,7 @@ export default function Header() {
         </div>
         {/* 오른쪽 메뉴 */}
         <nav className="hidden md:inline-flex justify-start items-center gap-5">
-          {isLogged && (
+          {!isLoading && isLogged && (
             <>
               <Link href="/chat">
                 <div className="px-3.5 py-2.5 rounded-[10px] flex justify-center items-center gap-2.5 hover:bg-gray-100 transition-colors">
@@ -58,24 +71,26 @@ export default function Header() {
                   </div>
                 </div>
               </Link>
-              <Link href="/">
+              <Link href="/my">
                 <div className="px-3.5 py-2.5 rounded-[10px] flex justify-center items-center gap-2.5 hover:bg-gray-100 transition-colors">
                   <div className="justify-start text-zinc-500 text-base font-medium leading-6">
                     마이페이지
                   </div>
                 </div>
               </Link>
-              <Link href="/" onClick={onClickLogout}>
-                <div className="px-3.5 py-2.5 rounded-[10px] flex justify-center items-center gap-2.5 hover:bg-gray-100 transition-colors">
-                  <div className="justify-start text-neutral-400 text-base font-medium leading-6">
-                    로그아웃
-                  </div>
+              <button
+                type="button"
+                onClick={onClickLogout}
+                className="px-3.5 py-2.5 rounded-[10px] flex justify-center items-center gap-2.5 hover:bg-gray-100 transition-colors"
+              >
+                <div className="justify-start text-neutral-400 text-base font-medium leading-6">
+                  로그아웃
                 </div>
-              </Link>
+              </button>
             </>
           )}
-          {!isLogged && (
-            <Link href="/home" onClick={onClickLogin}>
+          {!isLoading && !isLogged && (
+            <Link href="/login">
               <div className="px-3.5 py-2.5 rounded-[10px] flex justify-center items-center gap-2.5 hover:bg-gray-100 transition-colors">
                 <div className="justify-start text-zinc-500 text-base font-medium leading-6">
                   로그인
@@ -86,31 +101,38 @@ export default function Header() {
         </nav>
         {/* 모바일 메뉴 */}
         <nav className="md:hidden inline-flex justify-start items-center gap-3">
-          {isLogged && (
+          {!isLoading && isLogged && (
             <>
               <Link href="/chat">
                 <div className="px-3 py-2 rounded-[10px] flex justify-center items-center hover:bg-gray-100 transition-colors">
                   <div className="text-zinc-500 text-sm font-medium leading-6">채팅</div>
                 </div>
               </Link>
-              <Link href="/">
+              <Link href="/my">
                 <div className="px-3 py-2 rounded-[10px] flex justify-center items-center hover:bg-gray-100 transition-colors">
                   <div className="text-zinc-500 text-sm font-medium leading-6">마이페이지</div>
                 </div>
               </Link>
-              <Link href="/" onClick={onClickLogout}>
-                <div className="px-3 py-2 rounded-[10px] flex justify-center items-center hover:bg-gray-100 transition-colors">
-                  <div className="text-neutral-400 text-sm font-medium leading-6">로그아웃</div>
-                </div>
-              </Link>
+              <button
+                type="button"
+                onClick={onClickLogout}
+                className="px-3 py-2 rounded-[10px] flex justify-center items-center hover:bg-gray-100 transition-colors"
+              >
+                <div className="text-neutral-400 text-sm font-medium leading-6">로그아웃</div>
+              </button>
             </>
           )}
-          {!isLogged && (
-            <Link href="/home" onClick={onClickLogin}>
+          {!isLoading && !isLogged && (
+            <Link href="/login">
               <div className="px-3 py-2 rounded-[10px] flex justify-center items-center hover:bg-gray-100 transition-colors">
                 <div className="text-zinc-500 text-sm font-medium leading-6">로그인</div>
               </div>
             </Link>
+          )}
+          {isLoading && (
+            <div className="px-3 py-2 rounded-[10px] flex justify-center items-center">
+              <div className="text-zinc-400 text-sm font-medium leading-6">확인 중...</div>
+            </div>
           )}
         </nav>
       </div>

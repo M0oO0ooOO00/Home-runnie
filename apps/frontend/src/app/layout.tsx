@@ -18,12 +18,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Header />
-        <div className="max-w-[1440px] mx-auto">
-          <main>
-            <Providers>{children}</Providers>
-          </main>
-        </div>
+        <Providers>
+          <Header />
+          <div className="max-w-[1440px] mx-auto">
+            <main>{children}</main>
+          </div>
+        </Providers>
       </body>
     </html>
   );

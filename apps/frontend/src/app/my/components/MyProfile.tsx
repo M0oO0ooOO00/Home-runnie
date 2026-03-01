@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
+import { useMyProfileProtectedQuery } from '@/hooks/my/useProfileQuery';
 import { Team, TeamDescription } from '@homerunnie/shared';
 
 export default function MyProfile() {
-  const { data: myProfile, isLoading } = useMyProfileQuery();
+  const { data: myProfile, isLoading } = useMyProfileProtectedQuery();
 
   return (
     <div className="flex flex-col rounded-[20px] border p-[30px] gap-[10px] bg-white shadow-md w-full mb-10 min-h-[220px] justify-center">

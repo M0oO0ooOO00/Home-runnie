@@ -13,12 +13,12 @@ import {
 } from '@/shared/ui/primitives/select';
 import { baseBallTeamItems, Team } from '@homerunnie/shared';
 import { Button } from '@/shared/ui/primitives/button';
-import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
+import { useMyProfileProtectedQuery } from '@/hooks/my/useProfileQuery';
 import { useMyProfileMutation } from '@/hooks/my/useProfileMutation';
 
 export default function Edit() {
   const router = useRouter();
-  const { data: myProfile, isLoading } = useMyProfileQuery();
+  const { data: myProfile, isLoading } = useMyProfileProtectedQuery();
   const { mutate: updateProfile, isPending } = useMyProfileMutation();
 
   const [nickname, setNickname] = useState('');

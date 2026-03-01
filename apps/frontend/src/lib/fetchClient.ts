@@ -2,6 +2,7 @@ interface RequestConfig extends RequestInit {
   headers?: Record<string, string>;
   timeout?: number;
   retries?: number;
+  authRequired?: boolean;
 }
 
 class FetchClient {
@@ -39,6 +40,7 @@ class FetchClient {
     const credentials = config.credentials || 'include';
     const timeout = config.timeout ?? 10000;
     const retries = config.retries ?? 5;
+    const authRequired = config.authRequired ?? false;
 
     const fetchConfig: RequestConfig = {
       ...config,
@@ -46,16 +48,15 @@ class FetchClient {
       credentials,
       timeout,
       retries,
+      authRequired,
     };
 
     let response = await this.fetchWithRetry(url, fetchConfig);
 
-    if (response.status === 401 || response.status === 403) {
+    if ((response.status === 401 || response.status === 403) && authRequired) {
       // [SSR Support] 서버 사이드에서는 재발급 로직 대신 바로 리다이렉트 처리
       if (isServer) {
         const { redirect } = await import('next/navigation');
-        // TODO: alert를 모달로 변경
-        alert('재로그인이 필요합니다');
         redirect('/');
       }
 
@@ -99,7 +100,7 @@ class FetchClient {
   }
 
   private async fetchWithRetry(url: string, config: RequestConfig): Promise<Response> {
-    const { timeout = 10000, retries = 5, ...fetchOptions } = config;
+    const { timeout = 10000, retries = 5, authRequired: _authRequired, ...fetchOptions } = config;
 
     let lastError: unknown;
 
