@@ -15,6 +15,7 @@ import { baseBallTeamItems, Team } from '@homerunnie/shared';
 import { Button } from '@/shared/ui/primitives/button';
 import { useMyProfileProtectedQuery } from '@/hooks/my/useProfileQuery';
 import { useMyProfileMutation } from '@/hooks/my/useProfileMutation';
+import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
 
 export default function Edit() {
   const router = useRouter();
@@ -23,6 +24,11 @@ export default function Edit() {
 
   const [nickname, setNickname] = useState('');
   const [supportTeam, setSupportTeam] = useState<Team | undefined>(undefined);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalDescription, setModalDescription] = useState('');
+  const [modalConfirmText, setModalConfirmText] = useState('확인');
+  const [modalAction, setModalAction] = useState<() => void>(() => () => setIsModalOpen(false));
 
   useEffect(() => {
     if (myProfile) {
@@ -36,13 +42,35 @@ export default function Edit() {
       { nickname, supportTeam },
       {
         onSuccess: () => {
-          /* TODO: 모달 만들어달라고 하기! */
-          alert('프로필이 성공적으로 수정되었습니다.');
-          router.push('/my');
+          setModalTitle('저장 완료');
+          setModalDescription('프로필이 성공적으로 수정되었습니다.');
+          setModalConfirmText('마이페이지로 이동');
+          setModalAction(() => () => {
+            setIsModalOpen(false);
+            router.push('/my');
+          });
+          setIsModalOpen(true);
         },
         onError: (error) => {
-          /* TODO: 모달 만들어달라고 하기! */
-          alert(error.message || '프로필 수정에 실패했습니다.');
+          const isAuthError = error.message.includes('로그인이 필요합니다.');
+
+          if (isAuthError) {
+            setModalTitle('로그인이 필요합니다');
+            setModalDescription('로그인 후 프로필을 수정할 수 있어요.');
+            setModalConfirmText('로그인 하러가기');
+            setModalAction(() => () => {
+              setIsModalOpen(false);
+              router.push('/login');
+            });
+            setIsModalOpen(true);
+            return;
+          }
+
+          setModalTitle('저장 실패');
+          setModalDescription(error.message || '프로필 수정에 실패했습니다.');
+          setModalConfirmText('확인');
+          setModalAction(() => () => setIsModalOpen(false));
+          setIsModalOpen(true);
         },
       },
     );
@@ -139,6 +167,14 @@ export default function Edit() {
           </span>
         </Button>
       </div>
+      <LoginRequiredModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        title={modalTitle}
+        description={modalDescription}
+        confirmText={modalConfirmText}
+        onConfirm={modalAction}
+      />
     </>
   );
 }

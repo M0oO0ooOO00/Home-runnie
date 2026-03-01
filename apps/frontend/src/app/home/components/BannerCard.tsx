@@ -9,6 +9,7 @@ interface BannerCardProps {
   description: string;
   iconSrc: string;
   iconAlt: string;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 export default function BannerCard({
@@ -18,9 +19,14 @@ export default function BannerCard({
   description,
   iconSrc,
   iconAlt,
+  onClick,
 }: BannerCardProps) {
   return (
-    <Link href={href} className={`block w-1/2 h-[275px] p-[30px] ${bgColor} rounded-[18px]`}>
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`block w-1/2 h-[275px] p-[30px] ${bgColor} rounded-[18px]`}
+    >
       <div className="flex justify-between h-full">
         <div className="flex flex-col gap-[12px]">
           <p className="text-white text-[28px] font-bold">{title}</p>

@@ -7,12 +7,12 @@ export function middleware(request: NextRequest) {
   const hasAuthCookie = Boolean(accessToken || refreshToken);
 
   if (!hasAuthCookie) {
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL('/home', request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/my/:path*'],
+  matcher: ['/my/:path*', '/write/:path*'],
 };

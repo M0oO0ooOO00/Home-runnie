@@ -57,7 +57,7 @@ class FetchClient {
       // [SSR Support] 서버 사이드에서는 재발급 로직 대신 바로 리다이렉트 처리
       if (isServer) {
         const { redirect } = await import('next/navigation');
-        redirect('/');
+        redirect('/home');
       }
 
       try {
@@ -155,8 +155,7 @@ class FetchClient {
 
     if (!response.ok) {
       if (typeof window !== 'undefined') {
-        alert('로그인이 필요합니다.');
-        window.location.href = '/';
+        window.location.href = '/home';
       }
       throw new Error('로그인이 필요합니다.');
     }
