@@ -12,6 +12,7 @@ import TeamDropdown from '@/shared/ui/dropdown/team-dropdown';
 import { CtaButton } from '@/shared/ui/button/cta-button';
 import { baseBallTeamItems, baseBallStadiumItems, Stadium } from '@homerunnie/shared';
 import { useCreateRecruitmentPostMutation } from '@/hooks/post/usePostMutation';
+import { createChatRoom } from '@/apis/chat/chat';
 import { writeFormSchema, type WriteFormValues } from './schema';
 import { showToast, ToastIconType } from '@/shared/ui/toast/toast';
 
@@ -39,9 +40,15 @@ export default function Page() {
   });
 
   const { mutate: createPost, isPending } = useCreateRecruitmentPostMutation({
-    onSuccess: () => {
-      showToast('게시글이 성공적으로 작성되었습니다.', ToastIconType.SUCCESS);
-      router.push('/home');
+    onSuccess: async (response) => {
+      try {
+        await createChatRoom(response.id);
+        showToast('게시글과 채팅방이 성공적으로 생성되었습니다.', ToastIconType.SUCCESS);
+      } catch {
+        showToast('게시글은 생성되었지만 채팅방 생성에 실패했습니다.', ToastIconType.INFO);
+      } finally {
+        router.push('/home');
+      }
     },
     onError: (error) => {
       showToast(error.message || '게시글 작성에 실패했습니다.', ToastIconType.INFO);
