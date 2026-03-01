@@ -4,6 +4,7 @@ export * from './dto/admin';
 export * from './dto/auth';
 export * from './dto/member';
 export * from './dto/chat';
+export * from './dto/post';
 
 // Entities
 export * from './entities/team/team';
