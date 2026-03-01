@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
-import { getMyProfile, getMyProfileProtected } from '@/apis/my/member';
+import { getMyProfile } from '@/apis/my/member';
 import { GetMyProfileResponse } from '@homerunnie/shared';
 
 export const useMyProfileQuery = (
@@ -9,7 +9,7 @@ export const useMyProfileQuery = (
 ) => {
   return useQuery({
     queryKey: ['my-profile'],
-    queryFn: getMyProfile,
+    queryFn: () => getMyProfile(),
     ...options,
   });
 };
@@ -19,7 +19,7 @@ export const useMyProfileProtectedQuery = (
 ) => {
   return useQuery({
     queryKey: ['my-profile-protected'],
-    queryFn: getMyProfileProtected,
+    queryFn: () => getMyProfile({ authRequired: true }),
     ...options,
   });
 };

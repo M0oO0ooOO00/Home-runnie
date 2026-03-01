@@ -56,7 +56,7 @@ export default function MainBanner() {
           <BannerCard
             key={`${item.href}-${index}`}
             {...item}
-            onClick={index === 0 ? onClickWriteBanner : undefined}
+            onClick={item.href === '/write' ? onClickWriteBanner : undefined}
           />
         ))}
       </div>

@@ -16,6 +16,7 @@ import { Button } from '@/shared/ui/primitives/button';
 import { useMyProfileProtectedQuery } from '@/hooks/my/useProfileQuery';
 import { useMyProfileMutation } from '@/hooks/my/useProfileMutation';
 import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
+import { AuthenticationError } from '@/lib/fetchClient';
 
 export default function Edit() {
   const router = useRouter();
@@ -24,11 +25,13 @@ export default function Edit() {
 
   const [nickname, setNickname] = useState('');
   const [supportTeam, setSupportTeam] = useState<Team | undefined>(undefined);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalTitle, setModalTitle] = useState('');
-  const [modalDescription, setModalDescription] = useState('');
-  const [modalConfirmText, setModalConfirmText] = useState('확인');
-  const [modalAction, setModalAction] = useState<() => void>(() => () => setIsModalOpen(false));
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    title: '',
+    description: '',
+    confirmText: '확인',
+    action: () => setModalState((prev) => ({ ...prev, isOpen: false })),
+  });
 
   useEffect(() => {
     if (myProfile) {
@@ -42,35 +45,39 @@ export default function Edit() {
       { nickname, supportTeam },
       {
         onSuccess: () => {
-          setModalTitle('저장 완료');
-          setModalDescription('프로필이 성공적으로 수정되었습니다.');
-          setModalConfirmText('마이페이지로 이동');
-          setModalAction(() => () => {
-            setIsModalOpen(false);
-            router.push('/my');
+          setModalState({
+            isOpen: true,
+            title: '저장 완료',
+            description: '프로필이 성공적으로 수정되었습니다.',
+            confirmText: '마이페이지로 이동',
+            action: () => {
+              setModalState((prev) => ({ ...prev, isOpen: false }));
+              router.push('/my');
+            },
           });
-          setIsModalOpen(true);
         },
         onError: (error) => {
-          const isAuthError = error.message.includes('로그인이 필요합니다.');
-
-          if (isAuthError) {
-            setModalTitle('로그인이 필요합니다');
-            setModalDescription('로그인 후 프로필을 수정할 수 있어요.');
-            setModalConfirmText('로그인 하러가기');
-            setModalAction(() => () => {
-              setIsModalOpen(false);
-              router.push('/login');
+          if (error instanceof AuthenticationError) {
+            setModalState({
+              isOpen: true,
+              title: '로그인이 필요합니다',
+              description: '로그인 후 프로필을 수정할 수 있어요.',
+              confirmText: '로그인 하러가기',
+              action: () => {
+                setModalState((prev) => ({ ...prev, isOpen: false }));
+                router.push('/login');
+              },
             });
-            setIsModalOpen(true);
             return;
           }
 
-          setModalTitle('저장 실패');
-          setModalDescription(error.message || '프로필 수정에 실패했습니다.');
-          setModalConfirmText('확인');
-          setModalAction(() => () => setIsModalOpen(false));
-          setIsModalOpen(true);
+          setModalState({
+            isOpen: true,
+            title: '저장 실패',
+            description: error.message || '프로필 수정에 실패했습니다.',
+            confirmText: '확인',
+            action: () => setModalState((prev) => ({ ...prev, isOpen: false })),
+          });
         },
       },
     );
@@ -168,12 +175,12 @@ export default function Edit() {
         </Button>
       </div>
       <LoginRequiredModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        title={modalTitle}
-        description={modalDescription}
-        confirmText={modalConfirmText}
-        onConfirm={modalAction}
+        open={modalState.isOpen}
+        onOpenChange={(open) => setModalState((prev) => ({ ...prev, isOpen: open }))}
+        title={modalState.title}
+        description={modalState.description}
+        confirmText={modalState.confirmText}
+        onConfirm={modalState.action}
       />
     </>
   );

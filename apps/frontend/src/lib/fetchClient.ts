@@ -5,6 +5,25 @@ interface RequestConfig extends RequestInit {
   authRequired?: boolean;
 }
 
+export class ApiError extends Error {
+  status: number;
+  errorCode?: string;
+
+  constructor(message: string, status: number, errorCode?: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.errorCode = errorCode;
+  }
+}
+
+export class AuthenticationError extends ApiError {
+  constructor(message: string = '로그인이 필요합니다.', status: number = 401, errorCode?: string) {
+    super(message, status, errorCode);
+    this.name = 'AuthenticationError';
+  }
+}
+
 class FetchClient {
   private baseUrl: string;
   private refreshPromise: Promise<void> | null = null;
@@ -88,8 +107,15 @@ class FetchClient {
     }
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `API request failed: ${response.status}`);
+      const errorData = await response.json().catch(() => null);
+      const { message, errorCode } = this.extractErrorMeta(errorData);
+      const fallbackMessage = message || `API request failed: ${response.status}`;
+
+      if (response.status === 401 || response.status === 403) {
+        throw new AuthenticationError(fallbackMessage, response.status, errorCode);
+      }
+
+      throw new ApiError(fallbackMessage, response.status, errorCode);
     }
 
     if (response.status === 204) {
@@ -157,8 +183,26 @@ class FetchClient {
       if (typeof window !== 'undefined') {
         window.location.href = '/home';
       }
-      throw new Error('로그인이 필요합니다.');
+      throw new AuthenticationError('로그인이 필요합니다.', response.status);
     }
+  }
+
+  private extractErrorMeta(errorData: unknown): { message?: string; errorCode?: string } {
+    if (!errorData || typeof errorData !== 'object') {
+      return {};
+    }
+
+    const root = errorData as Record<string, unknown>;
+    const nested =
+      root.data && typeof root.data === 'object' ? (root.data as Record<string, unknown>) : null;
+
+    const messageCandidate = nested?.message ?? root.message;
+    const errorCodeCandidate = nested?.errorCode ?? root.errorCode;
+
+    return {
+      message: typeof messageCandidate === 'string' ? messageCandidate : undefined,
+      errorCode: typeof errorCodeCandidate === 'string' ? errorCodeCandidate : undefined,
+    };
   }
 
   get<T>(endpoint: string, config?: RequestConfig) {
