@@ -88,6 +88,7 @@ export default function Page() {
       ...data,
       gameDate: data.gameDate.toISOString(),
       stadium: data.stadium as Stadium,
+      picked: data.picked ?? [],
     });
   };
 
