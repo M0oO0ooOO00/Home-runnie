@@ -24,6 +24,19 @@ export const TeamDescription: Record<Team, string> = {
   [Team.LG]: 'LG 트윈스',
 };
 
+export const TeamLogoUrl: Record<Team, string> = {
+  [Team.DOOSAN]: '/teams/doosan.svg',
+  [Team.HANWHA]: '/teams/hanhwa.svg',
+  [Team.KIWOOM]: '/teams/kiwoom.svg',
+  [Team.KIA]: '/teams/KIA.svg',
+  [Team.KT]: '/teams/KT.svg',
+  [Team.LG]: '/teams/LG.svg',
+  [Team.LOTTE]: '/teams/Lotte.svg',
+  [Team.NC]: '/teams/nc.svg',
+  [Team.SAMSUNG]: '/teams/Samsung.svg',
+  [Team.SSG]: '/teams/SSG.svg',
+};
+
 const teamDisplayOrder: readonly Team[] = [
   Team.DOOSAN,
   Team.KT,
