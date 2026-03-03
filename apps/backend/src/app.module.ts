@@ -13,6 +13,7 @@ import { ScrapModule } from '@/scrap/scrap.module';
 import { AdminModule } from '@/admin/admin.module';
 import { WarnModule } from '@/warn/warn.module';
 import { ChatModule } from '@/chat/chat.module';
+import { CommentModule } from '@/comment/comment.module';
 import databaseConfig from '@/common/config/database.config';
 import * as path from 'path';
 
@@ -33,6 +34,7 @@ import * as path from 'path';
     ScrapModule,
     AdminModule,
     ChatModule,
+    CommentModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
