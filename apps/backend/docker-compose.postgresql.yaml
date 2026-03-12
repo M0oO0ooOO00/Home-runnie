@@ -1,4 +1,4 @@
-name: jikgwan
+name: jikgwan-db
 
 services:
   postgres:

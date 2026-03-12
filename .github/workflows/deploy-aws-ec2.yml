@@ -1,0 +1,169 @@
+name: Backend CI/CD (AWS EC2)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/backend/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - 'turbo.json'
+  pull_request:
+    branches: ['main']
+    paths:
+      - 'apps/backend/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - 'turbo.json'
+
+jobs:
+  build-and-test:
+    name: Build and Check Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.PRIVATE_SUBMODULE_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type Check & Lint
+        run: pnpm turbo run type-check lint --filter=@homerunnie/backend
+
+      - name: Build Backend
+        run: pnpm turbo run build --filter=@homerunnie/backend...
+
+  # docker-build-test:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-test
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         submodules: true
+  #         token: ${{ secrets.PRIVATE_SUBMODULE_TOKEN }}
+
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
+
+  #     - name: Test Docker Build
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         context: .
+  #         file: apps/backend/Dockerfile
+  #         push: false
+  #         tags: jikgwan-backend:test
+  #         cache-from: type=gha
+  #         cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          submodules: true # secret 폴더가 서브모듈인 경우 필수
+          token: ${{ secrets.PRIVATE_SUBMODULE_TOKEN }}
+
+      # 1. AWS 인증 설정
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 2. AWS ECR 로그인
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 3. Docker 이미지 빌드 및 푸시
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -f apps/backend/Dockerfile .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      # 4. .env 파일을 서버로 전송 (apps/backend/secret/.env -> ~/jikgwan/.env)
+      - name: Copy .env to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: 'apps/backend/secret/prod.env'
+          target: '~/jikgwan'
+          strip_components: 3 # apps/backend/secret 경로를 제거하고 .env 파일만 전송
+
+      # 5. ECR 로그인 비밀번호 추출 (Runner 환경에서)
+      - name: Get ECR Login Password
+        id: ecr-pass
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          echo "password=$(aws ecr get-login-password --region $AWS_REGION)" >> $GITHUB_OUTPUT
+
+      # 6. EC2에 배포 (SSH 사용)
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          ECR_PASSWORD: ${{ steps.ecr-pass.outputs.password }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: ECR_REGISTRY,ECR_REPOSITORY,ECR_PASSWORD
+          script: |
+            mkdir -p ~/jikgwan
+            cd ~/jikgwan
+
+            # 1. ECR 로그인 (AWS CLI 필요없음, 환경변수로 넘겨받은 패스워드 사용)
+            echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+            # 2. docker-compose.prod.yaml 생성 (ECR 이미지 경로 반영)
+            cat <<EOF > docker-compose.prod.yaml
+            services:
+              backend:
+                image: $ECR_REGISTRY/$ECR_REPOSITORY:latest
+                container_name: jikgwan-backend
+                ports:
+                  - "3030:3030"
+                env_file:
+                  - prod.env
+                restart: always
+            EOF
+
+            # 3. 이미지 풀 및 컨테이너 재시작
+            docker compose -f docker-compose.prod.yaml pull
+            docker compose -f docker-compose.prod.yaml up -d
+
+            # 4. 미사용 이미지 정리 (용량 확보)
+            docker image prune -f
