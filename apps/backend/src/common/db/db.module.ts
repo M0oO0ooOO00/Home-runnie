@@ -14,12 +14,12 @@ import * as schema from '@/common/db/schema';
         const isMigrating = configService.get<string>('DB_MIGRATING') === 'true';
         const isSeeding = configService.get<string>('DB_SEEDING') === 'true';
 
+        const isSslEnabled = configService.get<string>('DB_SSL') === 'true';
+
         const pool = new Pool({
           connectionString: configService.getOrThrow('DATABASE_URL'),
           max: isMigrating || isSeeding ? 1 : 10,
-          ssl: {
-            rejectUnauthorized: false,
-          },
+          ...(isSslEnabled && { ssl: { rejectUnauthorized: false } }),
         });
 
         return drizzle(pool, {
