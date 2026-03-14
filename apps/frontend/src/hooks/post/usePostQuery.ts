@@ -11,6 +11,7 @@ export const useRecruitmentPostsQuery = (page: number = 1, pageSize: number = 10
   return useQuery({
     queryKey: ['recruitment-posts', page, pageSize],
     queryFn: () => getRecruitmentPosts(page, pageSize),
+    retry: false,
   });
 };
 
