@@ -11,7 +11,7 @@ export class CookieService {
 
     const defaultOptions: CookieOptions = {
       // 배포 이후 도메인 설정 바꾸기
-      domain: isProduction ? 'example.domain.com' : undefined,
+      domain: isProduction ? this.configService.get('COOKIE_DOMAIN') : undefined,
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
