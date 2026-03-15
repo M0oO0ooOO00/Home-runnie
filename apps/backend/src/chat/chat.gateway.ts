@@ -10,18 +10,13 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JoinRoomDto } from '@/chat/dto/room-join.dto';
 import { CreateMessageDto } from '@/chat/dto/create-message.dto';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { MemberRepository } from '@/member/repository';
 import { ChatRepository } from '@/chat/repository';
 import { JwtPayload } from '@/auth/types';
-
-interface SocketUser {
-  memberId: number;
-  nickname: string;
-  roomIds: Set<string>;
-}
+import { WsJwtGuard, WsSocketUser, WsUser, extractTokenFromSocket } from '@/chat/ws-jwt.guard';
 
 @Injectable()
 @WebSocketGateway({
@@ -37,8 +32,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private readonly logger = new Logger(ChatGateway.name);
 
-  private users: Map<string, SocketUser> = new Map();
-
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -48,13 +41,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(socket: Socket) {
     try {
-      const token = this.extractTokenFromCookie(socket);
+      const token = extractTokenFromSocket(socket);
       if (!token) {
         socket.disconnect();
         return;
       }
 
-      const payload = this.jwtService.verify<JwtPayload>(token, {
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
         secret: this.configService.get<string>('JWT_SECRET'),
       });
 
@@ -66,11 +59,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
-      this.users.set(socket.id, {
+      socket.data.user = {
         memberId: payload.memberId,
         nickname: profile.nickname,
         roomIds: new Set<string>(),
-      });
+      } satisfies WsSocketUser;
 
       socket.emit('authenticated');
       this.logger.log(`client connected: ${profile.nickname} (${socket.id})`);
@@ -80,7 +73,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(socket: Socket) {
-    const user = this.users.get(socket.id);
+    const user = socket.data.user as WsSocketUser | undefined;
     if (user) {
       const { nickname, roomIds } = user;
       roomIds.forEach((room) => {
@@ -89,16 +82,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           message: `${nickname}님이 퇴장하셨습니다.`,
         });
       });
-      this.users.delete(socket.id);
     }
     this.logger.log(`client disconnected: ${socket.id}`);
   }
 
+  @UseGuards(WsJwtGuard)
   @SubscribeMessage('join_room')
-  async handleJoinRoom(@MessageBody() data: JoinRoomDto, @ConnectedSocket() socket: Socket) {
-    const user = this.users.get(socket.id);
-    if (!user) return;
-
+  async handleJoinRoom(
+    @WsUser() user: WsSocketUser,
+    @MessageBody() data: JoinRoomDto,
+    @ConnectedSocket() socket: Socket,
+  ) {
     const { roomId } = data;
     const { nickname } = user;
     const chatRoomId = parseInt(roomId, 10);
@@ -106,7 +100,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     socket.join(roomId);
     user.roomIds.add(roomId);
 
-    // 이전 메시지 기록 조회 후 해당 소켓에만 전송
     const history = await this.chatRepository.findMessagesByRoomId(chatRoomId);
     socket.emit(
       'message_history',
@@ -126,48 +119,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`${nickname} joined room ${roomId}`);
   }
 
+  @UseGuards(WsJwtGuard)
   @SubscribeMessage('message')
-  async handleMessage(@MessageBody() data: CreateMessageDto, @ConnectedSocket() socket: Socket) {
-    const user = this.users.get(socket.id);
+  async handleMessage(
+    @WsUser() user: WsSocketUser,
+    @MessageBody() data: CreateMessageDto,
+    @ConnectedSocket() socket: Socket,
+  ) {
     const { message, roomId } = data;
 
-    if (!user || !user.roomIds.has(roomId)) {
-      return;
-    }
+    if (!user.roomIds.has(roomId)) return;
 
     const { nickname, memberId } = user;
     const chatRoomId = parseInt(roomId, 10);
 
-    // DB에 메시지 저장
     await this.chatRepository.saveMessage(chatRoomId, memberId, message);
 
-    socket.to(roomId).emit('received_message', {
-      nickname,
-      message,
-      isOwn: false,
-    });
-
-    socket.emit('received_message', {
-      nickname,
-      message,
-      isOwn: true,
-    });
-  }
-
-  private extractTokenFromCookie(socket: Socket): string | null {
-    const cookieHeader = socket.handshake.headers.cookie;
-    if (!cookieHeader) return null;
-
-    const cookies: Record<string, string> = {};
-    cookieHeader.split(';').forEach((pair) => {
-      const idx = pair.indexOf('=');
-      if (idx > -1) {
-        const key = pair.slice(0, idx).trim();
-        const value = pair.slice(idx + 1).trim();
-        cookies[key] = decodeURIComponent(value);
-      }
-    });
-
-    return cookies['accessToken'] ?? null;
+    socket.to(roomId).emit('received_message', { nickname, message, isOwn: false });
+    socket.emit('received_message', { nickname, message, isOwn: true });
   }
 }
