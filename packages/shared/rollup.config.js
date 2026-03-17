@@ -1,4 +1,6 @@
 import typescript from '@rollup/plugin-typescript';
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
 
 export default [
   // CommonJS 빌드
@@ -11,6 +13,10 @@ export default [
       sourcemap: true,
     },
     plugins: [
+      resolve({
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      }),
+      commonjs(),
       typescript({
         declaration: false,
         declarationMap: false,
@@ -20,10 +26,7 @@ export default [
         tsconfig: false, // tsconfig.json 사용 안 함
       }),
     ],
-    external: (id) => {
-      // node_modules와 절대 경로는 external로 처리
-      return !id.startsWith('.') && !id.startsWith('/');
-    },
+    external: [/node_modules/],
   },
   // ES Module 빌드
   {
@@ -34,6 +37,10 @@ export default [
       sourcemap: true,
     },
     plugins: [
+      resolve({
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      }),
+      commonjs(),
       typescript({
         declaration: false,
         declarationMap: false,
@@ -43,8 +50,6 @@ export default [
         tsconfig: false, // tsconfig.json 사용 안 함
       }),
     ],
-    external: (id) => {
-      return !id.startsWith('.') && !id.startsWith('/');
-    },
+    external: [/node_modules/],
   },
 ];
