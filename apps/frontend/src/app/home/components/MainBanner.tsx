@@ -66,12 +66,12 @@ export default function MainBanner() {
 
         {/* 배너 텍스트  영역 */}
         <div className="z-10 flex flex-col items-center text-center">
-          <h1 className="text-[#111111] text-3xl md:text-4xl lg:text-[48px] font-bold leading-[1.3] tracking-tight">
+          <h1 className="text-stone-950 text-3xl md:text-4xl lg:text-[48px] font-bold leading-[1.3] tracking-tight">
             새로운 직관메이트 모집글
             <br />
             작성하기
           </h1>
-          <p className="text-[#6F7176] text-sm md:text-base lg:text-t04 font-medium mt-[12px] lg:mt-[20px]">
+          <p className="text-gray-500 text-sm md:text-base lg:text-t04 font-medium mt-[12px] lg:mt-[20px]">
             직관 같이 할 친구가 필요하다면?
           </p>
 
