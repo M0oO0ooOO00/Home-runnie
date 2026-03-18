@@ -3,7 +3,15 @@ name: jikgwan-db
 services:
   postgres:
     image: postgres
+    container_name: jikgwan-postgres
     ports:
       - 5432:5432
     env_file:
       - ./secret/.env.postgresql
+    networks:
+      - jikgwan-net
+
+networks:
+  jikgwan-net:
+    name: jikgwan-net
+    driver: bridge
