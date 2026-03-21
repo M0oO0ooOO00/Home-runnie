@@ -37,7 +37,7 @@ const ChatInfoSidebar = ({
   const router = useRouter();
   const [members, setMembers] = useState<ChatRoomMemberResponse[]>([]);
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<number>>(new Set());
-  const [kickTarget, setKickTarget] = useState<ChatRoomMemberResponse | null>(null);
+  const [kickTargets, setKickTargets] = useState<ChatRoomMemberResponse[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isKickMode, setIsKickMode] = useState(false);
   const isHost = role === ChatRoomMemberRole.HOST;
@@ -62,7 +62,6 @@ const ChatInfoSidebar = ({
       if (next.has(memberId)) {
         next.delete(memberId);
       } else {
-        next.clear();
         next.add(memberId);
       }
       return next;
@@ -78,20 +77,23 @@ const ChatInfoSidebar = ({
 
     if (selectedMemberIds.size === 0) return;
 
-    const targetId = [...selectedMemberIds][0];
-    const target = regularMembers.find((m) => m.memberId === targetId);
-    if (target) {
-      setKickTarget(target);
+    const targets = regularMembers.filter((m) => selectedMemberIds.has(m.memberId));
+    if (targets.length > 0) {
+      setKickTargets(targets);
     }
   };
 
   const handleKickConfirm = async () => {
-    if (!kickTarget) return;
+    if (kickTargets.length === 0) return;
     try {
-      await kickMember(Number(roomId), kickTarget.memberId);
-      setMembers((prev) => prev.filter((m) => m.memberId !== kickTarget.memberId));
+      const kickedIds = new Set<number>();
+      for (const target of kickTargets) {
+        await kickMember(Number(roomId), target.memberId);
+        kickedIds.add(target.memberId);
+      }
+      setMembers((prev) => prev.filter((m) => !kickedIds.has(m.memberId)));
       setSelectedMemberIds(new Set());
-      setKickTarget(null);
+      setKickTargets([]);
       setIsKickMode(false);
     } catch (error) {
       console.error('강퇴 실패:', error);
@@ -251,19 +253,23 @@ const ChatInfoSidebar = ({
       </div>
 
       {/* 내보내기 확인 모달 */}
-      <Dialog open={!!kickTarget} onOpenChange={() => setKickTarget(null)}>
+      <Dialog open={kickTargets.length > 0} onOpenChange={() => setKickTargets([])}>
         <DialogContent showCloseButton={false} className="sm:max-w-[480px] p-10">
           <DialogHeader className="items-center">
             <DialogTitle className="text-xl font-bold text-center">
-              {kickTarget?.nickname} 님을 내보내시겠어요?
+              {kickTargets.map((t) => t.nickname).join(', ')} 님을 내보내시겠어요?
             </DialogTitle>
             <DialogDescription className="text-center text-gray-500 mt-2">
-              내보내면 {kickTarget?.nickname}님은 더 이상 이 채팅방을 이용할 수 없어요
+              내보내면{' '}
+              {kickTargets.length === 1
+                ? `${kickTargets[0].nickname}님은`
+                : `${kickTargets.length}명은`}{' '}
+              더 이상 이 채팅방을 이용할 수 없어요
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-3 mt-6">
             <button
-              onClick={() => setKickTarget(null)}
+              onClick={() => setKickTargets([])}
               className="flex-1 py-4 rounded-lg border border-gray-200 text-gray-900 text-lg font-medium hover:bg-gray-50 transition-colors cursor-pointer"
             >
               취소

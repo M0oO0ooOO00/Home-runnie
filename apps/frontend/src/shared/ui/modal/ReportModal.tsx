@@ -21,6 +21,7 @@ import { Textarea } from '@/shared/ui/primitives/textarea';
 import { Label } from '@/shared/ui/primitives/label';
 import Image from 'next/image';
 import { createReport } from '@/apis/report/report';
+import { showToast, ToastIconType } from '@/shared/ui/toast/toast';
 
 export interface ReportParticipant {
   memberId: number;
@@ -68,13 +69,13 @@ const ReportModal = ({ isOpen, onClose, participants }: ReportModalProps) => {
     setSubmitting(true);
     try {
       await createReport({ reportedId, reportType: reason, content: content || undefined });
-      alert('신고가 접수되었습니다.');
+      showToast('신고가 접수되었습니다.', ToastIconType.SUCCESS);
       setSelectedTarget('');
       setReason('');
       setContent('');
       onClose();
     } catch {
-      alert('신고 접수에 실패했습니다. 다시 시도해주세요.');
+      showToast('신고 접수에 실패했습니다. 다시 시도해주세요.', ToastIconType.INFO);
     } finally {
       setSubmitting(false);
     }
