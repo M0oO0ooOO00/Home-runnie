@@ -47,6 +47,27 @@ export class CommentRepository {
     return created ?? null;
   }
 
+  async findCommentById(commentId: number, postId: number) {
+    const [comment] = await this.db
+      .select({ id: Comment.id, authorId: Comment.authorId, postId: Comment.postId })
+      .from(Comment)
+      .where(
+        and(eq(Comment.id, commentId), eq(Comment.postId, postId), eq(Comment.deleted, false)),
+      );
+
+    return comment ?? null;
+  }
+
+  async softDeleteComment(commentId: number, postId: number) {
+    const [updated] = await this.db
+      .update(Comment)
+      .set({ deleted: true })
+      .where(and(eq(Comment.id, commentId), eq(Comment.postId, postId), eq(Comment.deleted, false)))
+      .returning({ id: Comment.id, authorId: Comment.authorId });
+
+    return updated ?? null;
+  }
+
   async findAuthorProfile(memberId: number) {
     const [profile] = await this.db
       .select({

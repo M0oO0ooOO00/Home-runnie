@@ -38,6 +38,12 @@ export class ChatController {
     return this.chatService.createChatRoom(createChatRoomDto.postId, memberId);
   }
 
+  @Get('rooms/by-post/:postId')
+  async getChatRoomByPostId(@Param('postId', ParseIntPipe) postId: number) {
+    const chatRoom = await this.chatService.getChatRoomByPostId(postId);
+    return { chatRoomId: chatRoom?.id ?? null };
+  }
+
   @Get('rooms')
   @GetChatRoomsSwagger
   async getMyChatRooms(

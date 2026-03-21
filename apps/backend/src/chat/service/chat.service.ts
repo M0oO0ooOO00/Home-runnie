@@ -49,6 +49,10 @@ export class ChatService {
     });
   }
 
+  async getChatRoomByPostId(postId: number) {
+    return this.chatRepository.findChatRoomByPostId(postId);
+  }
+
   async getMyChatRooms(
     memberId: number,
     page: number = 1,
@@ -169,7 +173,7 @@ export class ChatService {
       throw new NotFoundException('해당 멤버를 찾을 수 없습니다.');
     }
 
-    await this.chatRepository.deleteChatRoomMember(chatRoomId, targetMemberId);
+    await this.chatRepository.softDeleteChatRoomMember(chatRoomId, targetMemberId);
 
     this.chatGateway.emitMemberKicked(String(chatRoomId), {
       memberId: targetMemberId,

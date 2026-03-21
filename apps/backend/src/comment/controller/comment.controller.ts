@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { CurrentMember } from '@/common';
 import { CommentService } from '@/comment/service';
@@ -13,6 +22,16 @@ export class CommentController {
     @Param('postId', ParseIntPipe) postId: number,
   ): Promise<RecruitmentCommentResponseDto[]> {
     return this.commentService.getRecruitmentComments(postId);
+  }
+
+  @Delete(':commentId')
+  @UseGuards(JwtAuthGuard)
+  async deleteComment(
+    @CurrentMember() memberId: number,
+    @Param('postId', ParseIntPipe) postId: number,
+    @Param('commentId', ParseIntPipe) commentId: number,
+  ) {
+    return this.commentService.deleteComment(memberId, postId, commentId);
   }
 
   @Post()

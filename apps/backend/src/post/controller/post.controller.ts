@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
 import { PostService } from '@/post/service';
 import {
@@ -40,6 +50,15 @@ export class PostController {
     @Param('postId', ParseIntPipe) postId: number,
   ): Promise<GetRecruitmentPostDetailResponseDto> {
     return this.postService.getRecruitmentPostDetail(postId);
+  }
+
+  @Delete('recruitment/:postId')
+  @UseGuards(JwtAuthGuard)
+  async deleteRecruitmentPost(
+    @CurrentMember() memberId: number,
+    @Param('postId', ParseIntPipe) postId: number,
+  ) {
+    return this.postService.deleteRecruitmentPost(memberId, postId);
   }
 
   @Patch('recruitment/:postId/status')

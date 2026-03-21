@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CommentRepository } from '@/comment/repository';
 import { CreateRecruitmentCommentRequestDto, RecruitmentCommentResponseDto } from '@/comment/dto';
 
@@ -19,6 +19,19 @@ export class CommentService {
       authorNickname: comment.authorNickname,
       createdAt: comment.createdAt.toISOString(),
     }));
+  }
+
+  async deleteComment(memberId: number, postId: number, commentId: number) {
+    const comment = await this.commentRepository.findCommentById(commentId, postId);
+    if (!comment) {
+      throw new NotFoundException('해당 댓글을 찾을 수 없습니다.');
+    }
+    if (comment.authorId !== memberId) {
+      throw new ForbiddenException('작성자만 삭제할 수 있습니다.');
+    }
+
+    await this.commentRepository.softDeleteComment(commentId, postId);
+    return { id: comment.id };
   }
 
   async createRecruitmentComment(

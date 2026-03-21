@@ -127,6 +127,23 @@ export class PostService {
     return response;
   }
 
+  async deleteRecruitmentPost(memberId: number, postId: number) {
+    const post = await this.postRepository.findRecruitmentPostById(postId);
+    if (!post) {
+      throw new NotFoundException('해당 모집글을 찾을 수 없습니다.');
+    }
+    if (post.authorId !== memberId) {
+      throw new ForbiddenException('작성자만 삭제할 수 있습니다.');
+    }
+
+    const deleted = await this.postRepository.softDeletePost(postId);
+    if (!deleted) {
+      throw new NotFoundException('해당 모집글을 찾을 수 없습니다.');
+    }
+
+    return { id: deleted.id };
+  }
+
   async updateRecruitmentPostStatus(
     memberId: number,
     postId: number,

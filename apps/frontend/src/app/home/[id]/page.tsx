@@ -16,6 +16,8 @@ import {
   useUpdateRecruitmentPostStatusMutation,
 } from '@/hooks/post/usePostMutation';
 import { useEffect, useState } from 'react';
+import { getChatRoomByPostId, requestJoinChatRoom } from '@/apis/chat/chat';
+import { showToast, ToastIconType } from '@/shared/ui/toast/toast';
 
 const TEAM_VALUES = new Set<string>(Object.values(Team));
 const STADIUM_LABEL_MAP = new Map(baseBallStadiumItems.map((item) => [item.value, item.label]));
@@ -70,6 +72,7 @@ export default function RecruitmentPostDetailPage() {
   const [commentInput, setCommentInput] = useState('');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [openCommentMenuId, setOpenCommentMenuId] = useState<number | null>(null);
+  const [isApplying, setIsApplying] = useState(false);
   const { mutate: updatePostStatus, isPending: isUpdatingStatus } =
     useUpdateRecruitmentPostStatusMutation(postId, {
       onSuccess: (response) => {
@@ -84,6 +87,28 @@ export default function RecruitmentPostDetailPage() {
         queryClient.invalidateQueries({ queryKey: ['recruitment-comments', postId] });
       },
     });
+
+  const handleApply = async () => {
+    if (!myProfile) {
+      router.push('/login');
+      return;
+    }
+    setIsApplying(true);
+    try {
+      const { chatRoomId } = await getChatRoomByPostId(postId);
+      if (!chatRoomId) {
+        showToast('아직 채팅방이 생성되지 않았습니다.', ToastIconType.INFO);
+        return;
+      }
+      await requestJoinChatRoom(chatRoomId);
+      showToast('참여 요청이 전송되었습니다. 방장의 수락을 기다려주세요.', ToastIconType.SUCCESS);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '참여 요청에 실패했습니다.';
+      showToast(message, ToastIconType.INFO);
+    } finally {
+      setIsApplying(false);
+    }
+  };
 
   const handleSubmitComment = () => {
     const trimmed = commentInput.trim();
@@ -309,17 +334,18 @@ export default function RecruitmentPostDetailPage() {
             <div className="flex justify-end">
               <button
                 type="button"
-                disabled={!isRecruiting}
-                className={`inline-flex h-16 w-[460px] items-center justify-center gap-2.5 rounded-2xl px-44 py-5 ${
-                  isRecruiting ? 'bg-stone-950' : 'bg-zinc-200'
+                disabled={!isRecruiting || isApplying}
+                onClick={handleApply}
+                className={`inline-flex h-16 w-[460px] items-center justify-center gap-2.5 rounded-2xl px-44 py-5 cursor-pointer ${
+                  isRecruiting && !isApplying ? 'bg-stone-950' : 'bg-zinc-200'
                 }`}
               >
                 <span
                   className={`text-lg font-semibold leading-7 ${
-                    isRecruiting ? 'text-white' : 'text-zinc-400'
+                    isRecruiting && !isApplying ? 'text-white' : 'text-zinc-400'
                   }`}
                 >
-                  신청하기
+                  {isApplying ? '요청 중...' : '신청하기'}
                 </span>
               </button>
             </div>
