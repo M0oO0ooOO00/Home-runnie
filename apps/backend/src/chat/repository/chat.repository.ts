@@ -64,7 +64,13 @@ export class ChatRepository {
       .innerJoin(ChatRoomMember, eq(ChatRoom.id, ChatRoomMember.chatRoomId))
       .leftJoin(Post, eq(ChatRoom.postId, Post.id))
       .leftJoin(RecruitmentDetail, eq(Post.id, RecruitmentDetail.postId))
-      .where(and(eq(ChatRoomMember.memberId, memberId), eq(ChatRoom.deleted, false)))
+      .where(
+        and(
+          eq(ChatRoomMember.memberId, memberId),
+          eq(ChatRoom.deleted, false),
+          eq(ChatRoomMember.deleted, false),
+        ),
+      )
       .orderBy(desc(ChatRoom.updatedAt))
       .limit(limit)
       .offset(offset);
@@ -77,9 +83,24 @@ export class ChatRepository {
       .select({ count: count() })
       .from(ChatRoom)
       .innerJoin(ChatRoomMember, eq(ChatRoom.id, ChatRoomMember.chatRoomId))
-      .where(and(eq(ChatRoomMember.memberId, memberId), eq(ChatRoom.deleted, false)));
+      .where(
+        and(
+          eq(ChatRoomMember.memberId, memberId),
+          eq(ChatRoom.deleted, false),
+          eq(ChatRoomMember.deleted, false),
+        ),
+      );
 
     return result[0]?.count || 0;
+  }
+
+  async findChatRoomByPostId(postId: number): Promise<ChatRoomType | null> {
+    const [chatRoom] = await this.db
+      .select()
+      .from(ChatRoom)
+      .where(and(eq(ChatRoom.postId, postId), eq(ChatRoom.deleted, false)));
+
+    return chatRoom || null;
   }
 
   async findChatRoomById(chatRoomId: number): Promise<ChatRoomType | null> {
@@ -120,7 +141,13 @@ export class ChatRepository {
     const [member] = await this.db
       .select()
       .from(ChatRoomMember)
-      .where(and(eq(ChatRoomMember.chatRoomId, chatRoomId), eq(ChatRoomMember.memberId, memberId)));
+      .where(
+        and(
+          eq(ChatRoomMember.chatRoomId, chatRoomId),
+          eq(ChatRoomMember.memberId, memberId),
+          eq(ChatRoomMember.deleted, false),
+        ),
+      );
 
     return member || null;
   }
@@ -134,18 +161,19 @@ export class ChatRepository {
       })
       .from(ChatRoomMember)
       .innerJoin(Profile, eq(ChatRoomMember.memberId, Profile.memberId))
-      .where(eq(ChatRoomMember.chatRoomId, chatRoomId));
+      .where(and(eq(ChatRoomMember.chatRoomId, chatRoomId), eq(ChatRoomMember.deleted, false)));
 
     return members;
   }
 
-  async deleteChatRoomMember(chatRoomId: number, memberId: number) {
-    const [deleted] = await this.db
-      .delete(ChatRoomMember)
+  async softDeleteChatRoomMember(chatRoomId: number, memberId: number) {
+    const [updated] = await this.db
+      .update(ChatRoomMember)
+      .set({ deleted: true })
       .where(and(eq(ChatRoomMember.chatRoomId, chatRoomId), eq(ChatRoomMember.memberId, memberId)))
       .returning();
 
-    return deleted || null;
+    return updated || null;
   }
 
   async softDeleteChatRoom(chatRoomId: number) {
@@ -190,6 +218,7 @@ export class ChatRepository {
         and(
           eq(ChatJoinRequest.chatRoomId, chatRoomId),
           eq(ChatJoinRequest.status, ChatJoinRequestStatus.PENDING),
+          eq(ChatJoinRequest.deleted, false),
         ),
       )
       .orderBy(desc(ChatJoinRequest.createdAt));
@@ -225,6 +254,7 @@ export class ChatRepository {
           eq(ChatJoinRequest.chatRoomId, chatRoomId),
           eq(ChatJoinRequest.memberId, memberId),
           eq(ChatJoinRequest.status, ChatJoinRequestStatus.PENDING),
+          eq(ChatJoinRequest.deleted, false),
         ),
       );
 

@@ -191,7 +191,14 @@ export class MemberRepository {
       .from(Scrap)
       .innerJoin(Post, eq(Scrap.postId, Post.id))
       .innerJoin(RecruitmentDetail, eq(Post.id, RecruitmentDetail.postId))
-      .where(and(eq(Scrap.memberId, memberId), eq(Post.post_type, 'RECRUITMENT')));
+      .where(
+        and(
+          eq(Scrap.memberId, memberId),
+          eq(Post.post_type, 'RECRUITMENT'),
+          eq(Scrap.deleted, false),
+          eq(Post.deleted, false),
+        ),
+      );
 
     return this.executeRecruitmentQuery(baseQuery, page, pageSize);
   }
@@ -204,7 +211,13 @@ export class MemberRepository {
     const baseQuery = this.createRecruitmentSelectQuery()
       .from(Post)
       .innerJoin(RecruitmentDetail, eq(Post.id, RecruitmentDetail.postId))
-      .where(and(eq(Post.authorId, memberId), eq(Post.post_type, 'RECRUITMENT')));
+      .where(
+        and(
+          eq(Post.authorId, memberId),
+          eq(Post.post_type, 'RECRUITMENT'),
+          eq(Post.deleted, false),
+        ),
+      );
 
     return this.executeRecruitmentQuery(baseQuery, page, pageSize);
   }
@@ -228,7 +241,14 @@ export class MemberRepository {
       .select({ count: count() })
       .from(Scrap)
       .innerJoin(Post, eq(Scrap.postId, Post.id))
-      .where(and(eq(Scrap.memberId, memberId), eq(Post.post_type, 'RECRUITMENT')));
+      .where(
+        and(
+          eq(Scrap.memberId, memberId),
+          eq(Post.post_type, 'RECRUITMENT'),
+          eq(Scrap.deleted, false),
+          eq(Post.deleted, false),
+        ),
+      );
 
     return result[0]?.count || 0;
   }
@@ -237,7 +257,13 @@ export class MemberRepository {
     const result = await this.db
       .select({ count: count() })
       .from(Post)
-      .where(and(eq(Post.authorId, memberId), eq(Post.post_type, 'RECRUITMENT')));
+      .where(
+        and(
+          eq(Post.authorId, memberId),
+          eq(Post.post_type, 'RECRUITMENT'),
+          eq(Post.deleted, false),
+        ),
+      );
 
     return result[0]?.count || 0;
   }
@@ -248,7 +274,7 @@ export class MemberRepository {
       .from(Participation)
       .innerJoin(RecruitmentDetail, eq(Participation.recruitmentDetailId, RecruitmentDetail.id))
       .innerJoin(Post, eq(RecruitmentDetail.postId, Post.id))
-      .where(eq(Participation.memberId, memberId));
+      .where(and(eq(Participation.memberId, memberId), eq(Post.deleted, false)));
 
     return result[0]?.count || 0;
   }

@@ -17,6 +17,17 @@ export const createChatRoom = async (postId: number): Promise<ChatRoomResponse> 
 };
 
 /**
+ * 게시글 ID로 채팅방 조회
+ */
+export const getChatRoomByPostId = async (
+  postId: number,
+): Promise<{ chatRoomId: number | null }> => {
+  return apiClient.get<{ chatRoomId: number | null }>(`/chat/rooms/by-post/${postId}`, {
+    authRequired: true,
+  });
+};
+
+/**
  * 내 채팅방 목록 조회
  */
 export const getMyChatRooms = async (

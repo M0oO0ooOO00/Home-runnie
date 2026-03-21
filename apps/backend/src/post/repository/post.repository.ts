@@ -87,7 +87,7 @@ export class PostRepository {
       })
       .from(Post)
       .innerJoin(RecruitmentDetail, eq(Post.id, RecruitmentDetail.postId))
-      .where(eq(Post.post_type, PostType.RECRUITMENT))
+      .where(and(eq(Post.post_type, PostType.RECRUITMENT), eq(Post.deleted, false)))
       .orderBy(desc(Post.createdAt))
       .limit(limit)
       .offset(offset);
@@ -99,7 +99,7 @@ export class PostRepository {
     const result = await this.db
       .select({ count: count() })
       .from(Post)
-      .where(eq(Post.post_type, PostType.RECRUITMENT));
+      .where(and(eq(Post.post_type, PostType.RECRUITMENT), eq(Post.deleted, false)));
 
     return result[0]?.count || 0;
   }
@@ -131,9 +131,21 @@ export class PostRepository {
       .innerJoin(RecruitmentDetail, eq(Post.id, RecruitmentDetail.postId))
       .innerJoin(Member, eq(Post.authorId, Member.id))
       .leftJoin(Profile, eq(Profile.memberId, Member.id))
-      .where(and(eq(Post.id, postId), eq(Post.post_type, PostType.RECRUITMENT)));
+      .where(
+        and(eq(Post.id, postId), eq(Post.post_type, PostType.RECRUITMENT), eq(Post.deleted, false)),
+      );
 
     return post ?? null;
+  }
+
+  async softDeletePost(postId: number) {
+    const [updated] = await this.db
+      .update(Post)
+      .set({ deleted: true })
+      .where(and(eq(Post.id, postId), eq(Post.deleted, false)))
+      .returning({ id: Post.id });
+
+    return updated ?? null;
   }
 
   async updateRecruitmentPostStatus(
