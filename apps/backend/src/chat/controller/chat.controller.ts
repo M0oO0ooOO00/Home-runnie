@@ -98,9 +98,9 @@ export class ChatController {
 
   @Delete('rooms/:roomId')
   async deleteChatRoom(
-    @CurrentMember() memberId: number,
+    @CurrentMember() hostId: number,
     @Param('roomId', ParseIntPipe) roomId: number,
   ) {
-    return this.chatService.deleteChatRoom(roomId, memberId);
+    return this.chatService.deleteChatRoom(roomId, hostId);
   }
 }

@@ -14,7 +14,6 @@ import { useSocket } from '@/hooks/chat/useSocket';
 
 interface RoomInfo {
   title: string;
-  participants: string;
   matchDate: string;
   matchTeam: string;
   role: ChatRoomMemberRole;
@@ -39,7 +38,6 @@ const createRoomData = (room: ChatRoomResponse): RoomData => {
   return {
     info: {
       title: `게시글 ${room.postId} 채팅방`,
-      participants: '나, 상대방 02명',
       matchDate: formatKoreanDate(new Date()),
       matchTeam: `게시글 ${room.postId} 모임`,
       role: room.role,
@@ -93,7 +91,7 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
           setRoomData({
             info: {
               title: '알 수 없는 방',
-              participants: '-',
+
               matchDate: '-',
               matchTeam: '-',
               role: ChatRoomMemberRole.MEMBER,
@@ -143,7 +141,6 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
       <div className="flex flex-col h-full flex-1 min-w-0 transition-all duration-300 ease-in-out">
         <ChatInfo
           title={currentRoomData.info.title}
-          participants={currentRoomData.info.participants}
           matchDate={currentRoomData.info.matchDate}
           matchTeam={currentRoomData.info.matchTeam}
           onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
@@ -209,7 +206,6 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
         onClose={() => setIsSidebarOpen(false)}
         onReport={() => setIsReportModalOpen(true)}
         title={currentRoomData.info.title}
-        participants={currentRoomData.info.participants}
         matchDate={currentRoomData.info.matchDate}
         matchTeam={currentRoomData.info.matchTeam}
         role={currentRoomData.info.role}

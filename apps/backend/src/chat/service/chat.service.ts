@@ -76,17 +76,18 @@ export class ChatService {
   }
 
   async requestJoinChatRoom(chatRoomId: number, memberId: number) {
-    const chatRoom = await this.chatRepository.findChatRoomById(chatRoomId);
+    const [chatRoom, existingMember, existingRequest] = await Promise.all([
+      this.chatRepository.findChatRoomById(chatRoomId),
+      this.chatRepository.findChatRoomMember(chatRoomId, memberId),
+      this.chatRepository.findExistingJoinRequest(chatRoomId, memberId),
+    ]);
+
     if (!chatRoom) {
       throw new NotFoundException('채팅방을 찾을 수 없습니다.');
     }
-
-    const existingMember = await this.chatRepository.findChatRoomMember(chatRoomId, memberId);
     if (existingMember) {
       throw new ConflictException('이미 채팅방에 참여 중입니다.');
     }
-
-    const existingRequest = await this.chatRepository.findExistingJoinRequest(chatRoomId, memberId);
     if (existingRequest) {
       throw new ConflictException('이미 참여 요청이 존재합니다.');
     }
@@ -124,14 +125,13 @@ export class ChatService {
 
     await this.verifyHost(request.chatRoomId, hostId);
 
-    const result = await this.db.transaction(async () => {
+    await this.db.transaction(async () => {
       await this.chatRepository.updateJoinRequestStatus(requestId, ChatJoinRequestStatus.ACCEPTED);
-      const newMember = await this.chatRepository.createChatRoomMember(
+      await this.chatRepository.createChatRoomMember(
         request.chatRoomId,
         request.memberId,
         ChatRoomMemberRole.MEMBER,
       );
-      return newMember;
     });
 
     this.chatGateway.emitMemberJoined(String(request.chatRoomId), {

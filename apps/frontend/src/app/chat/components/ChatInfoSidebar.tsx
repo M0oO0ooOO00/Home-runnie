@@ -11,7 +11,6 @@ interface ChatInfoSidebarProps {
   onClose: () => void;
   onReport: () => void;
   title: string;
-  participants: string;
   matchDate: string;
   matchTeam: string;
   role?: ChatRoomMemberRole;

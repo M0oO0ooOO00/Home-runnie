@@ -7,7 +7,6 @@ import JoinRequestDropdown from './JoinRequestDropdown';
 
 interface ChatInfoProps {
   title: string;
-  participants: string;
   matchDate: string;
   matchTeam: string;
   onToggleSidebar: () => void;
@@ -81,9 +80,7 @@ const ChatInfo = ({
                   </span>
                 )}
               </button>
-              {showJoinRequests && (
-                <JoinRequestDropdown roomId={roomId} onClose={() => setShowJoinRequests(false)} />
-              )}
+              {showJoinRequests && <JoinRequestDropdown roomId={roomId} />}
             </div>
           )}
           <button

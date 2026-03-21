@@ -7,10 +7,9 @@ import { getPendingJoinRequests, acceptJoinRequest, rejectJoinRequest } from '@/
 
 interface JoinRequestDropdownProps {
   roomId: string;
-  onClose: () => void;
 }
 
-const JoinRequestDropdown = ({ roomId, onClose }: JoinRequestDropdownProps) => {
+const JoinRequestDropdown = ({ roomId }: JoinRequestDropdownProps) => {
   const [requests, setRequests] = useState<JoinRequestResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<JoinRequestResponse | null>(null);
