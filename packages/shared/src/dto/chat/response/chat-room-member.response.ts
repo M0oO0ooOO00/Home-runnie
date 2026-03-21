@@ -1,9 +1,7 @@
 import { ChatRoomMemberRole } from '../../../entities/chat/chat-room-member-role';
 
-export interface ChatRoomResponse {
-  id: number;
-  postId: number;
+export interface ChatRoomMemberResponse {
+  memberId: number;
+  nickname: string;
   role: ChatRoomMemberRole;
-  createdAt: Date;
-  updatedAt: Date;
 }

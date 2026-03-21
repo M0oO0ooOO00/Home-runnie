@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { GetChatRoomsResponse } from '@homerunnie/shared';
 import { ChatRoomResponseDto } from './chat-room.response.dto';
-import { ChatRoom } from '@/chat/domain';
 
 export class GetChatRoomsResponseDto implements GetChatRoomsResponse {
   @ApiProperty({
@@ -39,7 +38,7 @@ export class GetChatRoomsResponseDto implements GetChatRoomsResponse {
   }
 
   static from(
-    chatRooms: (typeof ChatRoom.$inferSelect)[],
+    chatRooms: { id: number; postId: number; createdAt: Date; updatedAt: Date; role: string }[],
     total: number,
     page: number,
     limit: number,

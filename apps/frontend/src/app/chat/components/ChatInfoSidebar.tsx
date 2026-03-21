@@ -1,6 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { User } from 'lucide-react';
+import { ChatRoomMemberRole, ChatRoomMemberResponse } from '@homerunnie/shared';
+import { getChatRoomMembers, kickMember, deleteChatRoom } from '@/apis/chat/chat';
+import { useRouter } from 'next/navigation';
 
 interface ChatInfoSidebarProps {
   isOpen: boolean;
@@ -10,39 +14,65 @@ interface ChatInfoSidebarProps {
   participants: string;
   matchDate: string;
   matchTeam: string;
+  role?: ChatRoomMemberRole;
+  roomId: string;
 }
-
-// 참여자 데이터 타입
-interface Participant {
-  id: string;
-  name: string;
-  isMe?: boolean;
-}
-
-// 임시 참여자 데이터 (나중에 API로 교체)
-const mockParticipants: Participant[] = [
-  { id: '2', name: '수비니' },
-  { id: '3', name: '수미니' },
-  { id: '4', name: '누누' },
-  { id: '5', name: '호호' },
-  { id: '6', name: '용용' },
-  { id: '7', name: '실버' },
-  { id: '8', name: '바보' },
-];
 
 const ChatInfoSidebar = ({
   isOpen,
   onClose,
   onReport,
   title,
-  participants,
   matchDate,
   matchTeam,
+  role,
+  roomId,
 }: ChatInfoSidebarProps) => {
+  const router = useRouter();
+  const [members, setMembers] = useState<ChatRoomMemberResponse[]>([]);
+  const isHost = role === ChatRoomMemberRole.HOST;
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const fetchMembers = async () => {
+      try {
+        const data = await getChatRoomMembers(Number(roomId));
+        setMembers(data);
+      } catch (error) {
+        console.error('멤버 목록 조회 실패:', error);
+      }
+    };
+    fetchMembers();
+  }, [isOpen, roomId]);
+
+  const handleKick = async (memberId: number) => {
+    if (!confirm('해당 멤버를 강퇴하시겠습니까?')) return;
+    try {
+      await kickMember(Number(roomId), memberId);
+      setMembers((prev) => prev.filter((m) => m.memberId !== memberId));
+    } catch (error) {
+      console.error('강퇴 실패:', error);
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    if (!confirm('채팅방을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+    try {
+      await deleteChatRoom(Number(roomId));
+      router.push('/chat');
+    } catch (error) {
+      console.error('채팅방 삭제 실패:', error);
+    }
+  };
+
   const handleLeaveRoom = () => {
     // TODO: 채팅방 나가기 로직 구현
     console.log('채팅방 나가기');
   };
+
+  const hostMember = members.find((m) => m.role === ChatRoomMemberRole.HOST);
+  const regularMembers = members.filter((m) => m.role !== ChatRoomMemberRole.HOST);
 
   return (
     <div
@@ -72,28 +102,42 @@ const ChatInfoSidebar = ({
             <div className="py-[30px] px-5 border-[1px]">
               <div className="flex items-center justify-between mb-[22px]">
                 <h3 className="text-t04-sb text-gray-900">참여자</h3>
-                <span className="text-b03-r text-gray-700">{mockParticipants.length}명</span>
+                <span className="text-b03-r text-gray-700">{members.length}명</span>
               </div>
-              <div className="mb-[36px]">
-                <p className="text-b03-r text-gray-600 mb-[8px]">내 프로필</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-pink-200 flex items-center justify-center shrink-0">
-                    <User className="w-5 h-5 text-pink-600" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-b02-r text-gray-600">{'윤창현'}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-3">
-                {mockParticipants.map((participant) => (
-                  <div key={participant.id} className="flex items-center gap-[20px]">
+
+              {/* 방장 */}
+              {hostMember && (
+                <div className="mb-[36px]">
+                  <p className="text-b03-r text-gray-600 mb-[8px]">방장</p>
+                  <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-pink-200 flex items-center justify-center shrink-0">
                       <User className="w-5 h-5 text-pink-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-b02-r text-gray-900">{participant.name}</p>
+                      <p className="text-b02-r text-gray-600">{hostMember.nickname}</p>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 멤버 목록 */}
+              <div className="space-y-3">
+                {regularMembers.map((member) => (
+                  <div key={member.memberId} className="flex items-center gap-[20px]">
+                    <div className="w-9 h-9 rounded-full bg-pink-200 flex items-center justify-center shrink-0">
+                      <User className="w-5 h-5 text-pink-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-b02-r text-gray-900">{member.nickname}</p>
+                    </div>
+                    {isHost && (
+                      <button
+                        onClick={() => handleKick(member.memberId)}
+                        className="text-b03-r text-red-400 hover:text-red-500 transition-colors"
+                      >
+                        강퇴
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -101,19 +145,28 @@ const ChatInfoSidebar = ({
           </div>
         </div>
 
-        <div className=" border-gray-200 py-[15px] px-[20px]">
+        <div className="border-gray-200 py-[15px] px-[20px]">
           <button
             onClick={onReport}
             className="w-full text-right text-b02-r text-gray-900 hover:text-gray-800 transition-colors mb-[8px]"
           >
             신고하기
           </button>
-          <button
-            onClick={handleLeaveRoom}
-            className="w-full text-right text-b02-r text-red-500 hover:text-gray-800 transition-colors"
-          >
-            채팅방 나가기
-          </button>
+          {isHost ? (
+            <button
+              onClick={handleDeleteRoom}
+              className="w-full text-right text-b02-r text-red-500 hover:text-red-600 transition-colors"
+            >
+              채팅방 삭제
+            </button>
+          ) : (
+            <button
+              onClick={handleLeaveRoom}
+              className="w-full text-right text-b02-r text-red-500 hover:text-gray-800 transition-colors"
+            >
+              채팅방 나가기
+            </button>
+          )}
         </div>
       </div>
     </div>

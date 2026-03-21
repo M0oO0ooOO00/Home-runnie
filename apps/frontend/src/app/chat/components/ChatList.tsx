@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { ChatRoomMemberRole } from '@homerunnie/shared';
 
 interface ChatListItem {
   id: string;
@@ -8,6 +9,7 @@ interface ChatListItem {
   participants: string[];
   lastMessage: string;
   unreadCount: number;
+  role?: ChatRoomMemberRole;
 }
 
 interface ChatListProps {
@@ -34,7 +36,14 @@ const ChatList = ({ chatRooms, activeChatId }: ChatListProps) => {
             }`}
           >
             <div className="flex justify-between items-start">
-              <h2 className="font-bold text-lg mb-1">{room.title}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="font-bold text-lg mb-1">{room.title}</h2>
+                {room.role === ChatRoomMemberRole.HOST && (
+                  <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                    방장
+                  </span>
+                )}
+              </div>
               {room.unreadCount > 0 && (
                 <span className="bg-green-500 text-white text-xs font-semibold w-5 h-5 flex items-center justify-center rounded-full">
                   {room.unreadCount}

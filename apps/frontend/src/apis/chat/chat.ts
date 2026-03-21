@@ -1,11 +1,15 @@
-import { CreateChatRoomRequest, ChatRoomResponse, GetChatRoomsResponse } from '@homerunnie/shared';
+import {
+  CreateChatRoomRequest,
+  ChatRoomResponse,
+  GetChatRoomsResponse,
+  ChatRoomMemberResponse,
+  JoinRequestResponse,
+} from '@homerunnie/shared';
 
 import { apiClient } from '@/lib/fetchClient';
 
 /**
  * 채팅방 생성
- * @param postId 모집 게시글 ID
- * @returns 생성된 채팅방 정보
  */
 export const createChatRoom = async (postId: number): Promise<ChatRoomResponse> => {
   const request: CreateChatRoomRequest = { postId };
@@ -14,9 +18,6 @@ export const createChatRoom = async (postId: number): Promise<ChatRoomResponse> 
 
 /**
  * 내 채팅방 목록 조회
- * @param page 페이지 번호 (기본값: 1)
- * @param limit 페이지당 항목 수 (기본값: 20)
- * @returns 채팅방 목록 및 페이지네이션 정보
  */
 export const getMyChatRooms = async (
   page: number = 1,
@@ -25,4 +26,59 @@ export const getMyChatRooms = async (
   return apiClient.get<GetChatRoomsResponse>(`/chat/rooms?page=${page}&limit=${limit}`, {
     authRequired: true,
   });
+};
+
+/**
+ * 채팅방 멤버 목록 조회
+ */
+export const getChatRoomMembers = async (roomId: number): Promise<ChatRoomMemberResponse[]> => {
+  return apiClient.get<ChatRoomMemberResponse[]>(`/chat/rooms/${roomId}/members`, {
+    authRequired: true,
+  });
+};
+
+/**
+ * 채팅방 참여 요청
+ */
+export const requestJoinChatRoom = async (roomId: number): Promise<void> => {
+  return apiClient.post(`/chat/rooms/${roomId}/join-requests`, {}, { authRequired: true });
+};
+
+/**
+ * 대기 중인 참여 요청 목록 조회 (방장 전용)
+ */
+export const getPendingJoinRequests = async (roomId: number): Promise<JoinRequestResponse[]> => {
+  return apiClient.get<JoinRequestResponse[]>(`/chat/rooms/${roomId}/join-requests`, {
+    authRequired: true,
+  });
+};
+
+/**
+ * 참여 요청 수락 (방장 전용)
+ */
+export const acceptJoinRequest = async (requestId: number): Promise<void> => {
+  return apiClient.patch(`/chat/join-requests/${requestId}/accept`, {}, { authRequired: true });
+};
+
+/**
+ * 참여 요청 거절 (방장 전용)
+ */
+export const rejectJoinRequest = async (requestId: number): Promise<void> => {
+  return apiClient.patch(`/chat/join-requests/${requestId}/reject`, {}, { authRequired: true });
+};
+
+/**
+ * 멤버 강퇴 (방장 전용)
+ */
+export const kickMember = async (roomId: number, memberId: number): Promise<void> => {
+  return apiClient.delete(`/chat/rooms/${roomId}/members/${memberId}`, {
+    authRequired: true,
+  });
+};
+
+/**
+ * 채팅방 삭제 (방장 전용)
+ */
+export const deleteChatRoom = async (roomId: number): Promise<void> => {
+  return apiClient.delete(`/chat/rooms/${roomId}`, { authRequired: true });
 };

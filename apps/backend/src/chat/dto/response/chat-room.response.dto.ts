@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ChatRoomResponse } from '@homerunnie/shared';
-import { ChatRoom } from '@/chat/domain';
+import { ChatRoomResponse, ChatRoomMemberRole } from '@homerunnie/shared';
 
 export class ChatRoomResponseDto implements ChatRoomResponse {
   @ApiProperty({
@@ -16,6 +15,13 @@ export class ChatRoomResponseDto implements ChatRoomResponse {
     example: 123,
   })
   postId: number;
+
+  @ApiProperty({
+    description: '현재 사용자의 역할',
+    enum: ChatRoomMemberRole,
+    example: ChatRoomMemberRole.HOST,
+  })
+  role: ChatRoomMemberRole;
 
   @ApiProperty({
     description: '생성 일시',
@@ -35,10 +41,17 @@ export class ChatRoomResponseDto implements ChatRoomResponse {
     Object.assign(this, partial);
   }
 
-  static from(data: typeof ChatRoom.$inferSelect): ChatRoomResponseDto {
+  static from(data: {
+    id: number;
+    postId: number;
+    createdAt: Date;
+    updatedAt: Date;
+    role: string;
+  }): ChatRoomResponseDto {
     return new ChatRoomResponseDto({
       id: data.id,
       postId: data.postId,
+      role: data.role as ChatRoomMemberRole,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     });

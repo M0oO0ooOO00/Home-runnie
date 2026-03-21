@@ -11,3 +11,4 @@ export * from '@/common/db/enums/stadium.pg-enum';
 export * from '@/common/db/enums/oauth-provider.pg-enum';
 export * from '@/common/db/enums/account-status.pg-enum';
 export * from '@/common/db/enums/chat-room-member-role.pg-enum';
+export * from '@/common/db/enums/chat-join-request-status.pg-enum';
