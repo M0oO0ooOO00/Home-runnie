@@ -2,8 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { eq, and, desc, count } from 'drizzle-orm';
 import { DATABASE_CONNECTION } from '@/common';
-import { ChatRoom, ChatRoomMember, ChatMessage } from '@/chat/domain';
-import { ChatRoomMemberRole } from '@homerunnie/shared';
+import { ChatRoom, ChatRoomMember, ChatMessage, ChatJoinRequest } from '@/chat/domain';
+import { ChatRoomMemberRole, ChatJoinRequestStatus } from '@homerunnie/shared';
+import { Member } from '@/member/domain/member.entity';
+import { Profile } from '@/member/domain/profile.entity';
+import { Post } from '@/post/domain';
 import * as schema from '@/common/db/schema';
 
 type ChatRoomType = typeof ChatRoom.$inferSelect;
@@ -40,23 +43,22 @@ export class ChatRepository {
     return member;
   }
 
-  async findChatRoomsByMemberId(
-    memberId: number,
-    page: number,
-    limit: number,
-  ): Promise<ChatRoomType[]> {
+  async findChatRoomsByMemberId(memberId: number, page: number, limit: number) {
     const offset = (page - 1) * limit;
 
     const chatRooms = await this.db
       .select({
         id: ChatRoom.id,
         postId: ChatRoom.postId,
+        postTitle: Post.title,
         createdAt: ChatRoom.createdAt,
         updatedAt: ChatRoom.updatedAt,
         deleted: ChatRoom.deleted,
+        role: ChatRoomMember.role,
       })
       .from(ChatRoom)
       .innerJoin(ChatRoomMember, eq(ChatRoom.id, ChatRoomMember.chatRoomId))
+      .leftJoin(Post, eq(ChatRoom.postId, Post.id))
       .where(and(eq(ChatRoomMember.memberId, memberId), eq(ChatRoom.deleted, false)))
       .orderBy(desc(ChatRoom.updatedAt))
       .limit(limit)
@@ -107,5 +109,120 @@ export class ChatRepository {
       .limit(limit);
 
     return messages.reverse();
+  }
+
+  async findChatRoomMember(chatRoomId: number, memberId: number) {
+    const [member] = await this.db
+      .select()
+      .from(ChatRoomMember)
+      .where(and(eq(ChatRoomMember.chatRoomId, chatRoomId), eq(ChatRoomMember.memberId, memberId)));
+
+    return member || null;
+  }
+
+  async findChatRoomMembersByRoomId(chatRoomId: number) {
+    const members = await this.db
+      .select({
+        memberId: ChatRoomMember.memberId,
+        role: ChatRoomMember.role,
+        nickname: Profile.nickname,
+      })
+      .from(ChatRoomMember)
+      .innerJoin(Profile, eq(ChatRoomMember.memberId, Profile.memberId))
+      .where(eq(ChatRoomMember.chatRoomId, chatRoomId));
+
+    return members;
+  }
+
+  async deleteChatRoomMember(chatRoomId: number, memberId: number) {
+    const [deleted] = await this.db
+      .delete(ChatRoomMember)
+      .where(and(eq(ChatRoomMember.chatRoomId, chatRoomId), eq(ChatRoomMember.memberId, memberId)))
+      .returning();
+
+    return deleted || null;
+  }
+
+  async softDeleteChatRoom(chatRoomId: number) {
+    const [updated] = await this.db
+      .update(ChatRoom)
+      .set({ deleted: true })
+      .where(eq(ChatRoom.id, chatRoomId))
+      .returning();
+
+    return updated || null;
+  }
+
+  async createJoinRequest(chatRoomId: number, memberId: number) {
+    const [request] = await this.db
+      .insert(ChatJoinRequest)
+      .values({
+        chatRoomId,
+        memberId,
+        status: ChatJoinRequestStatus.PENDING,
+      })
+      .returning();
+
+    return request;
+  }
+
+  async findPendingJoinRequests(chatRoomId: number) {
+    const requests = await this.db
+      .select({
+        id: ChatJoinRequest.id,
+        memberId: ChatJoinRequest.memberId,
+        chatRoomId: ChatJoinRequest.chatRoomId,
+        status: ChatJoinRequest.status,
+        createdAt: ChatJoinRequest.createdAt,
+        nickname: Profile.nickname,
+        gender: Member.gender,
+        birthDate: Member.birthDate,
+      })
+      .from(ChatJoinRequest)
+      .innerJoin(Profile, eq(ChatJoinRequest.memberId, Profile.memberId))
+      .innerJoin(Member, eq(ChatJoinRequest.memberId, Member.id))
+      .where(
+        and(
+          eq(ChatJoinRequest.chatRoomId, chatRoomId),
+          eq(ChatJoinRequest.status, ChatJoinRequestStatus.PENDING),
+        ),
+      )
+      .orderBy(desc(ChatJoinRequest.createdAt));
+
+    return requests;
+  }
+
+  async findJoinRequestById(requestId: number) {
+    const [request] = await this.db
+      .select()
+      .from(ChatJoinRequest)
+      .where(eq(ChatJoinRequest.id, requestId));
+
+    return request || null;
+  }
+
+  async updateJoinRequestStatus(requestId: number, status: ChatJoinRequestStatus) {
+    const [updated] = await this.db
+      .update(ChatJoinRequest)
+      .set({ status })
+      .where(eq(ChatJoinRequest.id, requestId))
+      .returning();
+
+    return updated || null;
+  }
+
+  async findExistingJoinRequest(chatRoomId: number, memberId: number) {
+    const [request] = await this.db
+      .select()
+      .from(ChatJoinRequest)
+      .where(
+        and(
+          eq(ChatJoinRequest.chatRoomId, chatRoomId),
+          eq(ChatJoinRequest.memberId, memberId),
+          eq(ChatJoinRequest.status, ChatJoinRequestStatus.PENDING),
+        ),
+      );
+
+    return request || null;
   }
 }

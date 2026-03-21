@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import ChatList from './components/ChatList';
 import { getMyChatRooms } from '@/apis/chat/chat';
-import { ChatRoomResponse } from '@homerunnie/shared';
+import { ChatRoomResponse, ChatRoomMemberRole } from '@homerunnie/shared';
 import { ChatRoomsContext } from '@/stores/ChatRoomsContext';
 
 interface ChatListItem {
@@ -12,6 +12,7 @@ interface ChatListItem {
   participants: string[];
   lastMessage: string;
   unreadCount: number;
+  role?: ChatRoomMemberRole;
 }
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
@@ -35,13 +36,14 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
         });
         setChatRoomsMap(roomsMap);
 
-        // API 응답 데이터를 더미 데이터 형식으로 변환하여 업데이트
+        // API 응답 데이터를 ChatListItem 형식으로 변환
         const updatedRooms: ChatListItem[] = response.data.map((room, index) => ({
           id: String(room.id),
-          title: `게시글 ${room.postId} 채팅방`,
+          title: room.postTitle,
           participants: [`참여자${index + 1}`, `참여자${index + 2}`],
           lastMessage: '새로운 메시지가 없습니다.',
           unreadCount: 0,
+          role: room.role,
         }));
 
         setDummyRooms(updatedRooms);
@@ -56,7 +58,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
   }, []);
 
   return (
-    <div className="flex flex-row justify-center h-[calc(100vh-84px)]">
+    <div className="flex flex-row justify-center h-[calc(100vh-84px)] -mx-[120px] w-[calc(100%+240px)] max-w-none">
       <aside className="flex flex-col min-w-[400px] border-r border-gray-200 bg-white h-full">
         <div className="shrink-0">
           <h1 className="text-t00 pb-[30px] p-6">채팅</h1>
@@ -67,7 +69,9 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
           </ChatRoomsContext.Provider>
         </div>
       </aside>
-      <main className="flex flex-col w-full bg-gray-100 h-full">{children}</main>
+      <main className="flex flex-col w-full bg-gray-100 h-full">
+        <ChatRoomsContext.Provider value={chatRoomsMap}>{children}</ChatRoomsContext.Provider>
+      </main>
     </div>
   );
 }

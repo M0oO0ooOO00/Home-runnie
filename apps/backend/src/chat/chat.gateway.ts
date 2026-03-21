@@ -138,4 +138,24 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     socket.to(roomId).emit('received_message', { nickname, message, isOwn: false });
     socket.emit('received_message', { nickname, message, isOwn: true });
   }
+
+  emitToRoom(roomId: string, event: string, data: unknown) {
+    this.server.to(roomId).emit(event, data);
+  }
+
+  emitJoinRequestReceived(roomId: string, data: unknown) {
+    this.server.to(roomId).emit('join_request_received', data);
+  }
+
+  emitMemberJoined(roomId: string, data: unknown) {
+    this.server.to(roomId).emit('member_joined', data);
+  }
+
+  emitMemberKicked(roomId: string, data: unknown) {
+    this.server.to(roomId).emit('member_kicked', data);
+  }
+
+  emitRoomDeleted(roomId: string) {
+    this.server.to(roomId).emit('room_deleted', { roomId });
+  }
 }

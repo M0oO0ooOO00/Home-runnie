@@ -4,6 +4,7 @@ import { baseColumns } from '@/common/db/base.entity';
 import { Post } from '@/post/domain';
 import { ChatMessage } from '@/chat/domain/chat-message.entity';
 import { ChatRoomMember } from '@/chat/domain/chat-room-member.entity';
+import { ChatJoinRequest } from '@/chat/domain/chat-join-request.entity';
 
 export const ChatRoom = pgTable('chat_room', {
   ...baseColumns,
@@ -19,4 +20,5 @@ export const chatRoomRelations = relations(ChatRoom, ({ one, many }) => ({
   }),
   messages: many(ChatMessage),
   members: many(ChatRoomMember),
+  joinRequests: many(ChatJoinRequest),
 }));
