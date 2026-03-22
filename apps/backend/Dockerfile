@@ -49,4 +49,6 @@ EXPOSE 3030
 # 프로젝트 위치로 이동 (워크스페이스 환경이므로 apps/backend 위치)
 WORKDIR /app/apps/backend
 
-CMD ["pnpm", "start:prod"]
+RUN chmod +x ./entrypoint.sh
+
+CMD ["./entrypoint.sh"]
