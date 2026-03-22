@@ -153,6 +153,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(roomId).emit('member_joined', data);
   }
 
+  emitJoinRequestRejected(roomId: string, data: unknown) {
+    this.server.to(roomId).emit('join_request_rejected', data);
+  }
+
   emitMemberKicked(roomId: string, data: unknown) {
     this.server.to(roomId).emit('member_kicked', data);
   }

@@ -250,8 +250,13 @@ export class ChatRepository {
     return request || null;
   }
 
-  async updateJoinRequestStatus(requestId: number, status: ChatJoinRequestStatus) {
-    const [updated] = await this.db
+  async updateJoinRequestStatus(
+    requestId: number,
+    status: ChatJoinRequestStatus,
+    tx?: DbTransaction,
+  ) {
+    const executor = tx || this.db;
+    const [updated] = await executor
       .update(ChatJoinRequest)
       .set({ status })
       .where(eq(ChatJoinRequest.id, requestId))

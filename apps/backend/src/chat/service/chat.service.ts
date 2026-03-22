@@ -129,12 +129,25 @@ export class ChatService {
 
     await this.verifyHost(request.chatRoomId, hostId);
 
-    await this.db.transaction(async () => {
-      await this.chatRepository.updateJoinRequestStatus(requestId, ChatJoinRequestStatus.ACCEPTED);
+    const existingMember = await this.chatRepository.findChatRoomMember(
+      request.chatRoomId,
+      request.memberId,
+    );
+    if (existingMember) {
+      throw new ConflictException('이미 채팅방에 참여 중인 멤버입니다.');
+    }
+
+    await this.db.transaction(async (tx) => {
+      await this.chatRepository.updateJoinRequestStatus(
+        requestId,
+        ChatJoinRequestStatus.ACCEPTED,
+        tx,
+      );
       await this.chatRepository.createChatRoomMember(
         request.chatRoomId,
         request.memberId,
         ChatRoomMemberRole.MEMBER,
+        tx,
       );
     });
 
@@ -158,6 +171,11 @@ export class ChatService {
     await this.verifyHost(request.chatRoomId, hostId);
 
     await this.chatRepository.updateJoinRequestStatus(requestId, ChatJoinRequestStatus.REJECTED);
+
+    this.chatGateway.emitJoinRequestRejected(String(request.chatRoomId), {
+      memberId: request.memberId,
+    });
+
     return { chatRoomId: request.chatRoomId, memberId: request.memberId };
   }
 
