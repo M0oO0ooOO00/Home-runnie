@@ -109,6 +109,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         id: msg.id,
         message: msg.content,
         isOwn: msg.senderId === user.memberId,
+        nickname: msg.nickname,
         createdAt: msg.createdAt,
       })),
     );

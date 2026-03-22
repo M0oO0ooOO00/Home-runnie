@@ -128,8 +128,10 @@ export class ChatRepository {
         content: ChatMessage.content,
         senderId: ChatMessage.senderId,
         createdAt: ChatMessage.createdAt,
+        nickname: Profile.nickname,
       })
       .from(ChatMessage)
+      .innerJoin(Profile, eq(ChatMessage.senderId, Profile.memberId))
       .where(eq(ChatMessage.chatRoomId, chatRoomId))
       .orderBy(desc(ChatMessage.createdAt))
       .limit(limit);
