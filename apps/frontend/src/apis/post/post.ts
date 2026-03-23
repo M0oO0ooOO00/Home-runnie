@@ -8,6 +8,8 @@ export interface RecruitmentPostItemResponse {
   gameDate: string;
   teamHome: string;
   teamAway: string;
+  postStatus: 'ACTIVE' | 'CLOSE';
+  authorNickname: string | null;
   createdAt: string;
 }
 
@@ -16,6 +18,24 @@ export interface GetRecruitmentPostsResponse {
   total: number;
   page: number;
   limit: number;
+}
+
+export interface GetRecruitmentPostsQueryParams {
+  page?: number;
+  pageSize?: number;
+  keyword?: string;
+  title?: string;
+  gameDate?: string;
+  stadium?: CreateRecruitmentPostRequest['stadium'];
+  teamA?: CreateRecruitmentPostRequest['teamA'];
+  teamB?: CreateRecruitmentPostRequest['teamB'];
+  headcount?: string;
+  ticketStatus?: CreateRecruitmentPostRequest['ticketStatus'];
+  favTeam?: CreateRecruitmentPostRequest['favTeam'];
+  gender?: CreateRecruitmentPostRequest['gender'];
+  prefGender?: CreateRecruitmentPostRequest['prefGender'];
+  picked?: string[];
+  note?: string;
 }
 
 export interface UpdateRecruitmentPostStatusRequest {
@@ -77,12 +97,26 @@ export const createRecruitmentPost = async (
 };
 
 export const getRecruitmentPosts = async (
-  page: number = 1,
-  pageSize: number = 10,
+  params: GetRecruitmentPostsQueryParams = {},
 ): Promise<GetRecruitmentPostsResponse> => {
-  return apiClient.get<GetRecruitmentPostsResponse>(
-    `/post/recruitment?page=${page}&pageSize=${pageSize}`,
-  );
+  const { page = 1, pageSize = 10, picked, ...rest } = params;
+  const query = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  });
+
+  Object.entries(rest).forEach(([key, value]) => {
+    if (value == null) return;
+    const text = String(value).trim();
+    if (!text) return;
+    query.set(key, text);
+  });
+
+  if (picked?.length) {
+    query.set('picked', picked.join(','));
+  }
+
+  return apiClient.get<GetRecruitmentPostsResponse>(`/post/recruitment?${query.toString()}`);
 };
 
 export const getRecruitmentPostDetail = async (
