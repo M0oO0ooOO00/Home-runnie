@@ -65,20 +65,6 @@ export function useSocket(roomId: string) {
       ]);
     });
 
-    socket.on('user_joined', (data: { nickname: string; message: string }) => {
-      setMessages((prev) => [
-        ...prev,
-        { id: Date.now(), text: data.message, sender: 'other', nickname: '' },
-      ]);
-    });
-
-    socket.on('user_left', (data: { nickname: string; message: string }) => {
-      setMessages((prev) => [
-        ...prev,
-        { id: Date.now(), text: data.message, sender: 'other', nickname: '' },
-      ]);
-    });
-
     socket.on('join_request_received', () => {
       setJoinRequestCount((prev) => prev + 1);
     });

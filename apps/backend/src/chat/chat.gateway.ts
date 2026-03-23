@@ -75,16 +75,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(socket: Socket) {
-    const user = socket.data.user as WsSocketUser | undefined;
-    if (user) {
-      const { nickname, roomIds } = user;
-      roomIds.forEach((room) => {
-        socket.to(room).emit('user_left', {
-          nickname,
-          message: `${nickname}님이 퇴장하셨습니다.`,
-        });
-      });
-    }
     this.logger.log(`client disconnected: ${socket.id}`);
   }
 
@@ -113,11 +103,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         createdAt: msg.createdAt,
       })),
     );
-
-    socket.to(roomId).emit('user_joined', {
-      nickname,
-      message: `${nickname}님이 입장하셨습니다.`,
-    });
 
     this.logger.log(`${nickname} joined room ${roomId}`);
   }
