@@ -104,11 +104,12 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
           ECR_PASSWORD: ${{ steps.ecr-pass.outputs.password }}
+          IMAGE_TAG: ${{ github.sha }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: ECR_REGISTRY,ECR_REPOSITORY,ECR_PASSWORD
+          envs: ECR_REGISTRY,ECR_REPOSITORY,ECR_PASSWORD,IMAGE_TAG
           script: |
             set -e
             mkdir -p ~/jikgwan
@@ -119,7 +120,7 @@ jobs:
             cat <<EOF > docker-compose.prod.yaml
             services:
               backend:
-                image: $ECR_REGISTRY/$ECR_REPOSITORY:latest
+                image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
                 container_name: jikgwan-backend
                 ports:
                   - "3030:3030"
