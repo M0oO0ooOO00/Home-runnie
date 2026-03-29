@@ -46,6 +46,7 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY --from=installer --chown=nestjs:nodejs /app/pruned/node_modules ./node_modules
 COPY --from=installer --chown=nestjs:nodejs /app/pruned/dist ./dist
 COPY --from=installer --chown=nestjs:nodejs /app/pruned/package.json ./package.json
+COPY --from=installer --chown=nestjs:nodejs /app/apps/backend/drizzle ./apps/backend/drizzle
 
 EXPOSE 3030
 
