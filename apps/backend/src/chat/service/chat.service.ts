@@ -17,6 +17,7 @@ import {
 } from '@/chat/dto/response';
 import { ChatRoomMemberRole, ChatJoinRequestStatus } from '@homerunnie/shared';
 import { DATABASE_CONNECTION } from '@/common';
+import { PostStatusEnum } from '@/common/enums/post-status.enum';
 import * as schema from '@/common/db/schema';
 
 type DbType = NodePgDatabase<typeof schema>;
@@ -80,20 +81,37 @@ export class ChatService {
   }
 
   async requestJoinChatRoom(chatRoomId: number, memberId: number) {
-    const [chatRoom, existingMember, existingRequest] = await Promise.all([
+    const [chatRoom, existingMember, existingRequest, postStatus] = await Promise.all([
       this.chatRepository.findChatRoomById(chatRoomId),
       this.chatRepository.findChatRoomMember(chatRoomId, memberId),
       this.chatRepository.findExistingJoinRequest(chatRoomId, memberId),
+      this.chatRepository.findPostStatusByChatRoomId(chatRoomId),
     ]);
 
     if (!chatRoom) {
       throw new NotFoundException('채팅방을 찾을 수 없습니다.');
     }
+    if (postStatus !== PostStatusEnum.ACTIVE) {
+      throw new BadRequestException('마감된 모집글에는 참여 요청을 할 수 없습니다.');
+    }
     if (existingMember) {
       throw new ConflictException('이미 채팅방에 참여 중입니다.');
     }
+
     if (existingRequest) {
-      throw new ConflictException('이미 참여 요청이 존재합니다.');
+      if (existingRequest.status === ChatJoinRequestStatus.PENDING) {
+        throw new ConflictException('이미 참여 요청이 존재합니다.');
+      }
+
+      const request = await this.chatRepository.resetJoinRequestToPending(chatRoomId, memberId);
+
+      this.chatGateway.emitJoinRequestReceived(String(chatRoomId), {
+        requestId: request.id,
+        memberId,
+        chatRoomId,
+      });
+
+      return request;
     }
 
     const request = await this.chatRepository.createJoinRequest(chatRoomId, memberId);

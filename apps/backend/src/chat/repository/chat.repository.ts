@@ -112,6 +112,16 @@ export class ChatRepository {
     return chatRoom || null;
   }
 
+  async findPostStatusByChatRoomId(chatRoomId: number): Promise<string | null> {
+    const [result] = await this.db
+      .select({ postStatus: Post.postStatus })
+      .from(ChatRoom)
+      .innerJoin(Post, eq(ChatRoom.postId, Post.id))
+      .where(and(eq(ChatRoom.id, chatRoomId), eq(ChatRoom.deleted, false)));
+
+    return result?.postStatus || null;
+  }
+
   async saveMessage(chatRoomId: number, senderId: number, content: string) {
     const [message] = await this.db
       .insert(ChatMessage)
@@ -286,13 +296,26 @@ export class ChatRepository {
       })
       .from(ChatJoinRequest)
       .where(
-        and(
-          eq(ChatJoinRequest.chatRoomId, chatRoomId),
-          eq(ChatJoinRequest.memberId, memberId),
-          eq(ChatJoinRequest.status, ChatJoinRequestStatus.PENDING),
-        ),
+        and(eq(ChatJoinRequest.chatRoomId, chatRoomId), eq(ChatJoinRequest.memberId, memberId)),
       );
 
     return request || null;
+  }
+
+  async resetJoinRequestToPending(chatRoomId: number, memberId: number) {
+    const [updated] = await this.db
+      .update(ChatJoinRequest)
+      .set({ status: ChatJoinRequestStatus.PENDING })
+      .where(
+        and(eq(ChatJoinRequest.chatRoomId, chatRoomId), eq(ChatJoinRequest.memberId, memberId)),
+      )
+      .returning({
+        id: ChatJoinRequest.id,
+        status: ChatJoinRequest.status,
+        chatRoomId: ChatJoinRequest.chatRoomId,
+        memberId: ChatJoinRequest.memberId,
+      });
+
+    return updated || null;
   }
 }
