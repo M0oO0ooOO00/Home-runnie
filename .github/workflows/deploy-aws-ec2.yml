@@ -21,6 +21,7 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.PRIVATE_SUBMODULE_TOKEN }}
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
@@ -36,6 +37,11 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Verify Drizzle migrations are committed
+        env:
+          MIGRATION_DIFF_RANGE: ${{ github.event.before }}...${{ github.sha }}
+        run: sh ./scripts/check-drizzle-migration.sh ci
 
       - name: Type Check & Lint
         run: pnpm turbo run type-check lint --filter=@homerunnie/backend
