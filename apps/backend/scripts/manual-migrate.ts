@@ -13,7 +13,7 @@ async function manualMigrate(): Promise<void> {
     await client.connect();
     console.log('Running manual migration...');
 
-    const sqlFile = fs.readFileSync('drizzle/migrations/0000_clean_richard_fisk.sql', 'utf-8');
+    const sqlFile = fs.readFileSync('drizzle/migrations/0000_right_night_thrasher.sql', 'utf-8');
     const statements = sqlFile.split('--> statement-breakpoint').filter((s) => s.trim());
 
     for (const statement of statements) {
