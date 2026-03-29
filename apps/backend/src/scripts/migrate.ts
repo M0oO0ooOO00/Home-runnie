@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
@@ -40,6 +40,9 @@ async function run(): Promise<void> {
   const isProd = process.env.NODE_ENV === 'production';
   const migrationsFolder = resolveMigrationsFolder();
   const connectionString = process.env.DATABASE_URL;
+  const migrationFiles = readdirSync(migrationsFolder)
+    .filter((file) => file.endsWith('.sql'))
+    .sort();
 
   const pool = connectionString
     ? new Pool({
@@ -56,6 +59,13 @@ async function run(): Promise<void> {
       });
 
   try {
+    console.log(`[Drizzle] NODE_ENV=${process.env.NODE_ENV ?? 'undefined'}`);
+    console.log(`[Drizzle] CWD=${process.cwd()}`);
+    console.log(`[Drizzle] Migrations folder=${migrationsFolder}`);
+    console.log(
+      `[Drizzle] Migration files (${migrationFiles.length})=${migrationFiles.join(', ') || '(none)'}`,
+    );
+
     if (connectionString) {
       console.log(`[Drizzle] Using DATABASE_URL target: ${maskConnectionTarget(connectionString)}`);
     } else {
@@ -64,10 +74,37 @@ async function run(): Promise<void> {
       );
     }
 
-    const db = drizzle(pool);
-    await migrate(db, { migrationsFolder });
+    const client = await pool.connect();
+    try {
+      const dbInfo = await client.query<{
+        current_database: string;
+        current_schema: string;
+      }>('select current_database(), current_schema()');
+      const target = dbInfo.rows[0];
+      console.log(
+        `[Drizzle] Connected to DB=${target.current_database}, schema=${target.current_schema}`,
+      );
+    } finally {
+      client.release();
+    }
 
+    const db = drizzle(pool);
+    console.log('[Drizzle] Starting migrate()...');
+    await migrate(db, { migrationsFolder });
     console.log('[Drizzle] Migration applied successfully.');
+
+    const verifyClient = await pool.connect();
+    try {
+      const applied = await verifyClient.query<{ count: string }>(
+        'select count(*) from "__drizzle_migrations"',
+      );
+      console.log(`[Drizzle] __drizzle_migrations count=${applied.rows[0]?.count ?? '0'}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`[Drizzle] Could not read __drizzle_migrations: ${message}`);
+    } finally {
+      verifyClient.release();
+    }
   } finally {
     await pool.end();
   }
