@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useRecruitmentPostsQuery } from '@/hooks/post/usePostQuery';
 import type { RecruitmentPostItemResponse } from '@/apis/post/post';
 import { CtaButton } from '@/shared/ui/button/cta-button';
@@ -35,6 +36,7 @@ const getStatusFromItem = (item: unknown): RowStatus => {
 };
 
 export default function RecruitmentListPage() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [activeInfoTab, setActiveInfoTab] = useState<InfoTab>('game');
   const [gameDate, setGameDate] = useState<Date | null>(null);
@@ -287,7 +289,8 @@ export default function RecruitmentListPage() {
                 return (
                   <div
                     key={item.id}
-                    className="border-t border-zinc-200 px-10 py-5 first:border-t-0"
+                    onClick={() => router.push(`/home/${item.id}`)}
+                    className="border-t border-zinc-200 px-10 py-5 first:border-t-0 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
                     <div className="grid grid-cols-[70px_220px_120px_1fr_120px_120px_120px] items-center gap-4">
                       <p className="text-lg text-zinc-500">{String(rowNumber).padStart(2, '0')}</p>

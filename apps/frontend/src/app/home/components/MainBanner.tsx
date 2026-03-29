@@ -1,6 +1,7 @@
 'use client';
 
 import BannerCard from './BannerCard';
+import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
 import { useRouter } from 'next/navigation';
@@ -54,12 +55,15 @@ export default function MainBanner() {
 
   return (
     <>
-      <div className="relative w-full h-[500px] md:h-[700px] lg:h-[909px] bg-[#FAFAFA] flex flex-col items-center overflow-hidden pt-[10%] lg:pt-[130px] px-4">
+      <div className="relative w-screen left-1/2 -translate-x-1/2 h-[550px] md:h-[750px] lg:h-[960px] bg-white flex flex-col items-center overflow-hidden pt-[8%] lg:pt-20 px-4">
         {/* 배경 이미지 (바닥 고정, 비율에 맞춰 축소) */}
         <div className="absolute inset-0 flex justify-center items-end pointer-events-none">
-          <img
-            src="/bg.svg"
+          <Image
+            src="/bg.png"
             alt="메인 배너"
+            width={1440}
+            height={909}
+            priority
             className="w-full max-w-[1440px] h-auto object-contain object-bottom"
           />
         </div>
