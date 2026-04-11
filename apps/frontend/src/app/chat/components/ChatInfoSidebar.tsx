@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { User, Check } from 'lucide-react';
 import { ChatRoomMemberRole, ChatRoomMemberResponse } from '@homerunnie/shared';
-import { getChatRoomMembers, kickMember, deleteChatRoom } from '@/apis/chat/chat';
+import { kickMember, deleteChatRoom } from '@/apis/chat/chat';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
+import { useChatRoomMembersQuery, chatKeys } from '@/hooks/chat/useChatQuery';
 import {
   Dialog,
   DialogContent,
@@ -35,26 +37,14 @@ const ChatInfoSidebar = ({
   roomId,
 }: ChatInfoSidebarProps) => {
   const router = useRouter();
-  const [members, setMembers] = useState<ChatRoomMemberResponse[]>([]);
+  const queryClient = useQueryClient();
+  const { data: members = [] } = useChatRoomMembersQuery(Number(roomId), isOpen);
+
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<number>>(new Set());
   const [kickTargets, setKickTargets] = useState<ChatRoomMemberResponse[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isKickMode, setIsKickMode] = useState(false);
   const isHost = role === ChatRoomMemberRole.HOST;
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const fetchMembers = async () => {
-      try {
-        const data = await getChatRoomMembers(Number(roomId));
-        setMembers(data);
-      } catch (error) {
-        console.error('멤버 목록 조회 실패:', error);
-      }
-    };
-    fetchMembers();
-  }, [isOpen, roomId]);
 
   const toggleMemberSelection = (memberId: number) => {
     setSelectedMemberIds((prev) => {
@@ -86,12 +76,11 @@ const ChatInfoSidebar = ({
   const handleKickConfirm = async () => {
     if (kickTargets.length === 0) return;
     try {
-      const kickedIds = new Set<number>();
       for (const target of kickTargets) {
         await kickMember(Number(roomId), target.memberId);
-        kickedIds.add(target.memberId);
       }
-      setMembers((prev) => prev.filter((m) => !kickedIds.has(m.memberId)));
+      // 캐시 무효화하여 멤버 목록 갱신
+      queryClient.invalidateQueries({ queryKey: chatKeys.roomMembers(Number(roomId)) });
       setSelectedMemberIds(new Set());
       setKickTargets([]);
       setIsKickMode(false);
