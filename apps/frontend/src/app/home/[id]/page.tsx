@@ -16,7 +16,7 @@ import {
   useCreateRecruitmentCommentMutation,
   useUpdateRecruitmentPostStatusMutation,
 } from '@/hooks/post/usePostMutation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getChatRoomByPostId, requestJoinChatRoom } from '@/apis/chat/chat';
 import { showToast, ToastIconType } from '@/shared/ui/toast/toast';
 
@@ -71,6 +71,7 @@ export default function RecruitmentPostDetailPage() {
   const { data: myProfile } = useMyProfileQuery({ retry: false });
   const [isRecruiting, setIsRecruiting] = useState(true);
   const [commentInput, setCommentInput] = useState('');
+  const isSubmittingCommentRef = useRef(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [openCommentMenuId, setOpenCommentMenuId] = useState<number | null>(null);
   const [isApplying, setIsApplying] = useState(false);
@@ -113,8 +114,17 @@ export default function RecruitmentPostDetailPage() {
 
   const handleSubmitComment = () => {
     const trimmed = commentInput.trim();
-    if (!trimmed || isCreatingComment) return;
-    createComment({ content: trimmed });
+    if (!trimmed || isCreatingComment || isSubmittingCommentRef.current) return;
+
+    isSubmittingCommentRef.current = true;
+    createComment(
+      { content: trimmed },
+      {
+        onSettled: () => {
+          isSubmittingCommentRef.current = false;
+        },
+      },
+    );
   };
 
   useEffect(() => {
@@ -379,6 +389,7 @@ export default function RecruitmentPostDetailPage() {
               value={commentInput}
               onChange={(e) => setCommentInput(e.target.value)}
               onKeyDown={(e) => {
+                if (e.nativeEvent.isComposing) return;
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   handleSubmitComment();
