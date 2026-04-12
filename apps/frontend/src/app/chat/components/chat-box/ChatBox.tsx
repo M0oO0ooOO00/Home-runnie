@@ -8,9 +8,10 @@ import MessageBubble from './MessageBubble';
 import ChatInfoSidebar from '../sidebar/ChatInfoSidebar';
 import ReportModal, { ReportParticipant } from '@/shared/ui/modal/ReportModal';
 import { useChatRooms } from '@/stores/ChatRoomsContext';
-import { ChatRoomResponse, ChatRoomMemberRole, TeamDescription, Team } from '@homerunnie/shared';
+import { ChatRoomResponse, ChatRoomMemberRole } from '@homerunnie/shared';
 import { useSocket } from '@/hooks/chat/useSocket';
 import { useChatRoomMembersQuery } from '@/hooks/chat/useChatQuery';
+import { formatKoreanDate, formatTeamName } from '@/lib/format';
 
 interface RoomInfo {
   title: string;
@@ -18,22 +19,6 @@ interface RoomInfo {
   matchTeam: string;
   role: ChatRoomMemberRole;
 }
-
-const formatKoreanDate = (date: Date): string => {
-  return date
-    .toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    })
-    .replace(/\./g, '/')
-    .replace(/\s/g, '');
-};
-
-const formatTeamName = (team: string | null): string => {
-  if (!team) return '-';
-  return TeamDescription[team as Team] ?? team;
-};
 
 const createRoomInfo = (room: ChatRoomResponse): RoomInfo => ({
   title: room.postTitle,
