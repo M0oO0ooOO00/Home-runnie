@@ -1,16 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ChatInfo from './ChatInfo';
 import ChatInput from './ChatInput';
 import MessageBubble from './MessageBubble';
-import ChatInfoSidebar from './ChatInfoSidebar';
+import ChatInfoSidebar from '../sidebar/ChatInfoSidebar';
 import ReportModal, { ReportParticipant } from '@/shared/ui/modal/ReportModal';
 import { useChatRooms } from '@/stores/ChatRoomsContext';
-import { ChatRoomResponse, ChatRoomMemberRole, TeamDescription, Team } from '@homerunnie/shared';
+import { ChatRoomResponse, ChatRoomMemberRole } from '@homerunnie/shared';
 import { useSocket } from '@/hooks/chat/useSocket';
 import { useChatRoomMembersQuery } from '@/hooks/chat/useChatQuery';
+import { formatKoreanDate, formatTeamName } from '@/lib/format';
 
 interface RoomInfo {
   title: string;
@@ -18,22 +19,6 @@ interface RoomInfo {
   matchTeam: string;
   role: ChatRoomMemberRole;
 }
-
-const formatKoreanDate = (date: Date): string => {
-  return date
-    .toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    })
-    .replace(/\./g, '/')
-    .replace(/\s/g, '');
-};
-
-const formatTeamName = (team: string | null): string => {
-  if (!team) return '-';
-  return TeamDescription[team as Team] ?? team;
-};
 
 const createRoomInfo = (room: ChatRoomResponse): RoomInfo => ({
   title: room.postTitle,
@@ -55,6 +40,7 @@ const FALLBACK_ROOM_INFO: RoomInfo = {
 const ChatBox = ({ roomId }: { roomId: string }) => {
   const router = useRouter();
   const chatRoomsMap = useChatRooms();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
@@ -77,6 +63,10 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
 
   const roomResponse = chatRoomsMap.get(roomId);
   const roomInfo = roomResponse ? createRoomInfo(roomResponse) : FALLBACK_ROOM_INFO;
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   useEffect(() => {
     if (kickedFromRoom || roomDeleted) {
@@ -115,6 +105,7 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
             {messages.map((msg) => (
               <MessageBubble key={msg.id} msg={msg} />
             ))}
+            <div ref={messagesEndRef} />
           </div>
 
           <div className="shrink-0">
@@ -127,7 +118,6 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         onReport={() => setIsReportModalOpen(true)}
-        title={roomInfo.title}
         matchDate={roomInfo.matchDate}
         matchTeam={roomInfo.matchTeam}
         role={roomInfo.role}
