@@ -176,7 +176,7 @@ export default function RecruitmentPostDetailPage() {
       <div>
         <p className="mb-2 text-b02-sb text-gray-600">제목</p>
         <div className="mb-8 lg:mb-10 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 lg:gap-4">
-          <h1 className="text-t02-b lg:text-t00 font-bold leading-tight text-gray-900 break-words">
+          <h1 className="text-t02-b lg:text-t00 font-bold leading-tight text-gray-900 wrap-break-word">
             {data.title}
           </h1>
           <p className="inline-flex shrink-0 items-center gap-2 text-b03-sb lg:text-b02-sb text-gray-700">
@@ -184,7 +184,16 @@ export default function RecruitmentPostDetailPage() {
             {data.authorNickname ?? '작성자'}
           </p>
         </div>
-
+        <div className="flex justify-end">
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 text-b03-r text-zinc-500"
+            onClick={() => setIsReportModalOpen(true)}
+          >
+            <Image src="/icons/alert.svg" alt="" width={16} height={16} aria-hidden />
+            신고하기
+          </button>
+        </div>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <section className="relative rounded-[20px] bg-neutral-50 p-5 lg:h-80 lg:p-[30px] shadow-[0_10.3px_20.6px_rgba(0,0,0,0.03)]">
             <h2 className="text-t04-sb lg:text-t03-sb text-stone-950">경기 정보</h2>
@@ -360,14 +369,6 @@ export default function RecruitmentPostDetailPage() {
         <section className="mt-12 lg:mt-16">
           <div className="mb-4 flex items-end justify-between">
             <h2 className="text-t03-b lg:text-2xl font-bold text-gray-900">댓글</h2>
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 text-b03-r text-zinc-500"
-              onClick={() => setIsReportModalOpen(true)}
-            >
-              <Image src="/icons/alert.svg" alt="" width={16} height={16} aria-hidden />
-              신고하기
-            </button>
           </div>
 
           <div className="mb-4 flex flex-col sm:flex-row gap-3">
