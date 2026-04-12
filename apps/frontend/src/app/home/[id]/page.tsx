@@ -11,6 +11,7 @@ import {
 import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
 import { BgmTag } from '@/shared/ui/tag/bgm-tag';
 import { ReportModal } from '@/shared/ui/modal';
+import { TeamProfileAvatar } from '@/shared/ui/profile/team-profile-avatar';
 import {
   useCreateRecruitmentCommentMutation,
   useUpdateRecruitmentPostStatusMutation,
@@ -411,14 +412,7 @@ export default function RecruitmentPostDetailPage() {
                 } ${index === comments.length - 1 ? 'rounded-bl-2xl rounded-br-2xl' : ''}`}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <Image
-                    src="/icons/profile.svg"
-                    alt=""
-                    width={20}
-                    height={20}
-                    aria-hidden
-                    className="shrink-0"
-                  />
+                  <TeamProfileAvatar className="h-5 w-5 shrink-0" />
                   <p className="text-b03-sb lg:text-b02-sb text-gray-800 truncate">
                     {comment.authorNickname ?? '익명'}
                   </p>

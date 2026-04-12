@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useMyProfileProtectedQuery } from '@/hooks/my/useProfileQuery';
+import { TeamProfileAvatar } from '@/shared/ui/profile/team-profile-avatar';
 import { Team, TeamDescription, TeamLogoUrl } from '@homerunnie/shared';
 
 export default function MyProfile() {
@@ -16,13 +17,10 @@ export default function MyProfile() {
         <>
           <div className="flex flex-col sm:flex-row sm:justify-between mt-0 mb-4 border-b gap-2">
             <div className="flex items-center gap-4 mb-4 sm:mb-6">
-              <div className="w-12 h-12 rounded-full bg-pink-500 flex items-center justify-center shrink-0">
-                <Image
-                  src="/images/pink.png"
-                  alt="유저"
-                  width={68}
-                  height={68}
-                  className="cursor-pointer"
+              <div className="shrink-0">
+                <TeamProfileAvatar
+                  supportTeam={myProfile?.supportTeam}
+                  className="h-12 w-12 lg:h-[68px] lg:w-[68px]"
                 />
               </div>
               <div className="flex flex-col gap-2">
