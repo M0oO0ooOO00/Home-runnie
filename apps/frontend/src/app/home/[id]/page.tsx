@@ -187,7 +187,7 @@ export default function RecruitmentPostDetailPage() {
         <div className="flex justify-end">
           <button
             type="button"
-            className="inline-flex items-center gap-2 text-b03-r text-zinc-500"
+            className="inline-flex items-center gap-2 text-b03-r text-zinc-500 mb-4"
             onClick={() => setIsReportModalOpen(true)}
           >
             <Image src="/icons/alert.svg" alt="" width={16} height={16} aria-hidden />
