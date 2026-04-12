@@ -401,7 +401,7 @@ export default function RecruitmentPostDetailPage() {
             </button>
           </div>
 
-          <div className="bg-neutral-100 overflow-hidden rounded-2xl border border-zinc-300">
+          <div className="bg-neutral-100 overflow-visible rounded-2xl border border-zinc-300">
             {comments.map((comment, index) => (
               <div
                 key={comment.id}
