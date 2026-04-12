@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ChatInfo from './ChatInfo';
 import ChatInput from './ChatInput';
@@ -55,6 +55,7 @@ const FALLBACK_ROOM_INFO: RoomInfo = {
 const ChatBox = ({ roomId }: { roomId: string }) => {
   const router = useRouter();
   const chatRoomsMap = useChatRooms();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
@@ -77,6 +78,10 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
 
   const roomResponse = chatRoomsMap.get(roomId);
   const roomInfo = roomResponse ? createRoomInfo(roomResponse) : FALLBACK_ROOM_INFO;
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   useEffect(() => {
     if (kickedFromRoom || roomDeleted) {
@@ -115,6 +120,7 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
             {messages.map((msg) => (
               <MessageBubble key={msg.id} msg={msg} />
             ))}
+            <div ref={messagesEndRef} />
           </div>
 
           <div className="shrink-0">
@@ -127,7 +133,6 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         onReport={() => setIsReportModalOpen(true)}
-        title={roomInfo.title}
         matchDate={roomInfo.matchDate}
         matchTeam={roomInfo.matchTeam}
         role={roomInfo.role}
