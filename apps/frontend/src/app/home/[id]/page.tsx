@@ -293,7 +293,7 @@ export default function RecruitmentPostDetailPage() {
               </p>
               <div className="flex flex-wrap gap-2 lg:gap-3">
                 {writerTraits.map((trait) => (
-                  <BgmTag key={trait} text={trait} size="sm" />
+                  <BgmTag key={trait} text={trait} size="sm" className="cursor-default" />
                 ))}
                 {writerTraits.length === 0 ? <p className="text-b03-r text-gray-500">-</p> : null}
               </div>
