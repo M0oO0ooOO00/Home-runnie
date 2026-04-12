@@ -118,7 +118,7 @@ export default function RecruitmentListPage() {
                   />
                   <TeamDropdown
                     items={baseBallStadiumItems}
-                    placeholder="경기하는 구장을 선택해주세요"
+                    placeholder="경기하는 구장 선택"
                     value={stadium || null}
                     onChange={(next) => setStadium(next as Stadium)}
                     className="w-full"
