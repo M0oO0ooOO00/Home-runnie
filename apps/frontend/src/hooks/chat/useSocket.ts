@@ -11,6 +11,7 @@ export interface ChatMessage {
   sender: 'me' | 'other' | 'system';
   nickname: string;
   supportTeam: string | null;
+  createdAt: string;
 }
 
 export function useSocket(roomId: string) {
@@ -45,6 +46,7 @@ export function useSocket(roomId: string) {
             sender: isSystem ? ('system' as const) : msg.isOwn ? 'me' : ('other' as const),
             nickname: isSystem ? '' : msg.isOwn ? '' : msg.nickname,
             supportTeam: isSystem ? null : msg.supportTeam,
+            createdAt: msg.createdAt ?? new Date().toISOString(),
           };
         }),
       );
@@ -56,6 +58,7 @@ export function useSocket(roomId: string) {
       isOwn: boolean;
       supportTeam?: string | null;
       roomId?: string;
+      createdAt?: string;
     }) => {
       // 다른 방의 메시지는 무시 (공유 소켓이므로 모든 방의 메시지가 수신됨)
       if (data.roomId && data.roomId !== roomId) return;
@@ -69,6 +72,7 @@ export function useSocket(roomId: string) {
           sender: isSystem ? 'system' : data.isOwn ? 'me' : 'other',
           nickname: isSystem ? '' : data.nickname,
           supportTeam: isSystem ? null : (data.supportTeam ?? null),
+          createdAt: data.createdAt ?? new Date().toISOString(),
         },
       ]);
     };

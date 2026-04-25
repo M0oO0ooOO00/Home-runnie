@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { Team, TEAM_ASSETS, DEFAULT_PROFILE_IMAGE } from '@homerunnie/shared';
 import { ChatMessage } from '@/hooks/chat/useSocket';
+import { formatKoreanTime } from '@/lib/format';
 
 const MessageBubble = ({ msg }: { msg: ChatMessage }) => {
   if (msg.sender === 'system') {
@@ -13,6 +14,8 @@ const MessageBubble = ({ msg }: { msg: ChatMessage }) => {
 
   const isMe = msg.sender === 'me';
   const showProfile = !isMe && msg.nickname;
+  const date = msg.createdAt ? new Date(msg.createdAt) : null;
+  const time = date && !isNaN(date.getTime()) ? formatKoreanTime(date) : '';
 
   return (
     <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
@@ -33,6 +36,7 @@ const MessageBubble = ({ msg }: { msg: ChatMessage }) => {
               />
             </div>
           )}
+          {isMe && time && <span className="text-xs text-gray-400 shrink-0">{time}</span>}
           <div
             className={[
               'rounded-2xl px-4 py-2 max-w-xs lg:max-w-md',
@@ -43,6 +47,7 @@ const MessageBubble = ({ msg }: { msg: ChatMessage }) => {
           >
             {msg.text}
           </div>
+          {!isMe && time && <span className="text-xs text-gray-400 shrink-0">{time}</span>}
         </div>
       </div>
     </div>

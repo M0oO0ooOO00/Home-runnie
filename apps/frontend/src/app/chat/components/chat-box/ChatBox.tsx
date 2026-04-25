@@ -89,26 +89,28 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
           joinRequestCount={joinRequestCount}
           onJoinRequestOpen={resetJoinRequestCount}
         />
-        <section
-          className={`flex flex-col flex-1 min-h-0 py-6 transition-all duration-300 ease-in-out ${
-            isSidebarOpen ? 'px-4 lg:px-[30px]' : 'px-4 lg:px-[120px]'
-          }`}
-        >
+        <section className="flex flex-col flex-1 min-h-0 py-6 transition-all duration-300 ease-in-out">
           <ReportModal
             isOpen={isReportModalOpen}
             onClose={() => setIsReportModalOpen(false)}
             participants={reportParticipants}
           />
 
-          <div className="grow flex flex-col justify-end gap-4 overflow-y-auto min-h-0 mb-6">
-            {!connected && <p className="text-center text-sm text-gray-400">서버에 연결 중...</p>}
-            {messages.map((msg) => (
-              <MessageBubble key={msg.id} msg={msg} />
-            ))}
-            <div ref={messagesEndRef} />
+          <div className="grow flex flex-col overflow-y-auto min-h-0">
+            <div
+              className={`mt-auto flex flex-col gap-4 ${
+                isSidebarOpen ? 'px-4 lg:px-[30px]' : 'px-4 lg:px-8'
+              }`}
+            >
+              {!connected && <p className="text-center text-sm text-gray-400">서버에 연결 중...</p>}
+              {messages.map((msg) => (
+                <MessageBubble key={msg.id} msg={msg} />
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
           </div>
 
-          <div className="shrink-0">
+          <div className={`shrink-0 ${isSidebarOpen ? 'px-4 lg:px-[30px]' : 'px-4 lg:px-8'}`}>
             <ChatInput onSend={sendMessage} />
           </div>
         </section>

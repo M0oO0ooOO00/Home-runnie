@@ -11,6 +11,14 @@ export const formatKoreanDate = (date: Date): string => {
     .replace(/\s/g, '');
 };
 
+export const formatKoreanTime = (date: Date): string => {
+  return date.toLocaleTimeString('ko-KR', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+};
+
 export const formatTeamName = (team: string | null): string => {
   if (!team) return '-';
   return TeamDescription[team as Team] ?? team;
