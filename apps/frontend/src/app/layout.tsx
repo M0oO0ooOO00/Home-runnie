@@ -19,13 +19,9 @@ export const metadata: Metadata = {
   keywords: ['야구', '직관', '메이트', 'KBO', '응원', '직관 메이트', '직관 모집', '야구 커뮤니티'],
   applicationName: 'Homerunnie',
   authors: [{ name: 'Homerunnie' }],
-  alternates: {
-    canonical: '/',
-  },
   openGraph: {
     type: 'website',
     locale: 'ko_KR',
-    url: SITE_URL,
     siteName: 'Homerunnie',
     title: 'Homerunnie | 직관 메이트 찾기',
     description:
