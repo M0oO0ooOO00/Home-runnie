@@ -7,7 +7,10 @@ import {
   ApiUnauthorizedResponse,
   ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
-import { CreateRecruitmentPostRequestDto, CreateRecruitmentPostResponseDto } from '@/post/dto';
+import {
+  CreateRecruitmentPostRequestDto,
+  CreateRecruitmentPostResponseDto,
+} from '@/post/recruitment/dto';
 import { ErrorResponseDto } from '@/common';
 
 export const CreateRecruitmentPostSwagger = applyDecorators(

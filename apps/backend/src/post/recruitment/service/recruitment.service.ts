@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { PostRepository } from '@/post/repository';
+import { RecruitmentRepository } from '@/post/recruitment/repository';
 import {
   CreateRecruitmentPostRequestDto,
   CreateRecruitmentPostResponseDto,
@@ -9,14 +9,14 @@ import {
   RecruitmentPostItemResponseDto,
   UpdateRecruitmentPostStatusRequestDto,
   UpdateRecruitmentPostStatusResponseDto,
-} from '@/post/dto';
+} from '@/post/recruitment/dto';
 import { PostStatusEnum } from '@/common/enums/post-status.enum';
 import { TicketingType } from '@/common/enums/ticketing-type.enum';
 import { PreferGender } from '@/common/enums/prefer-gender.enum';
 
 @Injectable()
-export class PostService {
-  constructor(private readonly postRepository: PostRepository) {}
+export class RecruitmentService {
+  constructor(private readonly recruitmentRepository: RecruitmentRepository) {}
 
   async createRecruitmentPost(
     authorId: number,
@@ -52,7 +52,7 @@ export class PostService {
       preferGenderEnum = PreferGender.ANY;
     }
 
-    const result = await this.postRepository.createRecruitmentPost(
+    const result = await this.recruitmentRepository.createRecruitmentPost(
       authorId,
       title,
       new Date(gameDate),
@@ -95,7 +95,7 @@ export class PostService {
             : undefined;
 
     const [posts, total] = await Promise.all([
-      this.postRepository.findRecruitmentPosts(page, limit, {
+      this.recruitmentRepository.findRecruitmentPosts(page, limit, {
         keyword: query.keyword,
         title: query.title,
         gameDate: query.gameDate,
@@ -110,7 +110,7 @@ export class PostService {
         picked: query.picked,
         note: query.note,
       }),
-      this.postRepository.countRecruitmentPosts({
+      this.recruitmentRepository.countRecruitmentPosts({
         keyword: query.keyword,
         title: query.title,
         gameDate: query.gameDate,
@@ -145,7 +145,7 @@ export class PostService {
   }
 
   async getRecruitmentPostDetail(postId: number): Promise<GetRecruitmentPostDetailResponseDto> {
-    const post = await this.postRepository.findRecruitmentPostById(postId);
+    const post = await this.recruitmentRepository.findRecruitmentPostById(postId);
     if (!post) {
       throw new NotFoundException('해당 모집글을 찾을 수 없습니다.');
     }
@@ -175,7 +175,7 @@ export class PostService {
   }
 
   async deleteRecruitmentPost(memberId: number, postId: number) {
-    const post = await this.postRepository.findRecruitmentPostById(postId);
+    const post = await this.recruitmentRepository.findRecruitmentPostById(postId);
     if (!post) {
       throw new NotFoundException('해당 모집글을 찾을 수 없습니다.');
     }
@@ -183,7 +183,7 @@ export class PostService {
       throw new ForbiddenException('작성자만 삭제할 수 있습니다.');
     }
 
-    const deleted = await this.postRepository.softDeletePost(postId);
+    const deleted = await this.recruitmentRepository.softDeletePost(postId);
     if (!deleted) {
       throw new NotFoundException('해당 모집글을 찾을 수 없습니다.');
     }
@@ -196,7 +196,7 @@ export class PostService {
     postId: number,
     dto: UpdateRecruitmentPostStatusRequestDto,
   ): Promise<UpdateRecruitmentPostStatusResponseDto> {
-    const post = await this.postRepository.findRecruitmentPostById(postId);
+    const post = await this.recruitmentRepository.findRecruitmentPostById(postId);
     if (!post) {
       throw new NotFoundException('해당 모집글을 찾을 수 없습니다.');
     }
@@ -204,7 +204,7 @@ export class PostService {
       throw new ForbiddenException('작성자만 모집 상태를 변경할 수 있습니다.');
     }
 
-    const updated = await this.postRepository.updateRecruitmentPostStatus(
+    const updated = await this.recruitmentRepository.updateRecruitmentPostStatus(
       postId,
       dto.postStatus as PostStatusEnum.ACTIVE | PostStatusEnum.CLOSE,
     );

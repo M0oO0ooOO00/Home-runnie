@@ -7,7 +7,7 @@ import { DbModule } from '@/common/db/db.module';
 import { MemberModule } from '@/member/member.module';
 import { AuthModule } from '@/auth/auth.module';
 import { ReportModule } from '@/report/report.module';
-import { PostModule } from '@/post/post.module';
+import { RecruitmentModule } from '@/post/recruitment/recruitment.module';
 import { ParticipationModule } from '@/participation/participation.module';
 import { ScrapModule } from '@/scrap/scrap.module';
 import { AdminModule } from '@/admin/admin.module';
@@ -30,7 +30,7 @@ import * as path from 'path';
     MemberModule,
     AuthModule,
     ReportModule,
-    PostModule,
+    RecruitmentModule,
     ParticipationModule,
     ScrapModule,
     AdminModule,
