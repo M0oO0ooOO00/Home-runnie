@@ -258,16 +258,6 @@ export class RecruitmentRepository {
     return post ?? null;
   }
 
-  async softDeletePost(postId: number) {
-    const [updated] = await this.db
-      .update(Post)
-      .set({ deleted: true })
-      .where(and(eq(Post.id, postId), eq(Post.deleted, false)))
-      .returning({ id: Post.id });
-
-    return updated ?? null;
-  }
-
   async updateRecruitmentPostStatus(
     postId: number,
     postStatus: PostStatusEnum.ACTIVE | PostStatusEnum.CLOSE,
