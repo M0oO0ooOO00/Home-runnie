@@ -4,7 +4,7 @@ import { Member, Profile } from '@/member/domain';
 import { Report, ReportCount } from '@/report/domain';
 import { Warn } from '@/admin/domain';
 import { Post } from '@/post/shared/domain';
-import { RecruitmentDetail } from '@/post/domain';
+import { RecruitmentDetail } from '@/post/recruitment/domain';
 import { Scrap } from '@/scrap/domain';
 import { Participation } from '@/participation/domain';
 import { ChatRoom, ChatRoomMember, ChatMessage } from '@/chat/domain';

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Post } from '@/post/shared/domain';
-import { RecruitmentDetail } from '@/post/domain';
+import { RecruitmentDetail } from '@/post/recruitment/domain';
 import { PostType } from '@homerunnie/shared';
 import { PostStatusEnum } from '@/common/enums/post-status.enum';
 import { TicketingType } from '@/common/enums/ticketing-type.enum';
@@ -30,7 +30,7 @@ type RecruitmentPostSearchFilters = {
 };
 
 @Injectable()
-export class PostRepository {
+export class RecruitmentRepository {
   constructor(
     @Inject(DATABASE_CONNECTION)
     private readonly db: ReturnType<typeof drizzle>,
@@ -50,7 +50,6 @@ export class PostRepository {
     supportTeam: Team | null,
     picked: string[] | null,
   ) {
-    // Post 생성
     const [post] = await this.db
       .insert(Post)
       .values({
@@ -65,13 +64,12 @@ export class PostRepository {
       throw new Error('게시글 생성 실패');
     }
 
-    // RecruitmentDetail 생성
     const [recruitmentDetail] = await this.db
       .insert(RecruitmentDetail)
       .values({
         postId: post.id,
         gameDate: gameDate.toISOString(),
-        gameTime: gameDate.toISOString(), // gameTime도 gameDate와 동일하게 설정
+        gameTime: gameDate.toISOString(),
         stadium: stadium.toString(),
         teamHome: teamHome.toString(),
         teamAway: teamAway.toString(),

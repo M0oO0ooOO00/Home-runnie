@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
-import { PostService } from '@/post/service';
+import { RecruitmentService } from '@/post/recruitment/service';
 import {
   CreateRecruitmentPostRequestDto,
   CreateRecruitmentPostResponseDto,
@@ -19,55 +19,59 @@ import {
   GetRecruitmentPostsResponseDto,
   UpdateRecruitmentPostStatusRequestDto,
   UpdateRecruitmentPostStatusResponseDto,
-} from '@/post/dto';
+} from '@/post/recruitment/dto';
 import { CurrentMember } from '@/common';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
-import { CreateRecruitmentPostSwagger } from '@/post/swagger';
+import {
+  CreateRecruitmentPostSwagger,
+  RecruitmentControllerSwagger,
+} from '@/post/recruitment/swagger';
 
-@Controller('post')
-export class PostController {
-  constructor(private readonly postService: PostService) {}
+@Controller('post/recruitment')
+@RecruitmentControllerSwagger
+export class RecruitmentController {
+  constructor(private readonly recruitmentService: RecruitmentService) {}
 
-  @Post('recruitment')
+  @Post()
   @UseGuards(JwtAuthGuard)
   @CreateRecruitmentPostSwagger
   async createRecruitmentPost(
     @CurrentMember() memberId: number,
     @Body() createRecruitmentPostDto: CreateRecruitmentPostRequestDto,
   ): Promise<CreateRecruitmentPostResponseDto> {
-    return await this.postService.createRecruitmentPost(memberId, createRecruitmentPostDto);
+    return this.recruitmentService.createRecruitmentPost(memberId, createRecruitmentPostDto);
   }
 
-  @Get('recruitment')
+  @Get()
   async getRecruitmentPosts(
     @Query() query: GetRecruitmentPostsQueryDto,
   ): Promise<GetRecruitmentPostsResponseDto> {
-    return this.postService.getRecruitmentPosts(query);
+    return this.recruitmentService.getRecruitmentPosts(query);
   }
 
-  @Get('recruitment/:postId')
+  @Get(':postId')
   async getRecruitmentPostDetail(
     @Param('postId', ParseIntPipe) postId: number,
   ): Promise<GetRecruitmentPostDetailResponseDto> {
-    return this.postService.getRecruitmentPostDetail(postId);
+    return this.recruitmentService.getRecruitmentPostDetail(postId);
   }
 
-  @Delete('recruitment/:postId')
+  @Delete(':postId')
   @UseGuards(JwtAuthGuard)
   async deleteRecruitmentPost(
     @CurrentMember() memberId: number,
     @Param('postId', ParseIntPipe) postId: number,
   ) {
-    return this.postService.deleteRecruitmentPost(memberId, postId);
+    return this.recruitmentService.deleteRecruitmentPost(memberId, postId);
   }
 
-  @Patch('recruitment/:postId/status')
+  @Patch(':postId/status')
   @UseGuards(JwtAuthGuard)
   async updateRecruitmentPostStatus(
     @CurrentMember() memberId: number,
     @Param('postId', ParseIntPipe) postId: number,
     @Body() dto: UpdateRecruitmentPostStatusRequestDto,
   ): Promise<UpdateRecruitmentPostStatusResponseDto> {
-    return this.postService.updateRecruitmentPostStatus(memberId, postId, dto);
+    return this.recruitmentService.updateRecruitmentPostStatus(memberId, postId, dto);
   }
 }

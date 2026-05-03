@@ -2,7 +2,7 @@ import { relations } from 'drizzle-orm';
 import { Post } from '@/post/shared/domain';
 import { Member } from '@/member/domain';
 import { TipsDetail } from '@/post/domain/tips-detail.entity';
-import { RecruitmentDetail } from '@/post/domain/recruitment-detail.entity';
+import { RecruitmentDetail } from '@/post/recruitment/domain';
 import { PostImage } from '@/post/shared/domain/post-image.entity';
 import { Scrap } from '@/scrap/domain';
 import { Comment } from '@/comment/domain';
