@@ -1,7 +1,7 @@
 import { integer, pgTable, unique } from 'drizzle-orm/pg-core';
 import { baseColumns } from '@/common';
 import { Member } from '@/member/domain';
-import { Post } from '@/post/domain';
+import { Post } from '@/post/shared/domain';
 import { relations } from 'drizzle-orm';
 
 export const Scrap = pgTable(

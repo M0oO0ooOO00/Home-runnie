@@ -1,7 +1,7 @@
 import { integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { baseColumns } from '@/common';
 import { relations } from 'drizzle-orm';
-import { Post } from '@/post/domain/post.entity';
+import { Post } from '@/post/shared/domain/post.entity';
 import { Participation } from '@/participation/domain';
 import { preferGenderPgEnum, ticketingTypePgEnum } from '@/common';
 

@@ -1,6 +1,6 @@
 import { integer, pgTable, text } from 'drizzle-orm/pg-core';
 import { baseColumns } from '@/common';
-import { Post } from '@/post/domain/post.entity';
+import { Post } from '@/post/shared/domain/post.entity';
 import { relations } from 'drizzle-orm';
 
 export const PostImage = pgTable('post_image', {

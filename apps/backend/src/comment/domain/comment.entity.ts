@@ -2,7 +2,7 @@ import { integer, pgTable, text } from 'drizzle-orm/pg-core';
 import { baseColumns } from '@/common';
 import { postStatusPgEnum } from '@/common';
 import { Member } from '@/member/domain';
-import { Post } from '@/post/domain';
+import { Post } from '@/post/shared/domain';
 import { relations } from 'drizzle-orm';
 
 export { postStatusPgEnum };

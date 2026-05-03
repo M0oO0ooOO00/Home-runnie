@@ -4,7 +4,7 @@ import { baseColumns } from '@/common/db/base.entity';
 import { Profile } from '@/member/domain/profile.entity';
 import { ReportCount } from '@/report/domain';
 import { Report } from '@/report/domain';
-import { Post } from '@/post/domain';
+import { Post } from '@/post/shared/domain';
 import { Participation } from '@/participation/domain';
 import { Scrap } from '@/scrap/domain';
 import { Comment } from '@/comment/domain';

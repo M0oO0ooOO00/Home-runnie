@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { Post, RecruitmentDetail } from '@/post/domain';
+import { Post } from '@/post/shared/domain';
+import { RecruitmentDetail } from '@/post/domain';
 import { PostType } from '@homerunnie/shared';
 import { PostStatusEnum } from '@/common/enums/post-status.enum';
 import { TicketingType } from '@/common/enums/ticketing-type.enum';
