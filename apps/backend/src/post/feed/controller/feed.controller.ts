@@ -1,11 +1,17 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { FeedService } from '@/post/feed/service';
-import { CreateFeedPostRequestDto, FeedPostResponseDto } from '@/post/feed/dto';
+import {
+  CreateFeedPostRequestDto,
+  FeedPostResponseDto,
+  GetFeedPostsQueryDto,
+  GetFeedPostsResponseDto,
+} from '@/post/feed/dto';
 import { CurrentMember } from '@/common';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import {
   CreateFeedPostSwagger,
   GetFeedPostDetailSwagger,
+  GetFeedPostsSwagger,
   FeedControllerSwagger,
 } from '@/post/feed/swagger';
 
@@ -22,6 +28,13 @@ export class FeedController {
     @Body() dto: CreateFeedPostRequestDto,
   ): Promise<FeedPostResponseDto> {
     return this.feedService.createFeedPost(memberId, dto);
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  @GetFeedPostsSwagger
+  async getFeedPosts(@Query() query: GetFeedPostsQueryDto): Promise<GetFeedPostsResponseDto> {
+    return this.feedService.getFeedPosts(query.cursor ?? null, query.limit ?? 10);
   }
 
   @Get(':postId')

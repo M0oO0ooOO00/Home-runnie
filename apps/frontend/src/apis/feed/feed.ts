@@ -22,3 +22,12 @@ export async function getFeedPosts(params: GetFeedPostsParams = {}): Promise<Get
 export async function getFeedPostById(id: number): Promise<FeedPost> {
   return apiClient.get<FeedPost>(`/post/feed/${id}`);
 }
+
+export interface CreateFeedPostRequest {
+  content: string;
+  images?: string[];
+}
+
+export async function createFeedPost(body: CreateFeedPostRequest): Promise<FeedPost> {
+  return apiClient.post<FeedPost>('/post/feed', body, { authRequired: true });
+}

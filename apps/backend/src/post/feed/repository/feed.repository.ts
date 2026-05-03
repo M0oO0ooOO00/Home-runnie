@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt } from 'drizzle-orm';
 import { Post, PostImage } from '@/post/shared/domain';
 import { FeedDetail } from '@/post/feed/domain';
 import { Member } from '@/member/domain';
@@ -97,5 +97,58 @@ export class FeedRepository {
       images: imageRows.map((row) => row.imageUrl),
       createdAt: base.createdAt,
     };
+  }
+
+  async findFeedPosts(cursorId: number | null, limit: number): Promise<FeedPostQueryResult[]> {
+    const conditions = [eq(Post.post_type, PostType.FEED), eq(Post.deleted, false)];
+    if (cursorId !== null) {
+      conditions.push(lt(Post.id, cursorId));
+    }
+
+    const baseRows = await this.db
+      .select({
+        id: Post.id,
+        authorId: Post.authorId,
+        authorNickname: Profile.nickname,
+        supportTeam: Profile.supportTeam,
+        content: FeedDetail.content,
+        createdAt: Post.createdAt,
+      })
+      .from(Post)
+      .innerJoin(FeedDetail, eq(Post.id, FeedDetail.postId))
+      .innerJoin(Member, eq(Post.authorId, Member.id))
+      .leftJoin(Profile, eq(Profile.memberId, Member.id))
+      .where(and(...conditions))
+      .orderBy(desc(Post.id))
+      .limit(limit);
+
+    if (baseRows.length === 0) return [];
+
+    const postIds = baseRows.map((r) => r.id);
+    const imageRows = await this.db
+      .select({
+        postId: PostImage.postId,
+        imageUrl: PostImage.imageUrl,
+        imageOrder: PostImage.imageOrder,
+      })
+      .from(PostImage)
+      .where(inArray(PostImage.postId, postIds))
+      .orderBy(PostImage.imageOrder);
+
+    const imagesByPostId = imageRows.reduce<Record<number, string[]>>((acc, row) => {
+      if (!acc[row.postId]) acc[row.postId] = [];
+      acc[row.postId].push(row.imageUrl);
+      return acc;
+    }, {});
+
+    return baseRows.map((row) => ({
+      id: row.id,
+      authorId: row.authorId,
+      authorNickname: row.authorNickname,
+      supportTeam: row.supportTeam,
+      content: row.content,
+      images: imagesByPostId[row.id] ?? [],
+      createdAt: row.createdAt,
+    }));
   }
 }

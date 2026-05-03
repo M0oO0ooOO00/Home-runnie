@@ -1,6 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { FeedRepository, type FeedPostQueryResult } from '@/post/feed/repository';
-import { CreateFeedPostRequestDto, FeedPostResponseDto } from '@/post/feed/dto';
+import {
+  CreateFeedPostRequestDto,
+  FeedPostResponseDto,
+  GetFeedPostsResponseDto,
+} from '@/post/feed/dto';
 import { AuthorDto, AuthorType } from '@/post/shared/dto/author.dto';
 import { Team } from '@/common/enums';
 
@@ -30,6 +34,35 @@ export class FeedService {
       throw new NotFoundException('해당 게시글을 찾을 수 없습니다.');
     }
     return this.toResponse(detail);
+  }
+
+  async getFeedPosts(cursor: string | null, limit: number): Promise<GetFeedPostsResponseDto> {
+    const cursorId = cursor ? this.decodeCursor(cursor) : null;
+
+    const rows = await this.feedRepository.findFeedPosts(cursorId, limit + 1);
+
+    const hasMore = rows.length > limit;
+    const sliced = hasMore ? rows.slice(0, limit) : rows;
+    const lastItem = sliced[sliced.length - 1];
+    const nextCursor = hasMore && lastItem ? this.encodeCursor(lastItem.id) : null;
+
+    return new GetFeedPostsResponseDto({
+      items: sliced.map((row) => this.toResponse(row)),
+      nextCursor,
+    });
+  }
+
+  private encodeCursor(id: number): string {
+    return Buffer.from(String(id), 'utf-8').toString('base64');
+  }
+
+  private decodeCursor(cursor: string): number | null {
+    try {
+      const id = parseInt(Buffer.from(cursor, 'base64').toString('utf-8'), 10);
+      return Number.isFinite(id) ? id : null;
+    } catch {
+      return null;
+    }
   }
 
   private toResponse(detail: FeedPostQueryResult): FeedPostResponseDto {
