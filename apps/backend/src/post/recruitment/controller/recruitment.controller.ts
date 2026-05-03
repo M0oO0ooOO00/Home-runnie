@@ -24,6 +24,10 @@ import { CurrentMember } from '@/common';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import {
   CreateRecruitmentPostSwagger,
+  GetRecruitmentPostsSwagger,
+  GetRecruitmentPostDetailSwagger,
+  DeleteRecruitmentPostSwagger,
+  UpdateRecruitmentPostStatusSwagger,
   RecruitmentControllerSwagger,
 } from '@/post/recruitment/swagger';
 
@@ -43,6 +47,7 @@ export class RecruitmentController {
   }
 
   @Get()
+  @GetRecruitmentPostsSwagger
   async getRecruitmentPosts(
     @Query() query: GetRecruitmentPostsQueryDto,
   ): Promise<GetRecruitmentPostsResponseDto> {
@@ -50,6 +55,7 @@ export class RecruitmentController {
   }
 
   @Get(':postId')
+  @GetRecruitmentPostDetailSwagger
   async getRecruitmentPostDetail(
     @Param('postId', ParseIntPipe) postId: number,
   ): Promise<GetRecruitmentPostDetailResponseDto> {
@@ -58,6 +64,7 @@ export class RecruitmentController {
 
   @Delete(':postId')
   @UseGuards(JwtAuthGuard)
+  @DeleteRecruitmentPostSwagger
   async deleteRecruitmentPost(
     @CurrentMember() memberId: number,
     @Param('postId', ParseIntPipe) postId: number,
@@ -67,6 +74,7 @@ export class RecruitmentController {
 
   @Patch(':postId/status')
   @UseGuards(JwtAuthGuard)
+  @UpdateRecruitmentPostStatusSwagger
   async updateRecruitmentPostStatus(
     @CurrentMember() memberId: number,
     @Param('postId', ParseIntPipe) postId: number,

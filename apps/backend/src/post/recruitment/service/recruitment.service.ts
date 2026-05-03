@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { RecruitmentRepository } from '@/post/recruitment/repository';
+import { PostSharedRepository } from '@/post/shared/repository';
 import {
   CreateRecruitmentPostRequestDto,
   CreateRecruitmentPostResponseDto,
@@ -16,7 +17,10 @@ import { PreferGender } from '@/common/enums/prefer-gender.enum';
 
 @Injectable()
 export class RecruitmentService {
-  constructor(private readonly recruitmentRepository: RecruitmentRepository) {}
+  constructor(
+    private readonly recruitmentRepository: RecruitmentRepository,
+    private readonly postSharedRepository: PostSharedRepository,
+  ) {}
 
   async createRecruitmentPost(
     authorId: number,
@@ -183,7 +187,7 @@ export class RecruitmentService {
       throw new ForbiddenException('작성자만 삭제할 수 있습니다.');
     }
 
-    const deleted = await this.recruitmentRepository.softDeletePost(postId);
+    const deleted = await this.postSharedRepository.softDelete(postId);
     if (!deleted) {
       throw new NotFoundException('해당 모집글을 찾을 수 없습니다.');
     }
