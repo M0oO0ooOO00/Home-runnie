@@ -3,18 +3,42 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { LogIn, LogOut, MessageCircle, Menu, User, X } from 'lucide-react';
 import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
 import { logout } from '@/apis/auth/auth';
+import { cn } from '@/lib/utils';
 
 export default function Header() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    lastScrollY.current = window.scrollY;
+
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      const delta = currentY - lastScrollY.current;
+
+      if (currentY < 10) {
+        setHidden(false);
+      } else if (delta > 4) {
+        setHidden(true);
+      } else if (delta < -4) {
+        setHidden(false);
+      }
+
+      lastScrollY.current = currentY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const closeSidebar = () => setIsSidebarOpen(false);
   const { data, isLoading, isError } = useMyProfileQuery({
@@ -43,7 +67,13 @@ export default function Header() {
 
   return (
     <>
-      <header className="w-screen h-20 bg-neutral-50 overflow-hidden">
+      <header
+        className={cn(
+          'sticky top-0 z-30 w-screen h-14 lg:h-20 bg-neutral-50 overflow-hidden',
+          'transition-transform duration-300 ease-in-out',
+          hidden ? '-translate-y-full lg:translate-y-0' : 'translate-y-0',
+        )}
+      >
         <div className="max-w-[1440px] mx-auto h-full flex items-center justify-between px-4 sm:px-6 md:px-10 lg:px-20 xl:px-[120px] gap-3">
           {/* 로고 */}
           <Image
