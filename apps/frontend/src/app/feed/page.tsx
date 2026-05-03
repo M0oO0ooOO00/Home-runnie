@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { FeedCard } from '@/shared/ui/feed-card/feed-card';
 import { useFeedInfiniteQuery } from '@/hooks/feed/useFeedInfiniteQuery';
 
 export default function FeedPage() {
+  const router = useRouter();
   const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useFeedInfiniteQuery();
 
@@ -60,7 +62,7 @@ export default function FeedPage() {
     <div className="max-w-[600px] mx-auto py-6">
       <div className="space-y-3">
         {items.map((post) => (
-          <FeedCard key={post.id} post={post} />
+          <FeedCard key={post.id} post={post} onCardClick={(p) => router.push(`/feed/${p.id}`)} />
         ))}
       </div>
       <div ref={sentinelRef} className="h-16 flex items-center justify-center" aria-hidden="true">

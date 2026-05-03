@@ -44,6 +44,7 @@ export interface FeedCardProps {
   onLikeClick?: (post: FeedPost) => void;
   onCommentClick?: (post: FeedPost) => void;
   onCardClick?: (post: FeedPost) => void;
+  expanded?: boolean;
   className?: string;
 }
 
@@ -52,6 +53,7 @@ export function FeedCard({
   onLikeClick,
   onCommentClick,
   onCardClick,
+  expanded = false,
   className,
 }: FeedCardProps) {
   const { author, content, images, likeCount, isLiked, commentCount, createdAt } = post;
@@ -83,7 +85,14 @@ export function FeedCard({
       </header>
 
       <div className="px-4 py-3">
-        <p className="text-b03-r text-gray-800 whitespace-pre-wrap line-clamp-6">{content}</p>
+        <p
+          className={cn(
+            'text-b03-r text-gray-800 whitespace-pre-wrap',
+            !expanded && 'line-clamp-6',
+          )}
+        >
+          {content}
+        </p>
       </div>
 
       {images.length > 0 && (

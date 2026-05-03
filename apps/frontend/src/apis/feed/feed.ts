@@ -18,3 +18,7 @@ export async function getFeedPosts(params: GetFeedPostsParams = {}): Promise<Get
   query.set('limit', String(limit));
   return apiClient.get<GetFeedPostsResponse>(`/post/feed?${query.toString()}`);
 }
+
+export async function getFeedPostById(id: number): Promise<FeedPost> {
+  return apiClient.get<FeedPost>(`/post/feed/${id}`);
+}

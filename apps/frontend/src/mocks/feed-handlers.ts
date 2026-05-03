@@ -127,4 +127,20 @@ export const feedHandlers = [
     const response: GetFeedPostsResponse = { items, nextCursor };
     return HttpResponse.json(response);
   }),
+
+  http.get('*/api/post/feed/:id', async ({ params }) => {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    const id = Number(params.id);
+    if (!Number.isFinite(id)) {
+      return HttpResponse.json({ message: '잘못된 ID 형식입니다.' }, { status: 400 });
+    }
+
+    const post = ALL_POSTS.find((p) => p.id === id);
+    if (!post) {
+      return HttpResponse.json({ message: '해당 게시글을 찾을 수 없습니다.' }, { status: 404 });
+    }
+
+    return HttpResponse.json(post);
+  }),
 ];
