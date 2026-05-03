@@ -6,6 +6,7 @@ export * from '@/report/domain';
 export * from '@/post/shared/domain';
 export * from '@/post/recruitment/domain';
 export * from '@/post/tips/domain';
+export * from '@/post/feed/domain';
 export * from '@/post/post-relations';
 export * from '@/comment/domain';
 export * from '@/participation/domain';

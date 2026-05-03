@@ -3,7 +3,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { getFeedPosts, type GetFeedPostsResponse } from '@/apis/feed/feed';
 
-export const useFeedInfiniteQuery = (limit = 20) => {
+export const useFeedInfiniteQuery = (limit = 10) => {
   return useInfiniteQuery<
     GetFeedPostsResponse,
     Error,
