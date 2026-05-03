@@ -39,7 +39,7 @@ export class RecruitmentController {
     @CurrentMember() memberId: number,
     @Body() createRecruitmentPostDto: CreateRecruitmentPostRequestDto,
   ): Promise<CreateRecruitmentPostResponseDto> {
-    return await this.recruitmentService.createRecruitmentPost(memberId, createRecruitmentPostDto);
+    return this.recruitmentService.createRecruitmentPost(memberId, createRecruitmentPostDto);
   }
 
   @Get()
