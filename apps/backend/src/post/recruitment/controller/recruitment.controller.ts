@@ -22,9 +22,13 @@ import {
 } from '@/post/recruitment/dto';
 import { CurrentMember } from '@/common';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
-import { CreateRecruitmentPostSwagger } from '@/post/recruitment/swagger';
+import {
+  CreateRecruitmentPostSwagger,
+  RecruitmentControllerSwagger,
+} from '@/post/recruitment/swagger';
 
 @Controller('post/recruitment')
+@RecruitmentControllerSwagger
 export class RecruitmentController {
   constructor(private readonly recruitmentService: RecruitmentService) {}
 
