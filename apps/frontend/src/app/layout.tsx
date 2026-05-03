@@ -4,7 +4,6 @@ import '@/shared/styles/index.css';
 import 'sonner/dist/styles.css';
 import Header from '@/shared/ui/header/header';
 import Footer from '@/shared/ui/footer/footer';
-import '@/mocks'; // MSW 초기화 (브라우저 환경에서만 동작)
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.homerunnie.app';
 

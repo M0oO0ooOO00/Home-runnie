@@ -65,4 +65,6 @@
 //   return HttpResponse.json(response, { status: 200 });
 // });
 
-export const handlers = [];
+import { feedHandlers } from './feed-handlers';
+
+export const handlers = [...feedHandlers];
