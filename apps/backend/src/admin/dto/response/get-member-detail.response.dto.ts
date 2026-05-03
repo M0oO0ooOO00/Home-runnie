@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Profile, Member } from '@/member/domain';
 import { Warn } from '@/admin/domain';
 import { Report } from '@/report/domain';
-import { Post } from '@/post/domain';
+import { Post } from '@/post/shared/domain';
 import {
   Gender,
   GenderDescription,

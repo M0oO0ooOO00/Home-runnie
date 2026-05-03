@@ -4,7 +4,7 @@ import { Member } from '@/member/domain';
 import { relations } from 'drizzle-orm';
 import { TipsDetail } from '@/post/domain/tips-detail.entity';
 import { RecruitmentDetail } from '@/post/domain/recruitment-detail.entity';
-import { PostImage } from '@/post/domain/post-image.entity';
+import { PostImage } from '@/post/shared/domain/post-image.entity';
 import { Scrap } from '@/scrap/domain';
 import { Comment } from '@/comment/domain';
 import { postTypePgEnum, postStatusPgEnum } from '@/common';

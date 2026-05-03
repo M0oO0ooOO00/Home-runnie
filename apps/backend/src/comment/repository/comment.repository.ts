@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { and, asc, eq } from 'drizzle-orm';
 import { DATABASE_CONNECTION } from '@/common';
 import { Comment } from '@/comment/domain';
-import { Post } from '@/post/domain';
+import { Post } from '@/post/shared/domain';
 import { PostType } from '@homerunnie/shared';
 import { PostStatusEnum } from '@/common/enums/post-status.enum';
 import { Profile } from '@/member/domain/profile.entity';

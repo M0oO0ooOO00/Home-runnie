@@ -1,7 +1,7 @@
 import { integer, pgTable } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { baseColumns } from '@/common/db/base.entity';
-import { Post } from '@/post/domain';
+import { Post } from '@/post/shared/domain';
 import { ChatMessage } from '@/chat/domain/chat-message.entity';
 import { ChatRoomMember } from '@/chat/domain/chat-room-member.entity';
 import { ChatJoinRequest } from '@/chat/domain/chat-join-request.entity';

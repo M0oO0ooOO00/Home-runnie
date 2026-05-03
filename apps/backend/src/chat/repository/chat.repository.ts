@@ -6,7 +6,7 @@ import { ChatRoom, ChatRoomMember, ChatMessage, ChatJoinRequest } from '@/chat/d
 import { ChatRoomMemberRole, ChatJoinRequestStatus } from '@homerunnie/shared';
 import { Member } from '@/member/domain/member.entity';
 import { Profile } from '@/member/domain/profile.entity';
-import { Post } from '@/post/domain';
+import { Post } from '@/post/shared/domain';
 import { RecruitmentDetail } from '@/post/domain/recruitment-detail.entity';
 import * as schema from '@/common/db/schema';
 

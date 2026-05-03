@@ -3,6 +3,7 @@
 
 export * from '@/member/domain';
 export * from '@/report/domain';
+export * from '@/post/shared/domain';
 export * from '@/post/domain';
 export * from '@/comment/domain';
 export * from '@/participation/domain';
