@@ -12,7 +12,7 @@
 - **로그인 유도 패턴**: 라우트 가드 X, 액션 단위 로그인 시트 ○ (토스 스타일).
 - **모듈 분리**: 기존 `post` 모듈을 `shared/recruitment/tips`로 가르고 `feed`를 형제 하위 모듈로 추가.
 - **L2 호환성 핵심 3종** (지금 안 만들어도 막지는 않는다):
-  1. `Post.authorMemberId` nullable 확정
+  1. `Post.authorId` nullable 확정 (현재 `authorId`, `not null`)
   2. 응답 DTO에 `author` 객체 추상화
   3. `ReportType` enum에 POST/COMMENT 대상 미리 정의
 
@@ -50,7 +50,7 @@
 | C2  | FEED 작성/삭제 API                         | 본문 + 이미지 0~4장, topicIds는 P2에서                      | A1, B | M    |
 | C3  | FEED 단건 조회 API (`@OptionalAuth`)       | viewer 기반 `isLiked` 계산                                  | C1, B | S    |
 | C4  | **무한 스크롤 목록 API** (`@OptionalAuth`) | 커서 기반: `cursor=postId&limit=20`, 정렬 `createdAt DESC`  | C1, B | M    |
-| C5  | `Post.authorMemberId` nullable 검토/적용   | **L2 호환성 핵심**                                          | C1    | S    |
+| C5  | `Post.authorId` nullable 검토/적용         | **L2 호환성 핵심** (현재 `authorId not null`)               | C1    | S    |
 | C6  | 응답 DTO에 `author` 객체 추상화            | `{ author: { type: 'member', id, nickname, supportTeam } }` | C5    | S    |
 
 **C4 상세**:
@@ -138,7 +138,7 @@
 
 | #   | 작업                                                                     | 비고                   |
 | --- | ------------------------------------------------------------------------ | ---------------------- |
-| I1  | `Post.authorMemberId` nullable 확정 (Track C5)                           | -                      |
+| I1  | `Post.authorId` nullable 확정 (Track C5)                                 | 현재 `not null`        |
 | I2  | DTO `author` 추상화 확정 (Track C6, E4)                                  | -                      |
 | I3  | `ReportType` enum에 `POST_TARGET`, `COMMENT_TARGET` 미리 정의 (구현은 X) | enum만 추가, 로직 없음 |
 
