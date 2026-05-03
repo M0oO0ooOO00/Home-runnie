@@ -1,10 +1,12 @@
 'use client';
 
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ImagePlus, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCreateFeedPostMutation } from '@/hooks/feed/useCreateFeedPostMutation';
+import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
+import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
 
 const MAX_IMAGES = 4;
 const MAX_CONTENT = 2000;
@@ -19,6 +21,23 @@ export default function FeedNewPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [content, setContent] = useState('');
   const [images, setImages] = useState<ImageItem[]>([]);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+
+  const {
+    data: profile,
+    isLoading: isProfileLoading,
+    isError: isProfileError,
+  } = useMyProfileQuery({ retry: false });
+  const isLogged = useMemo(
+    () => !isProfileError && Boolean(profile?.nickname),
+    [profile?.nickname, isProfileError],
+  );
+
+  useEffect(() => {
+    if (!isProfileLoading && !isLogged) {
+      setLoginModalOpen(true);
+    }
+  }, [isProfileLoading, isLogged]);
 
   const { mutate, isPending, isError, error } = useCreateFeedPostMutation({
     onSuccess: () => router.push('/feed'),
@@ -160,6 +179,22 @@ export default function FeedNewPage() {
       {isError && (
         <p className="text-c01-r text-red-500 mt-3 px-1">게시 실패: {(error as Error)?.message}</p>
       )}
+
+      <LoginRequiredModal
+        open={loginModalOpen}
+        onOpenChange={(open) => {
+          setLoginModalOpen(open);
+          if (!open && !isLogged) {
+            router.replace('/feed');
+          }
+        }}
+        onConfirm={() => router.push('/login')}
+        title="로그인이 필요해요"
+        description="글을 작성하려면 로그인이 필요합니다."
+        confirmText="로그인 하러가기"
+        cancelText="피드로 돌아가기"
+        showCancel
+      />
     </div>
   );
 }

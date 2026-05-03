@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { LogIn, LogOut, MessageCircle, Menu, User, X } from 'lucide-react';
+import { LogIn, LogOut, MessageCircle, Menu, Newspaper, User, X } from 'lucide-react';
 import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
 import { logout } from '@/apis/auth/auth';
 import { cn } from '@/lib/utils';
@@ -86,6 +86,13 @@ export default function Header() {
           />
           {/* 오른쪽 메뉴 (PC) */}
           <nav className="hidden lg:inline-flex justify-start items-center gap-5">
+            <Link href="/feed">
+              <div className="px-3.5 py-2.5 rounded-[10px] flex justify-center items-center gap-2.5 hover:bg-gray-100 transition-colors">
+                <div className="justify-start text-zinc-500 text-base font-medium leading-6">
+                  커뮤니티
+                </div>
+              </div>
+            </Link>
             {!isLoading && isLogged && (
               <>
                 <Link href="/chat">
@@ -161,6 +168,14 @@ export default function Header() {
           </button>
         </div>
         <nav className="flex flex-col py-3">
+          <Link
+            href="/feed"
+            onClick={closeSidebar}
+            className="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 transition-colors"
+          >
+            <Newspaper className="w-5 h-5 text-zinc-500" />
+            <span className="text-b02-m text-zinc-700">커뮤니티</span>
+          </Link>
           {!isLoading && isLogged && (
             <>
               <Link

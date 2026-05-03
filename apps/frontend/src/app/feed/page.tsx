@@ -1,17 +1,33 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Pencil } from 'lucide-react';
 import { FeedCard } from '@/shared/ui/feed-card/feed-card';
 import { useFeedInfiniteQuery } from '@/hooks/feed/useFeedInfiniteQuery';
+import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
+import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
 
 export default function FeedPage() {
   const router = useRouter();
   const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useFeedInfiniteQuery();
+  const { data: profile, isError: isProfileError } = useMyProfileQuery({ retry: false });
+  const isLogged = useMemo(
+    () => !isProfileError && Boolean(profile?.nickname),
+    [profile?.nickname, isProfileError],
+  );
 
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+
+  const handleWriteClick = () => {
+    if (isLogged) {
+      router.push('/feed/new');
+    } else {
+      setLoginModalOpen(true);
+    }
+  };
 
   useEffect(() => {
     const node = sentinelRef.current;
@@ -80,12 +96,23 @@ export default function FeedPage() {
 
       <button
         type="button"
-        onClick={() => router.push('/feed/new')}
+        onClick={handleWriteClick}
         className="fixed bottom-5 right-5 z-30 w-11 h-11 rounded-full bg-primary text-primary-foreground shadow-md flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
         aria-label="피드 작성"
       >
         <Pencil size={18} />
       </button>
+
+      <LoginRequiredModal
+        open={loginModalOpen}
+        onOpenChange={setLoginModalOpen}
+        onConfirm={() => router.push('/login')}
+        title="로그인이 필요해요"
+        description="글을 작성하려면 로그인이 필요합니다."
+        confirmText="로그인 하러가기"
+        cancelText="다음에"
+        showCancel
+      />
     </>
   );
 }

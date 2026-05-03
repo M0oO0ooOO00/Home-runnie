@@ -31,14 +31,12 @@ export class FeedController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   @GetFeedPostsSwagger
   async getFeedPosts(@Query() query: GetFeedPostsQueryDto): Promise<GetFeedPostsResponseDto> {
     return this.feedService.getFeedPosts(query.cursor ?? null, query.limit ?? 10);
   }
 
   @Get(':postId')
-  @UseGuards(JwtAuthGuard)
   @GetFeedPostDetailSwagger
   async getFeedPostDetail(
     @Param('postId', ParseIntPipe) postId: number,
