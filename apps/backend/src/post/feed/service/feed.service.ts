@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { FeedRepository, type FeedPostQueryResult } from '@/post/feed/repository';
 import {
   CreateFeedPostRequestDto,
@@ -22,7 +22,7 @@ export class FeedService {
 
     const detail = await this.feedRepository.findFeedPostById(post.id);
     if (!detail) {
-      throw new Error('생성된 FEED 게시글 조회 실패');
+      throw new InternalServerErrorException('생성된 FEED 게시글 조회 실패');
     }
 
     return this.toResponse(detail);

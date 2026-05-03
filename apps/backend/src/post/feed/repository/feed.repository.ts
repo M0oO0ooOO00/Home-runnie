@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { and, desc, eq, inArray, lt } from 'drizzle-orm';
 import { Post, PostImage } from '@/post/shared/domain';
@@ -29,36 +29,38 @@ export class FeedRepository {
   async createFeedPost(authorId: number, content: string, images: string[]) {
     const title = content.slice(0, 50);
 
-    const [post] = await this.db
-      .insert(Post)
-      .values({
-        title,
-        post_type: PostType.FEED,
-        postStatus: PostStatusEnum.ACTIVE,
-        authorId,
-      })
-      .returning();
+    return this.db.transaction(async (tx) => {
+      const [post] = await tx
+        .insert(Post)
+        .values({
+          title,
+          post_type: PostType.FEED,
+          postStatus: PostStatusEnum.ACTIVE,
+          authorId,
+        })
+        .returning();
 
-    if (!post) {
-      throw new Error('FEED 게시글 생성 실패');
-    }
+      if (!post) {
+        throw new InternalServerErrorException('FEED 게시글 생성 실패');
+      }
 
-    await this.db.insert(FeedDetail).values({
-      postId: post.id,
-      content,
+      await tx.insert(FeedDetail).values({
+        postId: post.id,
+        content,
+      });
+
+      if (images.length > 0) {
+        await tx.insert(PostImage).values(
+          images.map((imageUrl, idx) => ({
+            postId: post.id,
+            imageUrl,
+            imageOrder: idx,
+          })),
+        );
+      }
+
+      return post;
     });
-
-    if (images.length > 0) {
-      await this.db.insert(PostImage).values(
-        images.map((imageUrl, idx) => ({
-          postId: post.id,
-          imageUrl,
-          imageOrder: idx,
-        })),
-      );
-    }
-
-    return post;
   }
 
   async findFeedPostById(postId: number): Promise<FeedPostQueryResult | null> {
