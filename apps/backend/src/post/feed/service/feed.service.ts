@@ -9,12 +9,14 @@ import { AuthorDto, AuthorType } from '@/post/shared/dto/author.dto';
 import { Team } from '@/common/enums';
 import { ReactionRepository } from '@/reaction/repository';
 import { ReactionTargetType } from '@/reaction/domain';
+import { FeedCommentRepository } from '@/post/feed/comment/repository';
 
 @Injectable()
 export class FeedService {
   constructor(
     private readonly feedRepository: FeedRepository,
     private readonly reactionRepository: ReactionRepository,
+    private readonly feedCommentRepository: FeedCommentRepository,
   ) {}
 
   async createFeedPost(
@@ -30,7 +32,7 @@ export class FeedService {
       throw new InternalServerErrorException('생성된 FEED 게시글 조회 실패');
     }
 
-    return this.toResponse(detail, 0, false);
+    return this.toResponse(detail, 0, false, 0);
   }
 
   async getFeedPostDetail(
@@ -54,7 +56,12 @@ export class FeedService {
           ).has(detail.id)
         : false;
 
-    return this.toResponse(detail, likeCount, isLiked);
+    const commentCountByPostId = await this.feedCommentRepository.countCommentsByPostIds([
+      detail.id,
+    ]);
+    const commentCount = commentCountByPostId[detail.id] ?? 0;
+
+    return this.toResponse(detail, likeCount, isLiked, commentCount);
   }
 
   async getFeedPosts(
@@ -84,10 +91,16 @@ export class FeedService {
             ids,
           )
         : new Set<number>();
+    const commentCountByPostId = await this.feedCommentRepository.countCommentsByPostIds(ids);
 
     return new GetFeedPostsResponseDto({
       items: sliced.map((row) =>
-        this.toResponse(row, likeCountByPostId[row.id] ?? 0, likedSet.has(row.id)),
+        this.toResponse(
+          row,
+          likeCountByPostId[row.id] ?? 0,
+          likedSet.has(row.id),
+          commentCountByPostId[row.id] ?? 0,
+        ),
       ),
       nextCursor,
     });
@@ -110,6 +123,7 @@ export class FeedService {
     detail: FeedPostQueryResult,
     likeCount: number,
     isLiked: boolean,
+    commentCount: number,
   ): FeedPostResponseDto {
     return new FeedPostResponseDto({
       id: detail.id,
@@ -123,7 +137,7 @@ export class FeedService {
       images: detail.images,
       likeCount,
       isLiked,
-      commentCount: 0,
+      commentCount,
       createdAt: detail.createdAt.toISOString(),
     });
   }
