@@ -38,7 +38,7 @@ export function CommentInput({
         placeholder={placeholder}
         autoFocus={autoFocus}
         maxLength={MAX_LENGTH + 100}
-        className="w-full min-h-[60px] resize-none outline-none text-b03-r text-gray-800 placeholder:text-gray-400 bg-gray-50 rounded-lg px-3 py-2 focus:bg-white focus:ring-1 focus:ring-gray-200"
+        className="w-full min-h-[60px] resize-none outline-none text-b03-r text-gray-800 placeholder:text-gray-500 bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 focus:bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-300 transition-colors"
       />
       <div className="flex items-center justify-end gap-2">
         {onCancel && (

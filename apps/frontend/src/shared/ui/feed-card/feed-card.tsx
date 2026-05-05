@@ -105,12 +105,15 @@ export function FeedCard({
         <button
           type="button"
           onClick={(e) => {
+            if (!onLikeClick) return;
             e.stopPropagation();
-            onLikeClick?.(post);
+            onLikeClick(post);
           }}
           className={cn(
             'inline-flex items-center gap-1.5 text-c01-m transition-colors',
-            isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500',
+            isLiked ? 'text-red-500' : 'text-gray-500',
+            onLikeClick ? 'cursor-pointer' : 'pointer-events-none',
+            onLikeClick && !isLiked && 'hover:text-red-500',
           )}
           aria-label={isLiked ? '좋아요 취소' : '좋아요'}
         >
@@ -120,10 +123,15 @@ export function FeedCard({
         <button
           type="button"
           onClick={(e) => {
+            if (!onCommentClick) return;
             e.stopPropagation();
-            onCommentClick?.(post);
+            onCommentClick(post);
           }}
-          className="inline-flex items-center gap-1.5 text-c01-m text-gray-500 hover:text-gray-700 transition-colors"
+          className={cn(
+            'inline-flex items-center gap-1.5 text-c01-m text-gray-500 transition-colors',
+            onCommentClick ? 'cursor-pointer' : 'pointer-events-none',
+            onCommentClick && 'hover:text-gray-700',
+          )}
           aria-label="댓글"
         >
           <MessageCircle size={18} />
