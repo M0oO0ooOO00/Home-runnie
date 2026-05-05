@@ -9,6 +9,7 @@ import { useFeedPostQuery } from '@/hooks/feed/useFeedPostQuery';
 import { useToggleLikeMutation } from '@/hooks/feed/useToggleLikeMutation';
 import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
 import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
+import { CommentList } from './components/CommentList';
 
 interface FeedDetailPageProps {
   params: { id: string };
@@ -23,6 +24,10 @@ export default function FeedDetailPage({ params }: FeedDetailPageProps) {
   const isLogged = useMemo(
     () => !isProfileError && Boolean(profile?.nickname),
     [profile?.nickname, isProfileError],
+  );
+  const viewerMemberId = useMemo(
+    () => (isLogged && profile?.memberId ? profile.memberId : null),
+    [isLogged, profile?.memberId],
   );
 
   const [loginModal, setLoginModal] = useState<{ open: boolean; message: string }>({
@@ -73,10 +78,13 @@ export default function FeedDetailPage({ params }: FeedDetailPageProps) {
         <>
           <FeedCard post={post} expanded onLikeClick={handleLikeClick} />
 
-          <section className="mt-3 bg-background rounded-2xl border border-gray-100 p-4">
-            <h2 className="text-b02-sb text-gray-950">댓글 ({post.commentCount})</h2>
-            <p className="text-c01-r text-gray-500 mt-3">댓글 기능 곧 출시 예정입니다.</p>
-          </section>
+          <div className="mt-3">
+            <CommentList
+              postId={post.id}
+              viewerMemberId={viewerMemberId}
+              onAuthRequired={showLoginModal}
+            />
+          </div>
         </>
       )}
 
