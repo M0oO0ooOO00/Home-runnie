@@ -53,7 +53,10 @@ export class ReactionRepository {
     if (targetIds.length === 0) return {};
 
     const rows = await this.db
-      .select({ targetId: Like.targetId })
+      .select({
+        targetId: Like.targetId,
+        cnt: count(),
+      })
       .from(Like)
       .where(
         and(
@@ -61,10 +64,11 @@ export class ReactionRepository {
           inArray(Like.targetId, targetIds),
           eq(Like.deleted, false),
         ),
-      );
+      )
+      .groupBy(Like.targetId);
 
     return rows.reduce<Record<number, number>>((acc, row) => {
-      acc[row.targetId] = (acc[row.targetId] ?? 0) + 1;
+      acc[row.targetId] = Number(row.cnt);
       return acc;
     }, {});
   }
