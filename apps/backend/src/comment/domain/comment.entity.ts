@@ -1,4 +1,4 @@
-import { integer, pgTable, text } from 'drizzle-orm/pg-core';
+import { type AnyPgColumn, integer, pgTable, text } from 'drizzle-orm/pg-core';
 import { baseColumns } from '@/common';
 import { postStatusPgEnum } from '@/common';
 import { Member } from '@/member/domain';
@@ -16,9 +16,10 @@ export const Comment = pgTable('comment', {
   postId: integer('post_id')
     .notNull()
     .references(() => Post.id),
+  parentId: integer('parent_id').references((): AnyPgColumn => Comment.id),
 });
 
-export const commentRelations = relations(Comment, ({ one }) => ({
+export const commentRelations = relations(Comment, ({ one, many }) => ({
   author: one(Member, {
     fields: [Comment.authorId],
     references: [Member.id],
@@ -26,5 +27,13 @@ export const commentRelations = relations(Comment, ({ one }) => ({
   post: one(Post, {
     fields: [Comment.postId],
     references: [Post.id],
+  }),
+  parent: one(Comment, {
+    fields: [Comment.parentId],
+    references: [Comment.id],
+    relationName: 'commentReplies',
+  }),
+  replies: many(Comment, {
+    relationName: 'commentReplies',
   }),
 }));

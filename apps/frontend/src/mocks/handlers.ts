@@ -66,5 +66,7 @@
 // });
 
 import { feedHandlers } from './feed-handlers';
+import { reactionHandlers } from './reaction-handlers';
+import { commentHandlers } from './comment-handlers';
 
-export const handlers = [...feedHandlers];
+export const handlers = [...feedHandlers, ...reactionHandlers, ...commentHandlers];

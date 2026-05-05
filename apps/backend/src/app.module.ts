@@ -9,6 +9,7 @@ import { AuthModule } from '@/auth/auth.module';
 import { ReportModule } from '@/report/report.module';
 import { RecruitmentModule } from '@/post/recruitment/recruitment.module';
 import { FeedModule } from '@/post/feed/feed.module';
+import { ReactionModule } from '@/reaction/reaction.module';
 import { ParticipationModule } from '@/participation/participation.module';
 import { ScrapModule } from '@/scrap/scrap.module';
 import { AdminModule } from '@/admin/admin.module';
@@ -33,6 +34,7 @@ import * as path from 'path';
     ReportModule,
     RecruitmentModule,
     FeedModule,
+    ReactionModule,
     ParticipationModule,
     ScrapModule,
     AdminModule,

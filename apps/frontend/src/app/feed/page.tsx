@@ -4,7 +4,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Pencil } from 'lucide-react';
 import { FeedCard } from '@/shared/ui/feed-card/feed-card';
+import type { FeedPost } from '@/shared/ui/feed-card/feed-card.types';
 import { useFeedInfiniteQuery } from '@/hooks/feed/useFeedInfiniteQuery';
+import { useToggleLikeMutation } from '@/hooks/feed/useToggleLikeMutation';
 import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
 import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
 
@@ -19,14 +21,31 @@ export default function FeedPage() {
   );
 
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [loginModal, setLoginModal] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
+
+  const toggleLikeMutation = useToggleLikeMutation();
+
+  const showLoginModal = (message: string) => {
+    setLoginModal({ open: true, message });
+  };
 
   const handleWriteClick = () => {
     if (isLogged) {
       router.push('/feed/new');
     } else {
-      setLoginModalOpen(true);
+      showLoginModal('글을 작성하려면 로그인이 필요합니다.');
     }
+  };
+
+  const handleLikeClick = (post: FeedPost) => {
+    if (!isLogged) {
+      showLoginModal('이 글에 좋아요를 누르려면 로그인이 필요합니다.');
+      return;
+    }
+    toggleLikeMutation.mutate(post.id);
   };
 
   useEffect(() => {
@@ -79,6 +98,7 @@ export default function FeedPage() {
                   key={post.id}
                   post={post}
                   onCardClick={(p) => router.push(`/feed/${p.id}`)}
+                  onLikeClick={handleLikeClick}
                 />
               ))}
             </div>
@@ -104,11 +124,11 @@ export default function FeedPage() {
       </button>
 
       <LoginRequiredModal
-        open={loginModalOpen}
-        onOpenChange={setLoginModalOpen}
+        open={loginModal.open}
+        onOpenChange={(open) => setLoginModal((s) => ({ ...s, open }))}
         onConfirm={() => router.push('/login')}
         title="로그인이 필요해요"
-        description="글을 작성하려면 로그인이 필요합니다."
+        description={loginModal.message}
         confirmText="로그인 하러가기"
         cancelText="다음에"
         showCancel
