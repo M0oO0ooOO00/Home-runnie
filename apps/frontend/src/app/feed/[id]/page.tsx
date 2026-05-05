@@ -1,9 +1,14 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { FeedCard } from '@/shared/ui/feed-card/feed-card';
+import type { FeedPost } from '@/shared/ui/feed-card/feed-card.types';
 import { useFeedPostQuery } from '@/hooks/feed/useFeedPostQuery';
+import { useToggleLikeMutation } from '@/hooks/feed/useToggleLikeMutation';
+import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
+import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
 
 interface FeedDetailPageProps {
   params: { id: string };
@@ -14,6 +19,30 @@ export default function FeedDetailPage({ params }: FeedDetailPageProps) {
   const postId = Number(params.id);
 
   const { data: post, isLoading, isError, error } = useFeedPostQuery(postId);
+  const { data: profile, isError: isProfileError } = useMyProfileQuery({ retry: false });
+  const isLogged = useMemo(
+    () => !isProfileError && Boolean(profile?.nickname),
+    [profile?.nickname, isProfileError],
+  );
+
+  const [loginModal, setLoginModal] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
+
+  const toggleLikeMutation = useToggleLikeMutation();
+
+  const showLoginModal = (message: string) => {
+    setLoginModal({ open: true, message });
+  };
+
+  const handleLikeClick = (p: FeedPost) => {
+    if (!isLogged) {
+      showLoginModal('이 글에 좋아요를 누르려면 로그인이 필요합니다.');
+      return;
+    }
+    toggleLikeMutation.mutate(p.id);
+  };
 
   return (
     <div className="max-w-[600px] mx-auto py-4">
@@ -42,7 +71,7 @@ export default function FeedDetailPage({ params }: FeedDetailPageProps) {
 
       {post && (
         <>
-          <FeedCard post={post} expanded />
+          <FeedCard post={post} expanded onLikeClick={handleLikeClick} />
 
           <section className="mt-3 bg-background rounded-2xl border border-gray-100 p-4">
             <h2 className="text-b02-sb text-gray-950">댓글 ({post.commentCount})</h2>
@@ -50,6 +79,17 @@ export default function FeedDetailPage({ params }: FeedDetailPageProps) {
           </section>
         </>
       )}
+
+      <LoginRequiredModal
+        open={loginModal.open}
+        onOpenChange={(open) => setLoginModal((s) => ({ ...s, open }))}
+        onConfirm={() => router.push('/login')}
+        title="로그인이 필요해요"
+        description={loginModal.message}
+        confirmText="로그인 하러가기"
+        cancelText="다음에"
+        showCancel
+      />
     </div>
   );
 }
