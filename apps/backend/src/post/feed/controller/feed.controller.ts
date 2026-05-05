@@ -6,8 +6,8 @@ import {
   GetFeedPostsQueryDto,
   GetFeedPostsResponseDto,
 } from '@/post/feed/dto';
-import { CurrentMember } from '@/common';
-import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
+import { CurrentMember, CurrentMemberOptional } from '@/common';
+import { JwtAuthGuard, OptionalJwtAuthGuard } from '@/auth/guards';
 import {
   CreateFeedPostSwagger,
   GetFeedPostDetailSwagger,
@@ -31,16 +31,22 @@ export class FeedController {
   }
 
   @Get()
+  @UseGuards(OptionalJwtAuthGuard)
   @GetFeedPostsSwagger
-  async getFeedPosts(@Query() query: GetFeedPostsQueryDto): Promise<GetFeedPostsResponseDto> {
-    return this.feedService.getFeedPosts(query.cursor ?? null, query.limit ?? 10);
+  async getFeedPosts(
+    @Query() query: GetFeedPostsQueryDto,
+    @CurrentMemberOptional() viewerMemberId: number | null,
+  ): Promise<GetFeedPostsResponseDto> {
+    return this.feedService.getFeedPosts(query.cursor ?? null, query.limit ?? 10, viewerMemberId);
   }
 
   @Get(':postId')
+  @UseGuards(OptionalJwtAuthGuard)
   @GetFeedPostDetailSwagger
   async getFeedPostDetail(
     @Param('postId', ParseIntPipe) postId: number,
+    @CurrentMemberOptional() viewerMemberId: number | null,
   ): Promise<FeedPostResponseDto> {
-    return this.feedService.getFeedPostDetail(postId);
+    return this.feedService.getFeedPostDetail(postId, viewerMemberId);
   }
 }
