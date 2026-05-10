@@ -126,11 +126,12 @@ jobs:
                   - "3030:3030"
                 env_file:
                   - prod.env
+                environment:
+                  - CI=true
                 restart: always
             EOF
-
+          
             docker compose -f docker-compose.prod.yaml pull
-            docker compose -f docker-compose.prod.yaml run --rm backend pnpm db:migrate:prod
+            docker compose -f docker-compose.prod.yaml run -T --rm backend pnpm db:migrate:prod
             docker compose -f docker-compose.prod.yaml up -d
-
             docker image prune -f
