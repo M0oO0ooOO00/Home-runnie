@@ -50,4 +50,4 @@ COPY --from=installer --chown=nestjs:nodejs /app/apps/backend/drizzle ./drizzle
 
 EXPOSE 3030
 
-CMD ["pnpm", "start:prod"]
+CMD ["node", "dist/main"]
