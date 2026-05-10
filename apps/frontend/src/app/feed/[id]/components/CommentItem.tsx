@@ -129,12 +129,9 @@ export function CommentItem({
                 <button
                   type="button"
                   onClick={handleDeleteClick}
-                  className={cn(
-                    'inline-flex items-center gap-1 text-c01-r transition-colors',
-                    confirmDelete
-                      ? 'text-red-600 font-semibold'
-                      : 'text-gray-500 hover:text-red-500',
-                  )}
+                  className={`inline-flex items-center gap-1 text-c01-r transition-colors ${
+                    confirmDelete ? 'text-red-600' : 'text-gray-500 hover:text-red-500'
+                  }`}
                 >
                   <Trash2 size={12} />
                   <span>{confirmDelete ? '한번 더 클릭' : '삭제'}</span>
