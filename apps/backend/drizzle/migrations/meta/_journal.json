@@ -15,6 +15,13 @@
       "when": 1778393421166,
       "tag": "0001_short_mercury",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778394058324,
+      "tag": "0002_elite_marauders",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { integer, pgTable, unique } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable, unique } from 'drizzle-orm/pg-core';
 import { baseColumns } from '@/common';
 import { Member } from '@/member/domain';
 import { reactionTargetTypePgEnum } from '@/common';
@@ -16,13 +16,10 @@ export const Like = pgTable(
     targetType: reactionTargetTypePgEnum('target_type').notNull(),
     targetId: integer('target_id').notNull(),
   },
-  (table) => ({
-    uniqueMemberTarget: unique('like_member_target_unique').on(
-      table.memberId,
-      table.targetType,
-      table.targetId,
-    ),
-  }),
+  (table) => [
+    unique('like_member_target_unique').on(table.memberId, table.targetType, table.targetId),
+    index('like_target_idx').on(table.targetType, table.targetId),
+  ],
 );
 
 export const likeRelations = relations(Like, ({ one }) => ({
