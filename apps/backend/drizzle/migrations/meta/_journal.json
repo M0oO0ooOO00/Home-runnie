@@ -8,6 +8,20 @@
       "when": 1774780866469,
       "tag": "0000_right_night_thrasher",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778393421166,
+      "tag": "0001_short_mercury",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778394058324,
+      "tag": "0002_elite_marauders",
+      "breakpoints": true
     }
   ]
 }
