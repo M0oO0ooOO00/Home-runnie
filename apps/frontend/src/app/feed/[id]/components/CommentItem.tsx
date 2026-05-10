@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MessageSquare, Trash2 } from 'lucide-react';
+import { MessageSquare, Pencil, Trash2 } from 'lucide-react';
 import { TeamDescription } from '@homerunnie/shared';
 import { TeamProfileAvatar } from '@/shared/ui/profile/team-profile-avatar';
 import { cn } from '@/lib/utils';
@@ -25,9 +25,11 @@ interface CommentItemProps {
   isReply?: boolean;
   isReplyingTarget?: boolean;
   isCreatingReply?: boolean;
+  isUpdatingComment?: boolean;
   onReplyToggle?: (commentId: number) => void;
   onReplySubmit?: (parentId: number, content: string) => void;
   onDelete?: (commentId: number) => void;
+  onUpdate?: (commentId: number, content: string) => void;
   onAuthRequired?: () => void;
 }
 
@@ -37,13 +39,16 @@ export function CommentItem({
   isReply = false,
   isReplyingTarget = false,
   isCreatingReply = false,
+  isUpdatingComment = false,
   onReplyToggle,
   onReplySubmit,
   onDelete,
+  onUpdate,
   onAuthRequired,
 }: CommentItemProps) {
   const isMine = viewerMemberId !== null && comment.author.id === viewerMemberId;
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleReplyClick = () => {
     if (viewerMemberId === null) {
@@ -76,35 +81,67 @@ export function CommentItem({
               </span>
             )}
           </div>
-          <p className="text-b03-r text-gray-800 whitespace-pre-wrap mt-0.5">{comment.content}</p>
-          <div className="flex items-center gap-3 mt-1.5">
-            <time className="text-c01-r text-gray-400" dateTime={comment.createdAt}>
-              {formatRelativeTime(comment.createdAt)}
-            </time>
-            {!isReply && onReplyToggle && (
-              <button
-                type="button"
-                onClick={handleReplyClick}
-                className="inline-flex items-center gap-1 text-c01-r text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <MessageSquare size={12} />
-                <span>답글</span>
-              </button>
-            )}
-            {isMine && onDelete && (
-              <button
-                type="button"
-                onClick={handleDeleteClick}
-                className={cn(
-                  'inline-flex items-center gap-1 text-c01-r transition-colors',
-                  confirmDelete ? 'text-red-600 font-semibold' : 'text-gray-500 hover:text-red-500',
-                )}
-              >
-                <Trash2 size={12} />
-                <span>{confirmDelete ? '한번 더 클릭' : '삭제'}</span>
-              </button>
-            )}
-          </div>
+          {isEditing ? (
+            <div className="mt-1">
+              <CommentInput
+                initialValue={comment.content}
+                placeholder="댓글을 입력하세요"
+                isSubmitting={isUpdatingComment}
+                submitLabel="저장"
+                submittingLabel="저장 중"
+                onSubmit={(content) => {
+                  onUpdate?.(comment.id, content);
+                  setIsEditing(false);
+                }}
+                onCancel={() => setIsEditing(false)}
+                autoFocus
+              />
+            </div>
+          ) : (
+            <p className="text-b03-r text-gray-800 whitespace-pre-wrap mt-0.5">{comment.content}</p>
+          )}
+          {!isEditing && (
+            <div className="flex items-center gap-3 mt-1.5">
+              <time className="text-c01-r text-gray-400" dateTime={comment.createdAt}>
+                {formatRelativeTime(comment.createdAt)}
+              </time>
+              {!isReply && onReplyToggle && (
+                <button
+                  type="button"
+                  onClick={handleReplyClick}
+                  className="inline-flex items-center gap-1 text-c01-r text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  <MessageSquare size={12} />
+                  <span>답글</span>
+                </button>
+              )}
+              {isMine && onUpdate && (
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="inline-flex items-center gap-1 text-c01-r text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  <Pencil size={12} />
+                  <span>수정</span>
+                </button>
+              )}
+              {isMine && onDelete && (
+                <button
+                  type="button"
+                  onClick={handleDeleteClick}
+                  className={cn(
+                    'inline-flex items-center gap-1 text-c01-r transition-colors',
+                    confirmDelete
+                      ? 'text-red-600 font-semibold'
+                      : 'text-gray-500 hover:text-red-500',
+                  )}
+                >
+                  <Trash2 size={12} />
+                  <span>{confirmDelete ? '한번 더 클릭' : '삭제'}</span>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -128,7 +165,9 @@ export function CommentItem({
               comment={reply}
               viewerMemberId={viewerMemberId}
               isReply
+              isUpdatingComment={isUpdatingComment}
               onDelete={onDelete}
+              onUpdate={onUpdate}
               onAuthRequired={onAuthRequired}
             />
           ))}

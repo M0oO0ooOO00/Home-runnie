@@ -17,6 +17,7 @@ export interface FeedPostQueryResult {
   content: string;
   images: string[];
   createdAt: Date;
+  updatedAt: Date;
 }
 
 @Injectable()
@@ -25,6 +26,46 @@ export class FeedRepository {
     @Inject(DATABASE_CONNECTION)
     private readonly db: ReturnType<typeof drizzle>,
   ) {}
+
+  async findFeedPostMeta(postId: number): Promise<{ id: number; authorId: number } | null> {
+    const [row] = await this.db
+      .select({ id: Post.id, authorId: Post.authorId })
+      .from(Post)
+      .where(and(eq(Post.id, postId), eq(Post.post_type, PostType.FEED), eq(Post.deleted, false)))
+      .limit(1);
+    return row ?? null;
+  }
+
+  async updateFeedPost(
+    postId: number,
+    patch: { content?: string; images?: string[] },
+  ): Promise<void> {
+    await this.db.transaction(async (tx) => {
+      if (patch.content !== undefined) {
+        const title = patch.content.slice(0, 50);
+        await tx.update(Post).set({ title, updatedAt: new Date() }).where(eq(Post.id, postId));
+        await tx
+          .update(FeedDetail)
+          .set({ content: patch.content, updatedAt: new Date() })
+          .where(eq(FeedDetail.postId, postId));
+      } else {
+        await tx.update(Post).set({ updatedAt: new Date() }).where(eq(Post.id, postId));
+      }
+
+      if (patch.images !== undefined) {
+        await tx.delete(PostImage).where(eq(PostImage.postId, postId));
+        if (patch.images.length > 0) {
+          await tx.insert(PostImage).values(
+            patch.images.map((imageUrl, idx) => ({
+              postId,
+              imageUrl,
+              imageOrder: idx,
+            })),
+          );
+        }
+      }
+    });
+  }
 
   async createFeedPost(authorId: number, content: string, images: string[]) {
     const title = content.slice(0, 50);
@@ -72,6 +113,7 @@ export class FeedRepository {
         supportTeam: Profile.supportTeam,
         content: FeedDetail.content,
         createdAt: Post.createdAt,
+        updatedAt: Post.updatedAt,
       })
       .from(Post)
       .innerJoin(FeedDetail, eq(Post.id, FeedDetail.postId))
@@ -98,6 +140,7 @@ export class FeedRepository {
       content: base.content,
       images: imageRows.map((row) => row.imageUrl),
       createdAt: base.createdAt,
+      updatedAt: base.updatedAt,
     };
   }
 
@@ -115,6 +158,7 @@ export class FeedRepository {
         supportTeam: Profile.supportTeam,
         content: FeedDetail.content,
         createdAt: Post.createdAt,
+        updatedAt: Post.updatedAt,
       })
       .from(Post)
       .innerJoin(FeedDetail, eq(Post.id, FeedDetail.postId))
@@ -151,6 +195,7 @@ export class FeedRepository {
       content: row.content,
       images: imagesByPostId[row.id] ?? [],
       createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
     }));
   }
 }

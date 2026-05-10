@@ -16,4 +16,5 @@ export interface FeedPost {
   isLiked: boolean;
   commentCount: number;
   createdAt: string;
+  updatedAt: string;
 }

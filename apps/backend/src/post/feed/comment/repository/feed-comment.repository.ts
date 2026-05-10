@@ -115,6 +115,13 @@ export class FeedCommentRepository {
       .where(eq(Comment.id, commentId));
   }
 
+  async updateCommentContent(commentId: number, content: string) {
+    await this.db
+      .update(Comment)
+      .set({ content, updatedAt: new Date() })
+      .where(eq(Comment.id, commentId));
+  }
+
   async countCommentsByPostIds(postIds: number[]): Promise<Record<number, number>> {
     if (postIds.length === 0) return {};
     const rows = await this.db

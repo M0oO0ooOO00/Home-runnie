@@ -36,3 +36,17 @@ export async function deleteFeedComment(
     authRequired: true,
   });
 }
+
+export interface UpdateFeedCommentRequest {
+  content: string;
+}
+
+export async function updateFeedComment(
+  postId: number,
+  commentId: number,
+  body: UpdateFeedCommentRequest,
+): Promise<FeedComment> {
+  return apiClient.patch<FeedComment>(`/post/feed/${postId}/comments/${commentId}`, body, {
+    authRequired: true,
+  });
+}

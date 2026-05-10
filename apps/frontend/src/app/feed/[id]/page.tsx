@@ -7,8 +7,10 @@ import { FeedCard } from '@/shared/ui/feed-card/feed-card';
 import type { FeedPost } from '@/shared/ui/feed-card/feed-card.types';
 import { useFeedPostQuery } from '@/hooks/feed/useFeedPostQuery';
 import { useToggleLikeMutation } from '@/hooks/feed/useToggleLikeMutation';
+import { useDeleteFeedPostMutation } from '@/hooks/feed/useDeleteFeedPostMutation';
 import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
 import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
+import ConfirmModal from '@/shared/ui/modal/ConfirmModal';
 import { CommentList } from './components/CommentList';
 
 interface FeedDetailPageProps {
@@ -34,8 +36,15 @@ export default function FeedDetailPage({ params }: FeedDetailPageProps) {
     open: false,
     message: '',
   });
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const toggleLikeMutation = useToggleLikeMutation();
+  const deletePostMutation = useDeleteFeedPostMutation({
+    onSuccess: () => {
+      setDeleteOpen(false);
+      router.push('/feed');
+    },
+  });
 
   const showLoginModal = (message: string) => {
     setLoginModal({ open: true, message });
@@ -76,7 +85,14 @@ export default function FeedDetailPage({ params }: FeedDetailPageProps) {
 
       {post && (
         <>
-          <FeedCard post={post} expanded onLikeClick={handleLikeClick} />
+          <FeedCard
+            post={post}
+            viewerMemberId={viewerMemberId}
+            expanded
+            onLikeClick={handleLikeClick}
+            onEditClick={(p) => router.push(`/feed/${p.id}/edit`)}
+            onDeleteClick={() => setDeleteOpen(true)}
+          />
 
           <div className="mt-3">
             <CommentList
@@ -87,6 +103,20 @@ export default function FeedDetailPage({ params }: FeedDetailPageProps) {
           </div>
         </>
       )}
+
+      <ConfirmModal
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onConfirm={() => {
+          if (post) deletePostMutation.mutate(post.id);
+        }}
+        title="게시글을 삭제하시겠어요?"
+        description="삭제된 게시글은 복구할 수 없습니다."
+        confirmText="삭제"
+        cancelText="취소"
+        destructive
+        isPending={deletePostMutation.isPending}
+      />
 
       <LoginRequiredModal
         open={loginModal.open}

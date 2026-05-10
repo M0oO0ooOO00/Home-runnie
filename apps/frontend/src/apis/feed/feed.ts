@@ -31,3 +31,16 @@ export interface CreateFeedPostRequest {
 export async function createFeedPost(body: CreateFeedPostRequest): Promise<FeedPost> {
   return apiClient.post<FeedPost>('/post/feed', body, { authRequired: true });
 }
+
+export interface UpdateFeedPostRequest {
+  content?: string;
+  images?: string[];
+}
+
+export async function updateFeedPost(id: number, body: UpdateFeedPostRequest): Promise<FeedPost> {
+  return apiClient.patch<FeedPost>(`/post/feed/${id}`, body, { authRequired: true });
+}
+
+export async function deleteFeedPost(id: number): Promise<{ id: number }> {
+  return apiClient.delete<{ id: number }>(`/post/feed/${id}`, { authRequired: true });
+}

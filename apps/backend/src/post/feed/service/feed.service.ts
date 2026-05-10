@@ -1,15 +1,23 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { FeedRepository, type FeedPostQueryResult } from '@/post/feed/repository';
 import {
   CreateFeedPostRequestDto,
   FeedPostResponseDto,
   GetFeedPostsResponseDto,
+  UpdateFeedPostRequestDto,
 } from '@/post/feed/dto';
 import { AuthorDto, AuthorType } from '@/post/shared/dto/author.dto';
 import { Team } from '@/common/enums';
 import { ReactionRepository } from '@/reaction/repository';
 import { ReactionTargetType } from '@/reaction/domain';
 import { FeedCommentRepository } from '@/post/feed/comment/repository';
+import { PostSharedRepository } from '@/post/shared/repository';
 
 @Injectable()
 export class FeedService {
@@ -17,6 +25,7 @@ export class FeedService {
     private readonly feedRepository: FeedRepository,
     private readonly reactionRepository: ReactionRepository,
     private readonly feedCommentRepository: FeedCommentRepository,
+    private readonly postSharedRepository: PostSharedRepository,
   ) {}
 
   async createFeedPost(
@@ -33,6 +42,48 @@ export class FeedService {
     }
 
     return this.toResponse(detail, 0, false, 0);
+  }
+
+  async updateFeedPost(
+    memberId: number,
+    postId: number,
+    dto: UpdateFeedPostRequestDto,
+  ): Promise<FeedPostResponseDto> {
+    if (dto.content === undefined && dto.images === undefined) {
+      throw new BadRequestException('content 또는 images 중 최소 하나는 전달해야 합니다.');
+    }
+
+    const meta = await this.feedRepository.findFeedPostMeta(postId);
+    if (!meta) {
+      throw new NotFoundException('해당 게시글을 찾을 수 없습니다.');
+    }
+    if (meta.authorId !== memberId) {
+      throw new ForbiddenException('작성자만 수정할 수 있습니다.');
+    }
+
+    await this.feedRepository.updateFeedPost(postId, {
+      content: dto.content,
+      images: dto.images,
+    });
+
+    return this.getFeedPostDetail(postId, memberId);
+  }
+
+  async deleteFeedPost(memberId: number, postId: number): Promise<{ id: number }> {
+    const meta = await this.feedRepository.findFeedPostMeta(postId);
+    if (!meta) {
+      throw new NotFoundException('해당 게시글을 찾을 수 없습니다.');
+    }
+    if (meta.authorId !== memberId) {
+      throw new ForbiddenException('작성자만 삭제할 수 있습니다.');
+    }
+
+    const deleted = await this.postSharedRepository.softDelete(postId);
+    if (!deleted) {
+      throw new NotFoundException('해당 게시글을 찾을 수 없습니다.');
+    }
+
+    return { id: deleted.id };
   }
 
   async getFeedPostDetail(
@@ -139,6 +190,7 @@ export class FeedService {
       isLiked,
       commentCount,
       createdAt: detail.createdAt.toISOString(),
+      updatedAt: detail.updatedAt.toISOString(),
     });
   }
 }
