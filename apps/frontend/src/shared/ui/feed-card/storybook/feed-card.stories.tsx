@@ -25,6 +25,7 @@ const basePost: FeedPost = {
   isLiked: false,
   commentCount: 5,
   createdAt: new Date(Date.now() - 1000 * 60 * 7).toISOString(),
+  updatedAt: new Date(Date.now() - 1000 * 60 * 7).toISOString(),
 };
 
 const meta = {

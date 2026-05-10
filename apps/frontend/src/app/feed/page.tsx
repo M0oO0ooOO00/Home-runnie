@@ -7,8 +7,10 @@ import { FeedCard } from '@/shared/ui/feed-card/feed-card';
 import type { FeedPost } from '@/shared/ui/feed-card/feed-card.types';
 import { useFeedInfiniteQuery } from '@/hooks/feed/useFeedInfiniteQuery';
 import { useToggleLikeMutation } from '@/hooks/feed/useToggleLikeMutation';
+import { useDeleteFeedPostMutation } from '@/hooks/feed/useDeleteFeedPostMutation';
 import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
 import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
+import ConfirmModal from '@/shared/ui/modal/ConfirmModal';
 
 export default function FeedPage() {
   const router = useRouter();
@@ -20,13 +22,22 @@ export default function FeedPage() {
     [profile?.nickname, isProfileError],
   );
 
+  const viewerMemberId = useMemo(
+    () => (isLogged && profile?.memberId ? profile.memberId : null),
+    [isLogged, profile?.memberId],
+  );
+
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [loginModal, setLoginModal] = useState<{ open: boolean; message: string }>({
     open: false,
     message: '',
   });
+  const [deleteTarget, setDeleteTarget] = useState<FeedPost | null>(null);
 
   const toggleLikeMutation = useToggleLikeMutation();
+  const deletePostMutation = useDeleteFeedPostMutation({
+    onSuccess: () => setDeleteTarget(null),
+  });
 
   const showLoginModal = (message: string) => {
     setLoginModal({ open: true, message });
@@ -97,8 +108,11 @@ export default function FeedPage() {
                 <FeedCard
                   key={post.id}
                   post={post}
+                  viewerMemberId={viewerMemberId}
                   onCardClick={(p) => router.push(`/feed/${p.id}`)}
                   onLikeClick={handleLikeClick}
+                  onEditClick={(p) => router.push(`/feed/${p.id}/edit`)}
+                  onDeleteClick={(p) => setDeleteTarget(p)}
                 />
               ))}
             </div>
@@ -132,6 +146,22 @@ export default function FeedPage() {
         confirmText="로그인 하러가기"
         cancelText="다음에"
         showCancel
+      />
+
+      <ConfirmModal
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        onConfirm={() => {
+          if (deleteTarget) deletePostMutation.mutate(deleteTarget.id);
+        }}
+        title="게시글을 삭제하시겠어요?"
+        description="삭제된 게시글은 복구할 수 없습니다."
+        confirmText="삭제"
+        cancelText="취소"
+        destructive
+        isPending={deletePostMutation.isPending}
       />
     </>
   );

@@ -10,6 +10,9 @@ interface CommentInputProps {
   onSubmit: (content: string) => void;
   onCancel?: () => void;
   autoFocus?: boolean;
+  initialValue?: string;
+  submitLabel?: string;
+  submittingLabel?: string;
 }
 
 const MAX_LENGTH = 1000;
@@ -20,14 +23,21 @@ export function CommentInput({
   onSubmit,
   onCancel,
   autoFocus = false,
+  initialValue = '',
+  submitLabel = '등록',
+  submittingLabel = '등록 중',
 }: CommentInputProps) {
-  const [value, setValue] = useState('');
-  const canSubmit = value.trim().length > 0 && value.length <= MAX_LENGTH && !isSubmitting;
+  const [value, setValue] = useState(initialValue);
+  const canSubmit =
+    value.trim().length > 0 &&
+    value.length <= MAX_LENGTH &&
+    !isSubmitting &&
+    value.trim() !== initialValue.trim();
 
   const handleSubmit = () => {
     if (!canSubmit) return;
     onSubmit(value.trim());
-    setValue('');
+    setValue(initialValue);
   };
 
   return (
@@ -62,7 +72,7 @@ export function CommentInput({
           )}
         >
           {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : <Send size={14} />}
-          <span>{isSubmitting ? '등록 중' : '등록'}</span>
+          <span>{isSubmitting ? submittingLabel : submitLabel}</span>
         </button>
       </div>
     </div>

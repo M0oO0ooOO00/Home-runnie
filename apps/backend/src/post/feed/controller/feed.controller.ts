@@ -1,18 +1,32 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { FeedService } from '@/post/feed/service';
 import {
   CreateFeedPostRequestDto,
   FeedPostResponseDto,
   GetFeedPostsQueryDto,
   GetFeedPostsResponseDto,
+  UpdateFeedPostRequestDto,
 } from '@/post/feed/dto';
 import { CurrentMember, CurrentMemberOptional } from '@/common';
 import { JwtAuthGuard, OptionalJwtAuthGuard } from '@/auth/guards';
 import {
   CreateFeedPostSwagger,
+  DeleteFeedPostSwagger,
   GetFeedPostDetailSwagger,
   GetFeedPostsSwagger,
   FeedControllerSwagger,
+  UpdateFeedPostSwagger,
 } from '@/post/feed/swagger';
 
 @Controller('post/feed')
@@ -48,5 +62,26 @@ export class FeedController {
     @CurrentMemberOptional() viewerMemberId: number | null,
   ): Promise<FeedPostResponseDto> {
     return this.feedService.getFeedPostDetail(postId, viewerMemberId);
+  }
+
+  @Patch(':postId')
+  @UseGuards(JwtAuthGuard)
+  @UpdateFeedPostSwagger
+  async updateFeedPost(
+    @CurrentMember() memberId: number,
+    @Param('postId', ParseIntPipe) postId: number,
+    @Body() dto: UpdateFeedPostRequestDto,
+  ): Promise<FeedPostResponseDto> {
+    return this.feedService.updateFeedPost(memberId, postId, dto);
+  }
+
+  @Delete(':postId')
+  @UseGuards(JwtAuthGuard)
+  @DeleteFeedPostSwagger
+  async deleteFeedPost(
+    @CurrentMember() memberId: number,
+    @Param('postId', ParseIntPipe) postId: number,
+  ): Promise<{ id: number }> {
+    return this.feedService.deleteFeedPost(memberId, postId);
   }
 }

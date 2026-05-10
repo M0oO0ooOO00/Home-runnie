@@ -6,7 +6,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { FeedCommentRepository, type FeedCommentQueryResult } from '@/post/feed/comment/repository';
-import { CreateFeedCommentRequestDto, FeedCommentResponseDto } from '@/post/feed/comment/dto';
+import {
+  CreateFeedCommentRequestDto,
+  FeedCommentResponseDto,
+  UpdateFeedCommentRequestDto,
+} from '@/post/feed/comment/dto';
 import { AuthorDto, AuthorType } from '@/post/shared/dto/author.dto';
 import { Team } from '@/common/enums';
 
@@ -84,6 +88,32 @@ export class FeedCommentService {
     }
 
     return Array.from(rootById.values());
+  }
+
+  async updateComment(
+    memberId: number,
+    postId: number,
+    commentId: number,
+    dto: UpdateFeedCommentRequestDto,
+  ): Promise<FeedCommentResponseDto> {
+    const comment = await this.feedCommentRepository.findCommentById(commentId);
+    if (!comment || comment.deleted) {
+      throw new NotFoundException('해당 댓글을 찾을 수 없습니다.');
+    }
+    if (comment.postId !== postId) {
+      throw new BadRequestException('댓글이 다른 게시글에 속해 있습니다.');
+    }
+    if (comment.authorId !== memberId) {
+      throw new ForbiddenException('작성자만 수정할 수 있습니다.');
+    }
+
+    await this.feedCommentRepository.updateCommentContent(commentId, dto.content);
+
+    const joined = await this.feedCommentRepository.findFeedCommentJoined(commentId);
+    if (!joined) {
+      throw new InternalServerErrorException('수정된 댓글 조회 실패');
+    }
+    return this.toResponse(joined);
   }
 
   async deleteComment(memberId: number, postId: number, commentId: number) {

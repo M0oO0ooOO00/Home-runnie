@@ -79,6 +79,7 @@ export const feedHandlers = [
       isLiked: false,
       commentCount: 0,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     runtimePosts.unshift(newPost);

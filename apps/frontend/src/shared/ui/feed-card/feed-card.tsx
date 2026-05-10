@@ -5,6 +5,7 @@ import { TeamDescription } from '@homerunnie/shared';
 import { TeamProfileAvatar } from '@/shared/ui/profile/team-profile-avatar';
 import { cn } from '@/lib/utils';
 import type { FeedPost } from './feed-card.types';
+import { FeedCardKebabMenu } from './FeedCardKebabMenu';
 
 function formatRelativeTime(iso: string): string {
   const now = Date.now();
@@ -41,22 +42,32 @@ function ImageGrid({ images }: { images: string[] }) {
 
 export interface FeedCardProps {
   post: FeedPost;
+  viewerMemberId?: number | null;
   onLikeClick?: (post: FeedPost) => void;
   onCommentClick?: (post: FeedPost) => void;
   onCardClick?: (post: FeedPost) => void;
+  onEditClick?: (post: FeedPost) => void;
+  onDeleteClick?: (post: FeedPost) => void;
   expanded?: boolean;
   className?: string;
 }
 
 export function FeedCard({
   post,
+  viewerMemberId,
   onLikeClick,
   onCommentClick,
   onCardClick,
+  onEditClick,
+  onDeleteClick,
   expanded = false,
   className,
 }: FeedCardProps) {
-  const { author, content, images, likeCount, isLiked, commentCount, createdAt } = post;
+  const { author, content, images, likeCount, isLiked, commentCount, createdAt, updatedAt } = post;
+  const isMine =
+    viewerMemberId !== undefined && viewerMemberId !== null && author.id === viewerMemberId;
+  const showKebab = isMine && (onEditClick || onDeleteClick);
+  const isEdited = updatedAt && updatedAt !== createdAt;
 
   return (
     <article
@@ -78,10 +89,19 @@ export function FeedCard({
               </span>
             )}
           </div>
-          <time className="text-c01-r text-gray-400" dateTime={createdAt}>
-            {formatRelativeTime(createdAt)}
-          </time>
+          <div className="flex items-center gap-1.5">
+            <time className="text-c01-r text-gray-400" dateTime={createdAt}>
+              {formatRelativeTime(createdAt)}
+            </time>
+            {isEdited && <span className="text-c01-r text-gray-400">· 수정됨</span>}
+          </div>
         </div>
+        {showKebab && (
+          <FeedCardKebabMenu
+            onEdit={onEditClick ? () => onEditClick(post) : undefined}
+            onDelete={onDeleteClick ? () => onDeleteClick(post) : undefined}
+          />
+        )}
       </header>
 
       <div className="px-4 py-3">

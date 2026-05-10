@@ -79,6 +79,7 @@ export function generateMockFeedPost(id: number): FeedPost {
     isLiked: id % 3 === 0,
     commentCount: (id * 3) % 30,
     createdAt: new Date(Date.now() - minutesAgo * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - minutesAgo * 60 * 1000).toISOString(),
   };
 }
 

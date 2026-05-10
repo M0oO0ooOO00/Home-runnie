@@ -33,6 +33,12 @@ export class FeedPostResponseDto {
   @ApiProperty({ description: '작성 시간 (ISO 8601)', example: '2026-05-03T19:30:00.000Z' })
   createdAt: string;
 
+  @ApiProperty({
+    description: '최종 수정 시간 (ISO 8601). createdAt과 다르면 수정된 글.',
+    example: '2026-05-03T19:30:00.000Z',
+  })
+  updatedAt: string;
+
   constructor(partial: Partial<FeedPostResponseDto>) {
     Object.assign(this, partial);
   }

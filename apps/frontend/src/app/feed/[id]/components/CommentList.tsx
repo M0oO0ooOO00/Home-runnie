@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react';
 import { useFeedCommentsQuery } from '@/hooks/feed/useFeedCommentsQuery';
 import { useCreateFeedCommentMutation } from '@/hooks/feed/useCreateFeedCommentMutation';
 import { useDeleteFeedCommentMutation } from '@/hooks/feed/useDeleteFeedCommentMutation';
+import { useUpdateFeedCommentMutation } from '@/hooks/feed/useUpdateFeedCommentMutation';
 import { CommentInput } from './CommentInput';
 import { CommentItem } from './CommentItem';
 
@@ -18,6 +19,7 @@ export function CommentList({ postId, viewerMemberId, onAuthRequired }: CommentL
   const { data: comments, isLoading, isError, error } = useFeedCommentsQuery(postId);
   const createMutation = useCreateFeedCommentMutation(postId);
   const deleteMutation = useDeleteFeedCommentMutation(postId);
+  const updateMutation = useUpdateFeedCommentMutation(postId);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
 
   const isLogged = viewerMemberId !== null;
@@ -45,6 +47,10 @@ export function CommentList({ postId, viewerMemberId, onAuthRequired }: CommentL
 
   const handleDelete = (commentId: number) => {
     deleteMutation.mutate(commentId);
+  };
+
+  const handleUpdate = (commentId: number, content: string) => {
+    updateMutation.mutate({ commentId, content });
   };
 
   const handleReplyToggle = (commentId: number) => {
@@ -91,9 +97,11 @@ export function CommentList({ postId, viewerMemberId, onAuthRequired }: CommentL
             viewerMemberId={viewerMemberId}
             isReplyingTarget={replyingTo === comment.id}
             isCreatingReply={createMutation.isPending && replyingTo === comment.id}
+            isUpdatingComment={updateMutation.isPending}
             onReplyToggle={handleReplyToggle}
             onReplySubmit={handleReplySubmit}
             onDelete={handleDelete}
+            onUpdate={handleUpdate}
             onAuthRequired={handleAuthRequired}
           />
         ))}
