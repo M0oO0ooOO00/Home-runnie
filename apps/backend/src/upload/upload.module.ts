@@ -2,7 +2,7 @@ import { BadRequestException, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
 import { S3Client } from '@aws-sdk/client-s3';
-import multerS3 from 'multer-s3';
+import * as multerS3 from 'multer-s3';
 import { v4 as uuidv4 } from 'uuid';
 import { extname } from 'node:path';
 import s3Config from '@/common/config/s3.config';
@@ -21,19 +21,16 @@ const ALLOWED_MIME = /^image\/(png|jpe?g|gif|webp|heic|heif)$/i;
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const region = configService.get<string>('s3.region');
-        const accessKeyId = configService.get<string>('s3.accessKeyId');
-        const secretAccessKey = configService.get<string>('s3.secretAccessKey');
         const bucket = configService.get<string>('s3.bucket');
 
-        if (!region || !accessKeyId || !secretAccessKey || !bucket) {
+        if (!region || !bucket) {
           throw new Error(
-            'S3 설정이 누락되었습니다. AWS_REGION / AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / S3_BUCKET 환경변수를 확인하세요.',
+            'S3 설정이 누락되었습니다. AWS_REGION / S3_BUCKET 환경변수를 확인하세요.',
           );
         }
 
         const s3 = new S3Client({
           region,
-          credentials: { accessKeyId, secretAccessKey },
         });
 
         return {
