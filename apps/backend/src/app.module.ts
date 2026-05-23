@@ -17,15 +17,20 @@ import { WarnModule } from '@/warn/warn.module';
 import { ChatModule } from '@/chat/chat.module';
 import { CommentModule } from '@/comment/comment.module';
 import { HealthModule } from '@/health/health.module';
+import { UploadModule } from '@/upload';
 import databaseConfig from '@/common/config/database.config';
+import s3Config from '@/common/config/s3.config';
 import * as path from 'path';
+
+const NODE_ENV = process.env.NODE_ENV ?? 'development';
+const SECRET_DIR = path.resolve(process.cwd(), 'secret');
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: [path.resolve(process.cwd(), 'secret/.env')],
+      envFilePath: [path.join(SECRET_DIR, `.env.${NODE_ENV}`), path.join(SECRET_DIR, '.env')],
       isGlobal: true,
-      load: [databaseConfig],
+      load: [databaseConfig, s3Config],
     }),
     DbModule,
     WarnModule,
@@ -41,6 +46,7 @@ import * as path from 'path';
     ChatModule,
     CommentModule,
     HealthModule,
+    UploadModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

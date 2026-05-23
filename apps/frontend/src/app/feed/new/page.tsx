@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, ImagePlus, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCreateFeedPostMutation } from '@/hooks/feed/useCreateFeedPostMutation';
+import { useUploadImagesMutation } from '@/hooks/upload/useUploadImagesMutation';
 import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
 import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
 
@@ -13,7 +14,7 @@ const MAX_CONTENT = 2000;
 
 interface ImageItem {
   previewUrl: string;
-  fakeUploadedUrl: string;
+  file: File;
 }
 
 export default function FeedNewPage() {
@@ -22,6 +23,7 @@ export default function FeedNewPage() {
   const [content, setContent] = useState('');
   const [images, setImages] = useState<ImageItem[]>([]);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const {
     data: profile,
@@ -39,9 +41,18 @@ export default function FeedNewPage() {
     }
   }, [isProfileLoading, isLogged]);
 
-  const { mutate, isPending, isError, error } = useCreateFeedPostMutation({
+  const { mutateAsync: uploadImagesAsync, isPending: isUploading } = useUploadImagesMutation();
+
+  const {
+    mutate,
+    isPending: isCreating,
+    isError,
+    error,
+  } = useCreateFeedPostMutation({
     onSuccess: () => router.push('/feed'),
   });
+
+  const isSubmitting = isUploading || isCreating;
 
   useEffect(() => {
     return () => {
@@ -54,9 +65,9 @@ export default function FeedNewPage() {
     const remaining = MAX_IMAGES - images.length;
     const accepted = files.slice(0, remaining);
 
-    const newItems: ImageItem[] = accepted.map((file, i) => ({
+    const newItems: ImageItem[] = accepted.map((file) => ({
       previewUrl: URL.createObjectURL(file),
-      fakeUploadedUrl: `https://picsum.photos/seed/new-${Date.now()}-${i}/800/600`,
+      file,
     }));
 
     setImages((prev) => [...prev, ...newItems]);
@@ -70,14 +81,23 @@ export default function FeedNewPage() {
     });
   };
 
-  const canSubmit = content.trim().length > 0 && content.length <= MAX_CONTENT && !isPending;
+  const canSubmit = content.trim().length > 0 && content.length <= MAX_CONTENT && !isSubmitting;
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (!canSubmit) return;
-    mutate({
-      content: content.trim(),
-      images: images.map((img) => img.fakeUploadedUrl),
-    });
+    setUploadError(null);
+
+    try {
+      const uploaded =
+        images.length > 0 ? await uploadImagesAsync(images.map((img) => img.file)) : { urls: [] };
+
+      mutate({
+        content: content.trim(),
+        images: uploaded.urls,
+      });
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : '이미지 업로드 중 오류가 발생했습니다.');
+    }
   };
 
   return (
@@ -103,8 +123,8 @@ export default function FeedNewPage() {
               : 'bg-gray-200 text-gray-500 cursor-not-allowed',
           )}
         >
-          {isPending && <Loader2 className="animate-spin" size={14} />}
-          <span>{isPending ? '게시 중...' : '게시'}</span>
+          {isSubmitting && <Loader2 className="animate-spin" size={14} />}
+          <span>{isUploading ? '업로드 중...' : isCreating ? '게시 중...' : '게시'}</span>
         </button>
       </div>
 
@@ -176,6 +196,7 @@ export default function FeedNewPage() {
         />
       </div>
 
+      {uploadError && <p className="text-c01-r text-red-500 mt-3 px-1">{uploadError}</p>}
       {isError && (
         <p className="text-c01-r text-red-500 mt-3 px-1">게시 실패: {(error as Error)?.message}</p>
       )}
