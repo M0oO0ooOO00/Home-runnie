@@ -59,7 +59,7 @@ export default function FeedDetailPage({ params }: FeedDetailPageProps) {
   };
 
   return (
-    <div className="max-w-[600px] mx-auto py-4">
+    <div className="mx-auto max-w-[680px] px-4 py-4 sm:px-6">
       <button
         type="button"
         onClick={() => router.back()}

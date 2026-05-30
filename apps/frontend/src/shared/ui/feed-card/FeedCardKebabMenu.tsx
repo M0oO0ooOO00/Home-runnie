@@ -39,20 +39,20 @@ export function FeedCardKebabMenu({ onEdit, onDelete }: FeedCardKebabMenuProps) 
           e.stopPropagation();
           setOpen((v) => !v);
         }}
-        className="p-1.5 -m-1.5 rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
+        className="-m-2 rounded-full p-2 text-gray-400 transition-colors hover:text-gray-600"
         aria-label="더보기"
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        <MoreHorizontal size={18} />
+        <MoreHorizontal size={28} strokeWidth={2.6} />
       </button>
 
       {open && (
         <div
           role="menu"
           className={cn(
-            'absolute right-0 top-full mt-1 z-10',
-            'min-w-[120px] bg-background rounded-lg border border-gray-100 shadow-md',
+            'absolute right-0 top-full z-10 mt-5',
+            'min-w-[160px] rounded-xl bg-card shadow-03',
             'overflow-hidden',
           )}
           onClick={(e) => e.stopPropagation()}
@@ -65,10 +65,10 @@ export function FeedCardKebabMenu({ onEdit, onDelete }: FeedCardKebabMenuProps) 
                 setOpen(false);
                 onEdit();
               }}
-              className="w-full inline-flex items-center gap-2 px-3 py-2 text-c01-m text-gray-800 hover:bg-gray-50 transition-colors"
+              className="inline-flex w-full items-center gap-4 px-5 py-4 text-b02-m text-gray-700 transition-colors hover:bg-gray-100"
             >
-              <Pencil size={14} />
-              <span>수정</span>
+              <Pencil size={20} strokeWidth={1.8} />
+              <span>수정하기</span>
             </button>
           )}
           {onDelete && (
@@ -79,10 +79,10 @@ export function FeedCardKebabMenu({ onEdit, onDelete }: FeedCardKebabMenuProps) 
                 setOpen(false);
                 onDelete();
               }}
-              className="w-full inline-flex items-center gap-2 px-3 py-2 text-c01-m text-red-500 hover:bg-red-50 transition-colors"
+              className="inline-flex w-full items-center gap-4 px-5 py-4 text-b02-m text-red-500 transition-colors hover:bg-red-50"
             >
-              <Trash2 size={14} />
-              <span>삭제</span>
+              <Trash2 size={20} strokeWidth={1.8} />
+              <span>삭제하기</span>
             </button>
           )}
         </div>
