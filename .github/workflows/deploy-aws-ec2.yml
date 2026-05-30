@@ -1,7 +1,17 @@
-name: Backend CI/CD (AWS EC2)
+name: Backend CI/CD
 
 on:
   push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/**'
+      - 'apps/backend/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - 'turbo.json'
+  pull_request:
     branches:
       - main
     paths:
@@ -51,7 +61,7 @@ jobs:
         run: pnpm turbo run build --filter=@homerunnie/backend...
 
   deploy:
-    name: Deploy to EC2
+    name: Deploy to Server
     runs-on: ubuntu-latest
     needs: build-and-test
     steps:
@@ -61,28 +71,22 @@ jobs:
           submodules: true
           token: ${{ secrets.PRIVATE_SUBMODULE_TOKEN }}
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build, tag, and push image to Amazon ECR
+      - name: Build, tag, and push image to Docker Hub
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          DOCKERHUB_REPOSITORY: ${{ secrets.DOCKERHUB_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -f apps/backend/Dockerfile .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker build -t $DOCKERHUB_REPOSITORY:$IMAGE_TAG -t $DOCKERHUB_REPOSITORY:latest -f apps/backend/Dockerfile .
+          docker push $DOCKERHUB_REPOSITORY:$IMAGE_TAG
+          docker push $DOCKERHUB_REPOSITORY:latest
 
-      - name: Copy .env to EC2
+      - name: Copy .env to Server
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -92,36 +96,29 @@ jobs:
           target: '~/jikgwan'
           strip_components: 3
 
-      - name: Get ECR Login Password
-        id: ecr-pass
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-        run: |
-          echo "password=$(aws ecr get-login-password --region $AWS_REGION)" >> $GITHUB_OUTPUT
-
-      - name: Deploy to EC2
+      - name: Deploy to Server
         uses: appleboy/ssh-action@master
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          ECR_PASSWORD: ${{ steps.ecr-pass.outputs.password }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          DOCKERHUB_REPOSITORY: ${{ secrets.DOCKERHUB_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: ECR_REGISTRY,ECR_REPOSITORY,ECR_PASSWORD,IMAGE_TAG
+          envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,DOCKERHUB_REPOSITORY,IMAGE_TAG
           script: |
             set -e
             mkdir -p ~/jikgwan
             cd ~/jikgwan
 
-            echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin $ECR_REGISTRY
+            echo "$DOCKERHUB_TOKEN" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
 
             cat <<EOF > docker-compose.prod.yaml
             services:
               backend:
-                image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+                image: $DOCKERHUB_REPOSITORY:$IMAGE_TAG
                 container_name: jikgwan-backend
                 ports:
                   - "3030:3030"
@@ -131,7 +128,7 @@ jobs:
                   - CI=true
                 restart: always
             EOF
-          
+
             docker compose -f docker-compose.prod.yaml pull
             docker compose -f docker-compose.prod.yaml run -T --rm backend node dist/scripts/migrate.js
             docker compose -f docker-compose.prod.yaml up -d
