@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Pencil } from 'lucide-react';
+import { ArrowUp, Loader2, Pencil } from 'lucide-react';
 import { FeedCard } from '@/shared/ui/feed-card/feed-card';
 import type { FeedPost } from '@/shared/ui/feed-card/feed-card.types';
 import { useFeedInfiniteQuery } from '@/hooks/feed/useFeedInfiniteQuery';
@@ -33,6 +33,7 @@ export default function FeedPage() {
     message: '',
   });
   const [deleteTarget, setDeleteTarget] = useState<FeedPost | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const toggleLikeMutation = useToggleLikeMutation();
   const deletePostMutation = useDeleteFeedPostMutation({
@@ -59,6 +60,20 @@ export default function FeedPage() {
     toggleLikeMutation.mutate(post.id);
   };
 
+  const handleScrollTopClick = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 320);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   useEffect(() => {
     const node = sentinelRef.current;
     if (!node) return;
@@ -80,7 +95,7 @@ export default function FeedPage() {
 
   return (
     <>
-      <div className="max-w-[600px] mx-auto py-6">
+      <div className="mx-auto max-w-[680px] px-4 pb-28 pt-6 sm:px-6">
         {isLoading && (
           <div className="flex items-center justify-center min-h-[60vh]">
             <Loader2 className="animate-spin text-gray-500" size={32} />
@@ -103,7 +118,7 @@ export default function FeedPage() {
 
         {!isLoading && !isError && items.length > 0 && (
           <>
-            <div className="space-y-3">
+            <div className="space-y-5">
               {items.map((post) => (
                 <FeedCard
                   key={post.id}
@@ -131,11 +146,23 @@ export default function FeedPage() {
       <button
         type="button"
         onClick={handleWriteClick}
-        className="fixed bottom-5 right-5 z-30 w-11 h-11 rounded-full bg-primary text-primary-foreground shadow-md flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+        className="fixed bottom-6 left-1/2 z-30 inline-flex -translate-x-1/2 items-center gap-3 rounded-full bg-gray-950 px-7 py-4 text-b01-b text-white shadow-03 transition-colors hover:bg-gray-850 active:bg-gray-900 max-sm:bottom-5 max-sm:gap-2.5 max-sm:px-5 max-sm:py-3 max-sm:text-b03-b"
         aria-label="피드 작성"
       >
-        <Pencil size={18} />
+        <Pencil size={26} strokeWidth={1.9} className="max-sm:size-5" />
+        <span>글 작성하기</span>
       </button>
+
+      {showScrollTop && (
+        <button
+          type="button"
+          onClick={handleScrollTopClick}
+          className="fixed bottom-8 right-[max(1.5rem,calc(50%_-_430px))] z-30 flex size-11 items-center justify-center rounded-full bg-gray-100 text-gray-600 shadow-02 transition-colors hover:bg-gray-200 active:bg-gray-300 max-sm:bottom-6 max-sm:right-4 max-sm:size-9"
+          aria-label="맨 위로 이동"
+        >
+          <ArrowUp size={22} strokeWidth={2.2} className="max-sm:size-5" />
+        </button>
+      )}
 
       <LoginRequiredModal
         open={loginModal.open}

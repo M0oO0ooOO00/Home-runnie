@@ -11,11 +11,16 @@ function formatRelativeTime(iso: string): string {
   const now = Date.now();
   const then = new Date(iso).getTime();
   const diff = Math.floor((now - then) / 1000);
-  if (diff < 60) return '방금 전';
-  if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)}일 전`;
+  if (diff < 60) return '방금전';
+  if (diff < 3600) return `${Math.floor(diff / 60)}분전`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}시간전`;
   return new Date(iso).toLocaleDateString('ko-KR');
+}
+
+function formatCompactCount(count: number): string {
+  if (count >= 1_000_000) return `${Number((count / 1_000_000).toFixed(1))}m`;
+  if (count >= 1_000) return `${Number((count / 1_000).toFixed(1))}k`;
+  return String(count);
 }
 
 function ImageGrid({ images }: { images: string[] }) {
@@ -23,18 +28,40 @@ function ImageGrid({ images }: { images: string[] }) {
 
   if (images.length === 1) {
     return (
-      <div className="overflow-hidden rounded-lg">
+      <div className="overflow-hidden rounded-xl">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={images[0]} alt="" className="w-full max-h-[480px] object-cover" />
+        <img src={images[0]} alt="" className="w-full max-h-[520px] object-cover" />
       </div>
     );
   }
 
+  if (images.length === 2) {
+    return (
+      <div className="grid aspect-[2/1] grid-cols-2 gap-1.5 overflow-hidden rounded-xl">
+        {images.map((src, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={`${src}-${i}`} src={src} alt="" className="h-full w-full object-cover" />
+        ))}
+      </div>
+    );
+  }
+
+  const overflowCount = images.length - 3;
+
   return (
-    <div className="grid grid-cols-2 gap-1 overflow-hidden rounded-lg">
-      {images.slice(0, 4).map((src, i) => (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img key={i} src={src} alt="" className="aspect-square w-full object-cover" />
+    <div className="grid aspect-[3/2] grid-cols-2 grid-rows-2 gap-1.5 overflow-hidden rounded-xl">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={images[0]} alt="" className="row-span-2 h-full w-full object-cover" />
+      {images.slice(1, 3).map((src, i) => (
+        <div key={`${src}-${i}`} className="relative h-full w-full overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={src} alt="" className="h-full w-full object-cover" />
+          {i === 1 && overflowCount > 0 && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/45 text-t04-b text-white">
+              +{overflowCount}
+            </div>
+          )}
+        </div>
       ))}
     </div>
   );
@@ -72,28 +99,28 @@ export function FeedCard({
   return (
     <article
       className={cn(
-        'w-full bg-background rounded-2xl border border-gray-100 overflow-hidden',
-        onCardClick && 'cursor-pointer hover:bg-gray-50/50 transition-colors',
+        'w-full overflow-hidden rounded-[28px] bg-card px-5 py-6 shadow-02 sm:px-6 sm:py-7',
+        onCardClick && 'cursor-pointer',
         className,
       )}
       onClick={() => onCardClick?.(post)}
     >
-      <header className="flex items-start gap-3 px-4 pt-4">
-        <TeamProfileAvatar supportTeam={author.supportTeam} size={40} />
-        <div className="flex flex-col flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-b02-sb text-gray-950 truncate">{author.nickname}</span>
+      <header className="flex items-start gap-3.5 sm:gap-4">
+        <TeamProfileAvatar supportTeam={author.supportTeam} className="size-14 shrink-0" />
+        <div className="flex min-w-0 flex-1 flex-col pt-0.5">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
+            <span className="truncate text-b01-sb text-gray-850">{author.nickname}</span>
             {author.supportTeam && (
-              <span className="text-c01-m text-gray-500 shrink-0">
-                · {TeamDescription[author.supportTeam] ?? author.supportTeam}
+              <span className="shrink-0 text-b02-m text-gray-500">
+                {TeamDescription[author.supportTeam] ?? author.supportTeam}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1.5">
-            <time className="text-c01-r text-gray-400" dateTime={createdAt}>
+          <div className="mt-1 flex items-center gap-1.5">
+            <time className="text-b02-r text-gray-500" dateTime={createdAt}>
               {formatRelativeTime(createdAt)}
             </time>
-            {isEdited && <span className="text-c01-r text-gray-400">· 수정됨</span>}
+            {isEdited && <span className="text-b02-r text-gray-500">· 수정됨</span>}
           </div>
         </div>
         {showKebab && (
@@ -104,10 +131,10 @@ export function FeedCard({
         )}
       </header>
 
-      <div className="px-4 py-3">
+      <div className="py-7 sm:py-8">
         <p
           className={cn(
-            'text-b03-r text-gray-800 whitespace-pre-wrap',
+            'whitespace-pre-wrap text-b01-r text-gray-950',
             !expanded && 'line-clamp-6',
           )}
         >
@@ -116,12 +143,12 @@ export function FeedCard({
       </div>
 
       {images.length > 0 && (
-        <div className="px-4 pb-3">
+        <div className="-mt-1 pb-7 sm:pb-8">
           <ImageGrid images={images} />
         </div>
       )}
 
-      <footer className="flex items-center gap-4 px-4 pb-4 pt-1">
+      <footer className="flex items-center gap-8 text-gray-400">
         <button
           type="button"
           onClick={(e) => {
@@ -130,15 +157,15 @@ export function FeedCard({
             onLikeClick(post);
           }}
           className={cn(
-            'inline-flex items-center gap-1.5 text-c01-m transition-colors',
-            isLiked ? 'text-red-500' : 'text-gray-500',
+            'inline-flex items-center gap-2 text-b01-m transition-colors',
+            isLiked ? 'text-red-500' : 'text-gray-400',
             onLikeClick ? 'cursor-pointer' : 'pointer-events-none',
             onLikeClick && !isLiked && 'hover:text-red-500',
           )}
           aria-label={isLiked ? '좋아요 취소' : '좋아요'}
         >
-          <Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />
-          <span>{likeCount}</span>
+          <Heart size={28} strokeWidth={1.8} fill={isLiked ? 'currentColor' : 'none'} />
+          <span>{formatCompactCount(likeCount)}</span>
         </button>
         <button
           type="button"
@@ -148,14 +175,14 @@ export function FeedCard({
             onCommentClick(post);
           }}
           className={cn(
-            'inline-flex items-center gap-1.5 text-c01-m text-gray-500 transition-colors',
+            'inline-flex items-center gap-2 text-b01-m text-gray-400 transition-colors',
             onCommentClick ? 'cursor-pointer' : 'pointer-events-none',
             onCommentClick && 'hover:text-gray-700',
           )}
           aria-label="댓글"
         >
-          <MessageCircle size={18} />
-          <span>{commentCount}</span>
+          <MessageCircle size={28} strokeWidth={1.8} />
+          <span>{formatCompactCount(commentCount)}</span>
         </button>
       </footer>
     </article>
