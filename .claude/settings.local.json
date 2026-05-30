@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --filter @homerunnie/frontend type-check)",
+      "Bash(pnpm --filter @homerunnie/frontend lint)",
+      "Bash(git check-ignore *)"
+    ]
+  }
+}

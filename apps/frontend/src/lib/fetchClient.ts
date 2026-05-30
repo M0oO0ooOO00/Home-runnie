@@ -34,8 +34,9 @@ class FetchClient {
 
   async request<T>(endpoint: string, config: RequestConfig = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+    const isFormData = typeof FormData !== 'undefined' && config.body instanceof FormData;
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...config.headers,
     };
 
@@ -214,6 +215,14 @@ class FetchClient {
       ...config,
       method: 'POST',
       body: JSON.stringify(body),
+    });
+  }
+
+  postFormData<T>(endpoint: string, formData: FormData, config?: RequestConfig) {
+    return this.request<T>(endpoint, {
+      ...config,
+      method: 'POST',
+      body: formData,
     });
   }
 

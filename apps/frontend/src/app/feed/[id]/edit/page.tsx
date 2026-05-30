@@ -6,17 +6,25 @@ import { ArrowLeft, ImagePlus, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFeedPostQuery } from '@/hooks/feed/useFeedPostQuery';
 import { useUpdateFeedPostMutation } from '@/hooks/feed/useUpdateFeedPostMutation';
+import { useUploadImagesMutation } from '@/hooks/upload/useUploadImagesMutation';
 import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
 import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
 
 const MAX_IMAGES = 4;
 const MAX_CONTENT = 2000;
 
-interface ImageItem {
+interface ExistingImage {
+  kind: 'existing';
   url: string;
-  isNew: boolean;
-  previewUrl?: string;
 }
+
+interface NewImage {
+  kind: 'new';
+  previewUrl: string;
+  file: File;
+}
+
+type ImageItem = ExistingImage | NewImage;
 
 interface FeedEditPageProps {
   params: { id: string };
@@ -43,11 +51,12 @@ export default function FeedEditPage({ params }: FeedEditPageProps) {
   const [images, setImages] = useState<ImageItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (post && !hydrated) {
       setContent(post.content);
-      setImages(post.images.map((url) => ({ url, isNew: false })));
+      setImages(post.images.map((url) => ({ kind: 'existing', url })));
       setHydrated(true);
     }
   }, [post, hydrated]);
@@ -66,17 +75,21 @@ export default function FeedEditPage({ params }: FeedEditPageProps) {
 
   const {
     mutate,
-    isPending,
+    isPending: isUpdating,
     isError: isMutateError,
     error: mutateError,
   } = useUpdateFeedPostMutation({
     onSuccess: () => router.replace(`/feed/${postId}`),
   });
 
+  const { mutateAsync: uploadImagesAsync, isPending: isUploading } = useUploadImagesMutation();
+
+  const isPending = isUploading || isUpdating;
+
   useEffect(() => {
     return () => {
       images.forEach((img) => {
-        if (img.previewUrl) URL.revokeObjectURL(img.previewUrl);
+        if (img.kind === 'new') URL.revokeObjectURL(img.previewUrl);
       });
     };
   }, [images]);
@@ -86,10 +99,10 @@ export default function FeedEditPage({ params }: FeedEditPageProps) {
     const remaining = MAX_IMAGES - images.length;
     const accepted = files.slice(0, remaining);
 
-    const newItems: ImageItem[] = accepted.map((file, i) => ({
-      url: `https://picsum.photos/seed/edit-${Date.now()}-${i}/800/600`,
+    const newItems: ImageItem[] = accepted.map((file) => ({
+      kind: 'new',
       previewUrl: URL.createObjectURL(file),
-      isNew: true,
+      file,
     }));
 
     setImages((prev) => [...prev, ...newItems]);
@@ -99,7 +112,7 @@ export default function FeedEditPage({ params }: FeedEditPageProps) {
   const removeImage = (idx: number) => {
     setImages((prev) => {
       const target = prev[idx];
-      if (target.previewUrl) URL.revokeObjectURL(target.previewUrl);
+      if (target.kind === 'new') URL.revokeObjectURL(target.previewUrl);
       return prev.filter((_, i) => i !== idx);
     });
   };
@@ -108,7 +121,7 @@ export default function FeedEditPage({ params }: FeedEditPageProps) {
     if (!post) return true;
     if (content !== post.content) return false;
     if (images.length !== post.images.length) return false;
-    return images.every((img, i) => !img.isNew && img.url === post.images[i]);
+    return images.every((img, i) => img.kind === 'existing' && img.url === post.images[i]);
   }, [content, images, post]);
 
   const canSubmit =
@@ -118,15 +131,29 @@ export default function FeedEditPage({ params }: FeedEditPageProps) {
     !isPending &&
     !isUnchanged;
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (!canSubmit || !post) return;
-    mutate({
-      id: postId,
-      body: {
-        content: content !== post.content ? content.trim() : undefined,
-        images: images.map((img) => img.url),
-      },
-    });
+    setUploadError(null);
+
+    try {
+      const newFiles = images.flatMap((img) => (img.kind === 'new' ? [img.file] : []));
+      const uploaded = newFiles.length > 0 ? await uploadImagesAsync(newFiles) : { urls: [] };
+
+      let uploadIdx = 0;
+      const finalUrls = images.map((img) =>
+        img.kind === 'existing' ? img.url : uploaded.urls[uploadIdx++],
+      );
+
+      mutate({
+        id: postId,
+        body: {
+          content: content !== post.content ? content.trim() : undefined,
+          images: finalUrls,
+        },
+      });
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : '이미지 업로드 중 오류가 발생했습니다.');
+    }
   };
 
   return (
@@ -153,7 +180,7 @@ export default function FeedEditPage({ params }: FeedEditPageProps) {
           )}
         >
           {isPending && <Loader2 className="animate-spin" size={14} />}
-          <span>{isPending ? '저장 중...' : '저장'}</span>
+          <span>{isUploading ? '업로드 중...' : isUpdating ? '저장 중...' : '저장'}</span>
         </button>
       </div>
 
@@ -182,27 +209,23 @@ export default function FeedEditPage({ params }: FeedEditPageProps) {
 
           {images.length > 0 && (
             <div className="grid grid-cols-2 gap-1 mt-3">
-              {images.map((img, idx) => (
-                <div
-                  key={img.previewUrl ?? img.url}
-                  className="relative aspect-square overflow-hidden rounded-lg"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={img.previewUrl ?? img.url}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(idx)}
-                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
-                    aria-label="이미지 삭제"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
+              {images.map((img, idx) => {
+                const src = img.kind === 'new' ? img.previewUrl : img.url;
+                return (
+                  <div key={src} className="relative aspect-square overflow-hidden rounded-lg">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(idx)}
+                      className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+                      aria-label="이미지 삭제"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -244,6 +267,7 @@ export default function FeedEditPage({ params }: FeedEditPageProps) {
         </div>
       )}
 
+      {uploadError && <p className="text-c01-r text-red-500 mt-3 px-1">{uploadError}</p>}
       {isMutateError && (
         <p className="text-c01-r text-red-500 mt-3 px-1">
           저장 실패: {(mutateError as Error)?.message}

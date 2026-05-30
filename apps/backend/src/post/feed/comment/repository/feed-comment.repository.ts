@@ -8,19 +8,18 @@ import { Post } from '@/post/shared/domain';
 import { PostType } from '@homerunnie/shared';
 import { PostStatusEnum } from '@/common/enums/post-status.enum';
 import { DATABASE_CONNECTION } from '@/common';
-
-export interface FeedCommentQueryResult {
-  id: number;
-  authorId: number;
-  authorNickname: string | null;
-  supportTeam: string | null;
-  content: string;
-  parentId: number | null;
-  createdAt: Date;
-}
+import {
+  type FeedCommentMeta,
+  type FeedCommentCounter,
+  type FeedCommentQueryResult,
+  type FeedCommentReader,
+  type FeedCommentWriter,
+} from '@/post/feed/comment/port';
 
 @Injectable()
-export class FeedCommentRepository {
+export class FeedCommentRepository
+  implements FeedCommentReader, FeedCommentWriter, FeedCommentCounter
+{
   constructor(
     @Inject(DATABASE_CONNECTION)
     private readonly db: ReturnType<typeof drizzle>,
@@ -40,13 +39,7 @@ export class FeedCommentRepository {
     return comment;
   }
 
-  async findCommentById(commentId: number): Promise<{
-    id: number;
-    authorId: number;
-    postId: number;
-    parentId: number | null;
-    deleted: boolean | null;
-  } | null> {
+  async findCommentById(commentId: number): Promise<FeedCommentMeta | null> {
     const [row] = await this.db
       .select({
         id: Comment.id,
