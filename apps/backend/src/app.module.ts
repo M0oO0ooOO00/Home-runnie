@@ -24,11 +24,12 @@ import * as path from 'path';
 
 const NODE_ENV = process.env.NODE_ENV ?? 'development';
 const SECRET_DIR = path.resolve(process.cwd(), 'secret');
+const ENV_FILE = NODE_ENV === 'production' ? 'prod.env' : '.env';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: [path.join(SECRET_DIR, `.env.${NODE_ENV}`), path.join(SECRET_DIR, '.env')],
+      envFilePath: [path.join(SECRET_DIR, ENV_FILE)],
       isGlobal: true,
       load: [databaseConfig, storageConfig],
     }),
