@@ -99,7 +99,7 @@ export function FeedCard({
   return (
     <article
       className={cn(
-        'w-full overflow-hidden rounded-[28px] bg-card px-5 py-6 shadow-02 sm:px-6 sm:py-7',
+        'h-fit w-full max-w-[585px] overflow-hidden rounded-[28px] bg-card px-5 py-6 shadow-02 sm:px-6 sm:py-7',
         onCardClick && 'cursor-pointer',
         className,
       )}
