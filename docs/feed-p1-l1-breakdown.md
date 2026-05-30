@@ -181,7 +181,7 @@ H1~H3 (측정)
 
 ## 정리해야 할 결정 포인트
 
-1. **이미지 업로드 인프라** — S3 vs Cloudinary (G5 시작 전)
+1. **이미지 업로드 인프라** — Azure Blob Storage (G5 시작 전)
 2. **분석 도구** — PostHog vs Amplitude vs GA4 (H1)
 3. **`/home` 라우트 처리** — 새 `/`로 흡수 vs 리다이렉트 (G1)
 4. **글 작성 진입 UX** — 페이지 이동 vs 모달/바텀시트 (G5)

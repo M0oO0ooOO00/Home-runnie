@@ -19,7 +19,7 @@ import { CommentModule } from '@/comment/comment.module';
 import { HealthModule } from '@/health/health.module';
 import { UploadModule } from '@/upload';
 import databaseConfig from '@/common/config/database.config';
-import s3Config from '@/common/config/s3.config';
+import storageConfig from '@/common/config/storage.config';
 import * as path from 'path';
 
 const NODE_ENV = process.env.NODE_ENV ?? 'development';
@@ -30,7 +30,7 @@ const SECRET_DIR = path.resolve(process.cwd(), 'secret');
     ConfigModule.forRoot({
       envFilePath: [path.join(SECRET_DIR, `.env.${NODE_ENV}`), path.join(SECRET_DIR, '.env')],
       isGlobal: true,
-      load: [databaseConfig, s3Config],
+      load: [databaseConfig, storageConfig],
     }),
     DbModule,
     WarnModule,
