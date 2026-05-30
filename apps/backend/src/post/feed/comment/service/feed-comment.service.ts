@@ -1,11 +1,11 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { FeedCommentRepository, type FeedCommentQueryResult } from '@/post/feed/comment/repository';
 import {
   CreateFeedCommentRequestDto,
   FeedCommentResponseDto,
@@ -13,24 +13,36 @@ import {
 } from '@/post/feed/comment/dto';
 import { AuthorDto, AuthorType } from '@/post/shared/dto/author.dto';
 import { Team } from '@/common/enums';
+import {
+  FEED_COMMENT_READER,
+  FEED_COMMENT_WRITER,
+  type FeedCommentQueryResult,
+  type FeedCommentReader,
+  type FeedCommentWriter,
+} from '@/post/feed/comment/port';
 
 @Injectable()
 export class FeedCommentService {
-  constructor(private readonly feedCommentRepository: FeedCommentRepository) {}
+  constructor(
+    @Inject(FEED_COMMENT_READER)
+    private readonly feedCommentReader: FeedCommentReader,
+    @Inject(FEED_COMMENT_WRITER)
+    private readonly feedCommentWriter: FeedCommentWriter,
+  ) {}
 
   async createComment(
     memberId: number,
     postId: number,
     dto: CreateFeedCommentRequestDto,
   ): Promise<FeedCommentResponseDto> {
-    const isFeed = await this.feedCommentRepository.assertPostIsFeed(postId);
+    const isFeed = await this.feedCommentReader.assertPostIsFeed(postId);
     if (!isFeed) {
       throw new NotFoundException('해당 피드 게시글을 찾을 수 없습니다.');
     }
 
     let parentId: number | null = null;
     if (dto.parentId !== undefined && dto.parentId !== null) {
-      const parent = await this.feedCommentRepository.findCommentById(dto.parentId);
+      const parent = await this.feedCommentReader.findCommentById(dto.parentId);
       if (!parent || parent.deleted) {
         throw new NotFoundException('부모 댓글을 찾을 수 없습니다.');
       }
@@ -43,7 +55,7 @@ export class FeedCommentService {
       parentId = dto.parentId;
     }
 
-    const created = await this.feedCommentRepository.createComment(
+    const created = await this.feedCommentWriter.createComment(
       memberId,
       postId,
       dto.content,
@@ -53,7 +65,7 @@ export class FeedCommentService {
       throw new InternalServerErrorException('댓글 생성 실패');
     }
 
-    const joined = await this.feedCommentRepository.findFeedCommentJoined(created.id);
+    const joined = await this.feedCommentReader.findFeedCommentJoined(created.id);
     if (!joined) {
       throw new InternalServerErrorException('생성된 댓글 조회 실패');
     }
@@ -62,12 +74,12 @@ export class FeedCommentService {
   }
 
   async getComments(postId: number): Promise<FeedCommentResponseDto[]> {
-    const isFeed = await this.feedCommentRepository.assertPostIsFeed(postId);
+    const isFeed = await this.feedCommentReader.assertPostIsFeed(postId);
     if (!isFeed) {
       throw new NotFoundException('해당 피드 게시글을 찾을 수 없습니다.');
     }
 
-    const rows = await this.feedCommentRepository.findCommentsByPostId(postId);
+    const rows = await this.feedCommentReader.findCommentsByPostId(postId);
 
     const rootById = new Map<number, FeedCommentResponseDto>();
     const replies: FeedCommentQueryResult[] = [];
@@ -96,7 +108,7 @@ export class FeedCommentService {
     commentId: number,
     dto: UpdateFeedCommentRequestDto,
   ): Promise<FeedCommentResponseDto> {
-    const comment = await this.feedCommentRepository.findCommentById(commentId);
+    const comment = await this.feedCommentReader.findCommentById(commentId);
     if (!comment || comment.deleted) {
       throw new NotFoundException('해당 댓글을 찾을 수 없습니다.');
     }
@@ -107,9 +119,9 @@ export class FeedCommentService {
       throw new ForbiddenException('작성자만 수정할 수 있습니다.');
     }
 
-    await this.feedCommentRepository.updateCommentContent(commentId, dto.content);
+    await this.feedCommentWriter.updateCommentContent(commentId, dto.content);
 
-    const joined = await this.feedCommentRepository.findFeedCommentJoined(commentId);
+    const joined = await this.feedCommentReader.findFeedCommentJoined(commentId);
     if (!joined) {
       throw new InternalServerErrorException('수정된 댓글 조회 실패');
     }
@@ -117,7 +129,7 @@ export class FeedCommentService {
   }
 
   async deleteComment(memberId: number, postId: number, commentId: number) {
-    const comment = await this.feedCommentRepository.findCommentById(commentId);
+    const comment = await this.feedCommentReader.findCommentById(commentId);
     if (!comment || comment.deleted) {
       throw new NotFoundException('해당 댓글을 찾을 수 없습니다.');
     }
@@ -128,7 +140,7 @@ export class FeedCommentService {
       throw new ForbiddenException('작성자만 삭제할 수 있습니다.');
     }
 
-    await this.feedCommentRepository.softDeleteComment(commentId);
+    await this.feedCommentWriter.softDeleteComment(commentId);
     return { id: commentId };
   }
 

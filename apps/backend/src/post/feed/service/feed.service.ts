@@ -1,11 +1,11 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { FeedRepository, type FeedPostQueryResult } from '@/post/feed/repository';
 import {
   CreateFeedPostRequestDto,
   FeedPostResponseDto,
@@ -14,18 +14,33 @@ import {
 } from '@/post/feed/dto';
 import { AuthorDto, AuthorType } from '@/post/shared/dto/author.dto';
 import { Team } from '@/common/enums';
-import { ReactionRepository } from '@/reaction/repository';
 import { ReactionTargetType } from '@/reaction/domain';
-import { FeedCommentRepository } from '@/post/feed/comment/repository';
-import { PostSharedRepository } from '@/post/shared/repository';
+import {
+  FEED_POST_DELETER,
+  FEED_POST_READER,
+  FEED_POST_WRITER,
+  FEED_REACTION_READER,
+  type FeedPostDeleter,
+  type FeedPostQueryResult,
+  type FeedPostReader,
+  type FeedPostWriter,
+  type FeedReactionReader,
+} from '@/post/feed/port';
+import { FEED_COMMENT_COUNTER, type FeedCommentCounter } from '@/post/feed/comment/port';
 
 @Injectable()
 export class FeedService {
   constructor(
-    private readonly feedRepository: FeedRepository,
-    private readonly reactionRepository: ReactionRepository,
-    private readonly feedCommentRepository: FeedCommentRepository,
-    private readonly postSharedRepository: PostSharedRepository,
+    @Inject(FEED_POST_READER)
+    private readonly feedPostReader: FeedPostReader,
+    @Inject(FEED_POST_WRITER)
+    private readonly feedPostWriter: FeedPostWriter,
+    @Inject(FEED_REACTION_READER)
+    private readonly feedReactionReader: FeedReactionReader,
+    @Inject(FEED_COMMENT_COUNTER)
+    private readonly feedCommentCounter: FeedCommentCounter,
+    @Inject(FEED_POST_DELETER)
+    private readonly feedPostDeleter: FeedPostDeleter,
   ) {}
 
   async createFeedPost(
@@ -34,9 +49,9 @@ export class FeedService {
   ): Promise<FeedPostResponseDto> {
     const { content, images = [] } = dto;
 
-    const post = await this.feedRepository.createFeedPost(memberId, content, images);
+    const post = await this.feedPostWriter.createFeedPost(memberId, content, images);
 
-    const detail = await this.feedRepository.findFeedPostById(post.id);
+    const detail = await this.feedPostReader.findFeedPostById(post.id);
     if (!detail) {
       throw new InternalServerErrorException('생성된 FEED 게시글 조회 실패');
     }
@@ -53,7 +68,7 @@ export class FeedService {
       throw new BadRequestException('content 또는 images 중 최소 하나는 전달해야 합니다.');
     }
 
-    const meta = await this.feedRepository.findFeedPostMeta(postId);
+    const meta = await this.feedPostReader.findFeedPostMeta(postId);
     if (!meta) {
       throw new NotFoundException('해당 게시글을 찾을 수 없습니다.');
     }
@@ -61,7 +76,7 @@ export class FeedService {
       throw new ForbiddenException('작성자만 수정할 수 있습니다.');
     }
 
-    await this.feedRepository.updateFeedPost(postId, {
+    await this.feedPostWriter.updateFeedPost(postId, {
       content: dto.content,
       images: dto.images,
     });
@@ -70,7 +85,7 @@ export class FeedService {
   }
 
   async deleteFeedPost(memberId: number, postId: number): Promise<{ id: number }> {
-    const meta = await this.feedRepository.findFeedPostMeta(postId);
+    const meta = await this.feedPostReader.findFeedPostMeta(postId);
     if (!meta) {
       throw new NotFoundException('해당 게시글을 찾을 수 없습니다.');
     }
@@ -78,7 +93,7 @@ export class FeedService {
       throw new ForbiddenException('작성자만 삭제할 수 있습니다.');
     }
 
-    const deleted = await this.postSharedRepository.softDelete(postId);
+    const deleted = await this.feedPostDeleter.softDelete(postId);
     if (!deleted) {
       throw new NotFoundException('해당 게시글을 찾을 수 없습니다.');
     }
@@ -90,16 +105,16 @@ export class FeedService {
     postId: number,
     viewerMemberId: number | null,
   ): Promise<FeedPostResponseDto> {
-    const detail = await this.feedRepository.findFeedPostById(postId);
+    const detail = await this.feedPostReader.findFeedPostById(postId);
     if (!detail) {
       throw new NotFoundException('해당 게시글을 찾을 수 없습니다.');
     }
 
-    const likeCount = await this.reactionRepository.countLikes(ReactionTargetType.POST, detail.id);
+    const likeCount = await this.feedReactionReader.countLikes(ReactionTargetType.POST, detail.id);
     const isLiked =
       viewerMemberId !== null
         ? (
-            await this.reactionRepository.findLikedTargetIds(
+            await this.feedReactionReader.findLikedTargetIds(
               viewerMemberId,
               ReactionTargetType.POST,
               [detail.id],
@@ -107,9 +122,7 @@ export class FeedService {
           ).has(detail.id)
         : false;
 
-    const commentCountByPostId = await this.feedCommentRepository.countCommentsByPostIds([
-      detail.id,
-    ]);
+    const commentCountByPostId = await this.feedCommentCounter.countCommentsByPostIds([detail.id]);
     const commentCount = commentCountByPostId[detail.id] ?? 0;
 
     return this.toResponse(detail, likeCount, isLiked, commentCount);
@@ -122,7 +135,7 @@ export class FeedService {
   ): Promise<GetFeedPostsResponseDto> {
     const cursorId = cursor ? this.decodeCursor(cursor) : null;
 
-    const rows = await this.feedRepository.findFeedPosts(cursorId, limit + 1);
+    const rows = await this.feedPostReader.findFeedPosts(cursorId, limit + 1);
 
     const hasMore = rows.length > limit;
     const sliced = hasMore ? rows.slice(0, limit) : rows;
@@ -130,19 +143,19 @@ export class FeedService {
     const nextCursor = hasMore && lastItem ? this.encodeCursor(lastItem.id) : null;
 
     const ids = sliced.map((row) => row.id);
-    const likeCountByPostId = await this.reactionRepository.countLikesByTargetIds(
+    const likeCountByPostId = await this.feedReactionReader.countLikesByTargetIds(
       ReactionTargetType.POST,
       ids,
     );
     const likedSet =
       viewerMemberId !== null
-        ? await this.reactionRepository.findLikedTargetIds(
+        ? await this.feedReactionReader.findLikedTargetIds(
             viewerMemberId,
             ReactionTargetType.POST,
             ids,
           )
         : new Set<number>();
-    const commentCountByPostId = await this.feedCommentRepository.countCommentsByPostIds(ids);
+    const commentCountByPostId = await this.feedCommentCounter.countCommentsByPostIds(ids);
 
     return new GetFeedPostsResponseDto({
       items: sliced.map((row) =>

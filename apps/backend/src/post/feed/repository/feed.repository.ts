@@ -8,20 +8,14 @@ import { Profile } from '@/member/domain/profile.entity';
 import { PostType } from '@homerunnie/shared';
 import { PostStatusEnum } from '@/common/enums/post-status.enum';
 import { DATABASE_CONNECTION } from '@/common';
-
-export interface FeedPostQueryResult {
-  id: number;
-  authorId: number;
-  authorNickname: string | null;
-  supportTeam: string | null;
-  content: string;
-  images: string[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+import {
+  type FeedPostQueryResult,
+  type FeedPostReader,
+  type FeedPostWriter,
+} from '@/post/feed/port';
 
 @Injectable()
-export class FeedRepository {
+export class FeedRepository implements FeedPostReader, FeedPostWriter {
   constructor(
     @Inject(DATABASE_CONNECTION)
     private readonly db: ReturnType<typeof drizzle>,
