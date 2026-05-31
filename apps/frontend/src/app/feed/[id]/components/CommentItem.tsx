@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { MessageSquare, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { TeamDescription } from '@homerunnie/shared';
 import { TeamProfileAvatar } from '@/shared/ui/profile/team-profile-avatar';
 import { cn } from '@/lib/utils';
@@ -59,6 +59,7 @@ export function CommentItem({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showReplies, setShowReplies] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const showMenu = isMine && (onUpdate || onDelete);
   const likeCount = comment.likeCount ?? 0;
@@ -167,12 +168,12 @@ export function CommentItem({
                   className="inline-flex items-center gap-3 transition-colors hover:text-gray-700"
                   aria-label="답글"
                 >
-                  <MessageSquare size={30} strokeWidth={1.8} />
+                  <MessageCircle size={28} strokeWidth={1.8} />
                   <span>{formatCompactCount(comment.replies.length)}</span>
                 </button>
               ) : (
                 <span className="inline-flex items-center gap-3">
-                  <MessageSquare size={30} strokeWidth={1.8} />
+                  <MessageCircle size={28} strokeWidth={1.8} />
                   <span>{formatCompactCount(0)}</span>
                 </span>
               )}
@@ -235,7 +236,7 @@ export function CommentItem({
       {isReplyingTarget && onReplySubmit && (
         <div className="ml-[72px]">
           <CommentInput
-            placeholder={`@${comment.author.nickname}에게 답글 달기`}
+            placeholder={`${comment.author.nickname}에게 답글 달기`}
             isSubmitting={isCreatingReply}
             onSubmit={(content) => onReplySubmit(comment.id, content)}
             onCancel={() => onReplyToggle?.(comment.id)}
@@ -248,24 +249,26 @@ export function CommentItem({
         <div className="flex flex-col gap-10">
           <button
             type="button"
-            onClick={() => onReplyToggle?.(comment.id)}
+            onClick={() => setShowReplies((prev) => !prev)}
             className="ml-[88px] self-start text-b01-r text-gray-500 transition-colors hover:text-gray-800 max-sm:ml-8"
+            aria-expanded={showReplies}
           >
-            답글 더 보기 ({comment.replies.length})
+            {showReplies ? '답글 숨기기' : `답글 더 보기 (${comment.replies.length})`}
           </button>
-          {comment.replies.map((reply) => (
-            <CommentItem
-              key={reply.id}
-              comment={reply}
-              viewerMemberId={viewerMemberId}
-              isReply
-              isUpdatingComment={isUpdatingComment}
-              onLikeClick={onLikeClick}
-              onDelete={onDelete}
-              onUpdate={onUpdate}
-              onAuthRequired={onAuthRequired}
-            />
-          ))}
+          {showReplies &&
+            comment.replies.map((reply) => (
+              <CommentItem
+                key={reply.id}
+                comment={reply}
+                viewerMemberId={viewerMemberId}
+                isReply
+                isUpdatingComment={isUpdatingComment}
+                onLikeClick={onLikeClick}
+                onDelete={onDelete}
+                onUpdate={onUpdate}
+                onAuthRequired={onAuthRequired}
+              />
+            ))}
         </div>
       )}
     </article>

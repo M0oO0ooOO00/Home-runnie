@@ -5,12 +5,14 @@ import { ReactionService } from '@/reaction/service';
 describe('ReactionService', () => {
   let service: ReactionService;
   let reactionRepository: jest.Mocked<ReactionRepository>;
+  let targetRows: { id: number }[];
 
   const db = {
     select: jest.fn(),
   };
 
   beforeEach(() => {
+    targetRows = [{ id: 10 }];
     reactionRepository = {
       findLike: jest.fn(),
       createLike: jest.fn(),
@@ -24,7 +26,7 @@ describe('ReactionService', () => {
     db.select.mockReturnValue({
       from: jest.fn().mockReturnValue({
         where: jest.fn().mockReturnValue({
-          limit: jest.fn().mockResolvedValue([{ id: 10 }]),
+          limit: jest.fn().mockImplementation(() => Promise.resolve(targetRows)),
         }),
       }),
     });
@@ -67,5 +69,25 @@ describe('ReactionService', () => {
     expect(reactionRepository.restoreLike).toHaveBeenCalledWith(5);
     expect(reactionRepository.createLike).not.toHaveBeenCalled();
     expect(result).toEqual({ liked: true, likeCount: 1 });
+  });
+
+  it('creates a comment like when the comment exists', async () => {
+    targetRows = [{ id: 20 }];
+    reactionRepository.findLike.mockResolvedValue(null as any);
+    reactionRepository.countLikes.mockResolvedValue(1);
+
+    const result = await service.toggleLike(1, ReactionTargetType.COMMENT, 20);
+
+    expect(reactionRepository.createLike).toHaveBeenCalledWith(1, ReactionTargetType.COMMENT, 20);
+    expect(result).toEqual({ liked: true, likeCount: 1 });
+  });
+
+  it('throws NotFoundException when the target comment does not exist', async () => {
+    targetRows = [];
+
+    await expect(service.toggleLike(1, ReactionTargetType.COMMENT, 20)).rejects.toThrow(
+      '해당 댓글을 찾을 수 없습니다.',
+    );
+    expect(reactionRepository.findLike).not.toHaveBeenCalled();
   });
 });
