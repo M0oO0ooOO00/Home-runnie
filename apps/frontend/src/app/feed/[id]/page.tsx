@@ -89,6 +89,7 @@ export default function FeedDetailPage({ params }: FeedDetailPageProps) {
             post={post}
             viewerMemberId={viewerMemberId}
             expanded
+            className="mx-auto"
             onLikeClick={handleLikeClick}
             onEditClick={(p) => router.push(`/feed/${p.id}/edit`)}
             onDeleteClick={() => setDeleteOpen(true)}
@@ -98,6 +99,7 @@ export default function FeedDetailPage({ params }: FeedDetailPageProps) {
             <CommentList
               postId={post.id}
               viewerMemberId={viewerMemberId}
+              viewerSupportTeam={profile?.supportTeam}
               onAuthRequired={showLoginModal}
             />
           </div>

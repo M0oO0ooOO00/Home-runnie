@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import type { Team } from '@homerunnie/shared';
 import { cn } from '@/lib/utils';
+import { TeamProfileAvatar } from '@/shared/ui/profile/team-profile-avatar';
 
 interface CommentInputProps {
   placeholder?: string;
@@ -13,6 +15,8 @@ interface CommentInputProps {
   initialValue?: string;
   submitLabel?: string;
   submittingLabel?: string;
+  supportTeam?: Team | string | null;
+  variant?: 'compact' | 'composer';
 }
 
 const MAX_LENGTH = 1000;
@@ -26,6 +30,8 @@ export function CommentInput({
   initialValue = '',
   submitLabel = '등록',
   submittingLabel = '등록 중',
+  supportTeam,
+  variant = 'compact',
 }: CommentInputProps) {
   const [value, setValue] = useState(initialValue);
   const canSubmit =
@@ -39,6 +45,49 @@ export function CommentInput({
     onSubmit(value.trim());
     setValue(initialValue);
   };
+
+  if (variant === 'composer') {
+    return (
+      <div className="flex flex-col gap-[10px]">
+        <div className="flex min-h-[86px] items-center gap-4 rounded-2xl bg-gray-100 px-5 py-4 transition-colors focus-within:bg-white focus-within:ring-1 focus-within:ring-gray-300">
+          <TeamProfileAvatar supportTeam={supportTeam} className="size-12 shrink-0" />
+          <textarea
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder={placeholder}
+            autoFocus={autoFocus}
+            maxLength={MAX_LENGTH + 100}
+            className="min-h-[48px] flex-1 resize-none bg-transparent text-b02-r text-gray-800 outline-none placeholder:text-gray-400"
+          />
+        </div>
+        <div className="flex items-center justify-end gap-2">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="rounded-full px-5 py-3 text-b03-m text-gray-500 transition-colors hover:text-gray-700"
+            >
+              취소
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            className={cn(
+              'inline-flex h-[37px] min-w-[89px] items-center justify-center rounded-lg px-5 text-b02-sb transition-colors',
+              canSubmit
+                ? 'bg-gray-950 text-white hover:bg-gray-850'
+                : 'cursor-not-allowed bg-gray-300 text-gray-500',
+            )}
+          >
+            {isSubmitting && <Loader2 className="mr-2 animate-spin" size={16} />}
+            <span>{isSubmitting ? submittingLabel : submitLabel}</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-2">
@@ -71,7 +120,7 @@ export function CommentInput({
               : 'bg-gray-200 text-gray-400 cursor-not-allowed',
           )}
         >
-          {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : <Send size={14} />}
+          {isSubmitting && <Loader2 className="animate-spin" size={14} />}
           <span>{isSubmitting ? submittingLabel : submitLabel}</span>
         </button>
       </div>

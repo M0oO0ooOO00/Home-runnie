@@ -16,16 +16,16 @@ export const reactionHandlers = [
     const targetType = String(params.targetType);
     const targetId = Number(params.targetId);
 
-    if (targetType !== 'POST') {
-      return HttpResponse.json({ message: '현재는 POST 타입만 지원합니다.' }, { status: 400 });
+    if (targetType !== 'POST' && targetType !== 'COMMENT') {
+      return HttpResponse.json({ message: '지원하지 않는 좋아요 대상입니다.' }, { status: 400 });
     }
 
     if (!Number.isFinite(targetId)) {
       return HttpResponse.json({ message: '잘못된 ID' }, { status: 400 });
     }
 
-    const post = FEED_MOCK_POSTS.find((p) => p.id === targetId);
-    const exists = post || targetId > 0;
+    const post = targetType === 'POST' ? FEED_MOCK_POSTS.find((p) => p.id === targetId) : null;
+    const exists = targetType === 'COMMENT' ? targetId > 0 : post || targetId > 0;
     if (!exists) {
       return HttpResponse.json({ message: '대상 없음' }, { status: 404 });
     }

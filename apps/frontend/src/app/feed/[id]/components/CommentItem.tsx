@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { MessageSquare, Pencil, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { MessageSquare, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { TeamDescription } from '@homerunnie/shared';
 import { TeamProfileAvatar } from '@/shared/ui/profile/team-profile-avatar';
 import { cn } from '@/lib/utils';
@@ -19,6 +20,12 @@ function formatRelativeTime(iso: string): string {
   return new Date(iso).toLocaleDateString('ko-KR');
 }
 
+function formatCompactCount(count: number): string {
+  if (count >= 1_000_000) return `${Number((count / 1_000_000).toFixed(1))}m`;
+  if (count >= 1_000) return `${Number((count / 1_000).toFixed(1))}k`;
+  return String(count);
+}
+
 interface CommentItemProps {
   comment: FeedComment;
   viewerMemberId: number | null;
@@ -28,6 +35,7 @@ interface CommentItemProps {
   isUpdatingComment?: boolean;
   onReplyToggle?: (commentId: number) => void;
   onReplySubmit?: (parentId: number, content: string) => void;
+  onLikeClick?: (commentId: number) => void;
   onDelete?: (commentId: number) => void;
   onUpdate?: (commentId: number, content: string) => void;
   onAuthRequired?: () => void;
@@ -42,6 +50,7 @@ export function CommentItem({
   isUpdatingComment = false,
   onReplyToggle,
   onReplySubmit,
+  onLikeClick,
   onDelete,
   onUpdate,
   onAuthRequired,
@@ -49,6 +58,28 @@ export function CommentItem({
   const isMine = viewerMemberId !== null && comment.author.id === viewerMemberId;
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const showMenu = isMine && (onUpdate || onDelete);
+  const likeCount = comment.likeCount ?? 0;
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [menuOpen]);
 
   const handleReplyClick = () => {
     if (viewerMemberId === null) {
@@ -58,7 +89,7 @@ export function CommentItem({
     onReplyToggle?.(comment.id);
   };
 
-  const handleDeleteClick = () => {
+  const handleMenuDeleteClick = () => {
     if (!confirmDelete) {
       setConfirmDelete(true);
       setTimeout(() => setConfirmDelete(false), 3000);
@@ -66,23 +97,30 @@ export function CommentItem({
     }
     onDelete?.(comment.id);
     setConfirmDelete(false);
+    setMenuOpen(false);
   };
 
   return (
-    <div className={cn('flex flex-col gap-2', isReply && 'ml-10')}>
-      <div className="flex items-start gap-3">
-        <TeamProfileAvatar supportTeam={comment.author.supportTeam} size={32} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-c01-m text-gray-950 truncate">{comment.author.nickname}</span>
+    <article className={cn('flex flex-col', isReply ? 'ml-[88px] gap-4 max-sm:ml-8' : 'gap-6')}>
+      <div className="flex items-start gap-4">
+        <TeamProfileAvatar
+          supportTeam={comment.author.supportTeam}
+          className={cn('shrink-0', isReply ? 'size-12' : 'size-14')}
+        />
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="truncate text-b01-sb text-gray-850">{comment.author.nickname}</span>
             {comment.author.supportTeam && (
-              <span className="text-c01-r text-gray-500 shrink-0">
-                · {TeamDescription[comment.author.supportTeam] ?? comment.author.supportTeam}
+              <span className="shrink-0 text-b01-r text-gray-500">
+                {TeamDescription[comment.author.supportTeam] ?? comment.author.supportTeam}
               </span>
             )}
+            <time className="basis-full text-b01-r text-gray-500" dateTime={comment.createdAt}>
+              {formatRelativeTime(comment.createdAt)}
+            </time>
           </div>
           {isEditing ? (
-            <div className="mt-1">
+            <div className="mt-3">
               <CommentInput
                 initialValue={comment.content}
                 placeholder="댓글을 입력하세요"
@@ -98,52 +136,104 @@ export function CommentItem({
               />
             </div>
           ) : (
-            <p className="text-b03-r text-gray-800 whitespace-pre-wrap mt-0.5">{comment.content}</p>
+            <p className="mt-8 whitespace-pre-wrap text-b01-r text-gray-950 max-sm:mt-5 max-sm:text-b02-r">
+              {comment.content}
+            </p>
           )}
           {!isEditing && (
-            <div className="flex items-center gap-3 mt-1.5">
-              <time className="text-c01-r text-gray-400" dateTime={comment.createdAt}>
-                {formatRelativeTime(comment.createdAt)}
-              </time>
-              {!isReply && onReplyToggle && (
+            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-b01-r text-gray-400">
+              <button
+                type="button"
+                onClick={() => onLikeClick?.(comment.id)}
+                className={cn(
+                  'inline-flex items-center gap-3 transition-colors',
+                  onLikeClick ? 'hover:text-gray-700' : 'pointer-events-none',
+                )}
+                aria-label={comment.isLiked ? '댓글 좋아요 취소' : '댓글 좋아요'}
+              >
+                <Image
+                  src={comment.isLiked ? '/icons/like_click.svg' : '/icons/like_default.svg'}
+                  alt=""
+                  width={28}
+                  height={28}
+                  aria-hidden
+                />
+                <span>{formatCompactCount(likeCount)}</span>
+              </button>
+              {!isReply && onReplyToggle ? (
                 <button
                   type="button"
                   onClick={handleReplyClick}
-                  className="inline-flex items-center gap-1 text-c01-r text-gray-500 hover:text-gray-700 transition-colors"
+                  className="inline-flex items-center gap-3 transition-colors hover:text-gray-700"
+                  aria-label="답글"
                 >
-                  <MessageSquare size={12} />
-                  <span>답글</span>
+                  <MessageSquare size={30} strokeWidth={1.8} />
+                  <span>{formatCompactCount(comment.replies.length)}</span>
                 </button>
-              )}
-              {isMine && onUpdate && (
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  className="inline-flex items-center gap-1 text-c01-r text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  <Pencil size={12} />
-                  <span>수정</span>
-                </button>
-              )}
-              {isMine && onDelete && (
-                <button
-                  type="button"
-                  onClick={handleDeleteClick}
-                  className={`inline-flex items-center gap-1 text-c01-r transition-colors ${
-                    confirmDelete ? 'text-red-600' : 'text-gray-500 hover:text-red-500'
-                  }`}
-                >
-                  <Trash2 size={12} />
-                  <span>{confirmDelete ? '한번 더 클릭' : '삭제'}</span>
-                </button>
+              ) : (
+                <span className="inline-flex items-center gap-3">
+                  <MessageSquare size={30} strokeWidth={1.8} />
+                  <span>{formatCompactCount(0)}</span>
+                </span>
               )}
             </div>
           )}
         </div>
+
+        {showMenu && (
+          <div ref={menuRef} className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((prev) => !prev)}
+              className="-m-2 rounded-full p-2 text-gray-400 transition-colors hover:text-gray-600"
+              aria-label="댓글 더보기"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+            >
+              <MoreHorizontal size={28} strokeWidth={2.6} />
+            </button>
+
+            {menuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-10 mt-4 min-w-[150px] overflow-hidden rounded-xl bg-card shadow-02"
+              >
+                {onUpdate && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setIsEditing(true);
+                      setMenuOpen(false);
+                    }}
+                    className="inline-flex w-full items-center gap-3 px-4 py-3 text-b03-m text-gray-700 transition-colors hover:bg-gray-100"
+                  >
+                    <Pencil size={18} strokeWidth={1.8} />
+                    <span>수정하기</span>
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={handleMenuDeleteClick}
+                    className={cn(
+                      'inline-flex w-full items-center gap-3 px-4 py-3 text-b03-m transition-colors hover:bg-red-50',
+                      confirmDelete ? 'text-red-600' : 'text-red-500',
+                    )}
+                  >
+                    <Trash2 size={18} strokeWidth={1.8} />
+                    <span>{confirmDelete ? '한번 더 클릭' : '삭제하기'}</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {isReplyingTarget && onReplySubmit && (
-        <div className="ml-10">
+        <div className="ml-[72px]">
           <CommentInput
             placeholder={`@${comment.author.nickname}에게 답글 달기`}
             isSubmitting={isCreatingReply}
@@ -155,7 +245,14 @@ export function CommentItem({
       )}
 
       {comment.replies.length > 0 && (
-        <div className="flex flex-col gap-3 mt-1">
+        <div className="flex flex-col gap-10">
+          <button
+            type="button"
+            onClick={() => onReplyToggle?.(comment.id)}
+            className="ml-[88px] self-start text-b01-r text-gray-500 transition-colors hover:text-gray-800 max-sm:ml-8"
+          >
+            답글 더 보기 ({comment.replies.length})
+          </button>
           {comment.replies.map((reply) => (
             <CommentItem
               key={reply.id}
@@ -163,6 +260,7 @@ export function CommentItem({
               viewerMemberId={viewerMemberId}
               isReply
               isUpdatingComment={isUpdatingComment}
+              onLikeClick={onLikeClick}
               onDelete={onDelete}
               onUpdate={onUpdate}
               onAuthRequired={onAuthRequired}
@@ -170,6 +268,6 @@ export function CommentItem({
           ))}
         </div>
       )}
-    </div>
+    </article>
   );
 }
