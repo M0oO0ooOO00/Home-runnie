@@ -8,6 +8,8 @@ export interface FeedComment {
   parentId: number | null;
   replies: FeedComment[];
   createdAt: string;
+  likeCount?: number;
+  isLiked?: boolean;
 }
 
 export interface CreateFeedCommentRequest {

@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { ReactionRepository } from '@/reaction/repository';
 import { ReactionTargetType } from '@/reaction/domain';
 import { ToggleLikeResponseDto } from '@/reaction/dto';
 import { Inject } from '@nestjs/common';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Post } from '@/post/shared/domain';
+import { Comment } from '@/comment/domain';
 import { DATABASE_CONNECTION } from '@/common';
 
 @Injectable()
@@ -21,16 +22,14 @@ export class ReactionService {
     targetType: ReactionTargetType,
     targetId: number,
   ): Promise<ToggleLikeResponseDto> {
-    if (targetType !== ReactionTargetType.POST) {
-      throw new BadRequestException('현재는 POST 타입만 지원합니다 (COMMENT는 추후 지원 예정)');
-    }
-
     await this.assertTargetExists(targetType, targetId);
 
     const existing = await this.reactionRepository.findLike(memberId, targetType, targetId);
 
-    if (existing) {
+    if (existing && !existing.deleted) {
       await this.reactionRepository.softDeleteLike(existing.id);
+    } else if (existing) {
+      await this.reactionRepository.restoreLike(existing.id);
     } else {
       await this.reactionRepository.createLike(memberId, targetType, targetId);
     }
@@ -38,7 +37,7 @@ export class ReactionService {
     const likeCount = await this.reactionRepository.countLikes(targetType, targetId);
 
     return new ToggleLikeResponseDto({
-      liked: !existing,
+      liked: !existing || Boolean(existing.deleted),
       likeCount,
     });
   }
@@ -56,6 +55,21 @@ export class ReactionService {
       if (!post) {
         throw new NotFoundException('해당 게시글을 찾을 수 없습니다.');
       }
+      return;
     }
+
+    if (targetType === ReactionTargetType.COMMENT) {
+      const [comment] = await this.db
+        .select({ id: Comment.id })
+        .from(Comment)
+        .where(and(eq(Comment.id, targetId), eq(Comment.deleted, false)))
+        .limit(1);
+      if (!comment) {
+        throw new NotFoundException('해당 댓글을 찾을 수 없습니다.');
+      }
+      return;
+    }
+
+    throw new BadRequestException('지원하지 않는 좋아요 대상입니다.');
   }
 }
