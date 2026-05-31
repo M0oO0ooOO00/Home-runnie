@@ -52,7 +52,7 @@ export function FeedCardKebabMenu({ onEdit, onDelete }: FeedCardKebabMenuProps) 
           role="menu"
           className={cn(
             'absolute right-0 top-full z-10 mt-5',
-            'min-w-[160px] rounded-xl bg-card shadow-03',
+            'min-w-[160px] rounded-xl bg-card',
             'overflow-hidden',
           )}
           onClick={(e) => e.stopPropagation()}

@@ -1,6 +1,7 @@
 'use client';
 
-import { Heart, MessageCircle } from 'lucide-react';
+import Image from 'next/image';
+import { MessageCircle } from 'lucide-react';
 import { TeamDescription } from '@homerunnie/shared';
 import { TeamProfileAvatar } from '@/shared/ui/profile/team-profile-avatar';
 import { cn } from '@/lib/utils';
@@ -164,7 +165,13 @@ export function FeedCard({
           )}
           aria-label={isLiked ? '좋아요 취소' : '좋아요'}
         >
-          <Heart size={28} strokeWidth={1.8} fill={isLiked ? 'currentColor' : 'none'} />
+          <Image
+            src={isLiked ? '/icons/like_click.svg' : '/icons/like_default.svg'}
+            alt=""
+            width={28}
+            height={28}
+            aria-hidden
+          />
           <span>{formatCompactCount(likeCount)}</span>
         </button>
         <button

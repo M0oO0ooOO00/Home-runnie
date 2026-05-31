@@ -29,8 +29,10 @@ export class ReactionService {
 
     const existing = await this.reactionRepository.findLike(memberId, targetType, targetId);
 
-    if (existing) {
+    if (existing && !existing.deleted) {
       await this.reactionRepository.softDeleteLike(existing.id);
+    } else if (existing) {
+      await this.reactionRepository.restoreLike(existing.id);
     } else {
       await this.reactionRepository.createLike(memberId, targetType, targetId);
     }
@@ -38,7 +40,7 @@ export class ReactionService {
     const likeCount = await this.reactionRepository.countLikes(targetType, targetId);
 
     return new ToggleLikeResponseDto({
-      liked: !existing,
+      liked: !existing || Boolean(existing.deleted),
       likeCount,
     });
   }

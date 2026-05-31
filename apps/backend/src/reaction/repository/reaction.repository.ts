@@ -20,7 +20,6 @@ export class ReactionRepository {
           eq(Like.memberId, memberId),
           eq(Like.targetType, targetType),
           eq(Like.targetId, targetId),
-          eq(Like.deleted, false),
         ),
       )
       .limit(1);
@@ -34,6 +33,15 @@ export class ReactionRepository {
 
   async softDeleteLike(id: number) {
     await this.db.update(Like).set({ deleted: true, updatedAt: new Date() }).where(eq(Like.id, id));
+  }
+
+  async restoreLike(id: number) {
+    const [row] = await this.db
+      .update(Like)
+      .set({ deleted: false, updatedAt: new Date() })
+      .where(eq(Like.id, id))
+      .returning();
+    return row;
   }
 
   async countLikes(targetType: ReactionTargetType, targetId: number): Promise<number> {

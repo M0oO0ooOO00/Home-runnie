@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowUp, Loader2, Pencil } from 'lucide-react';
+import { Loader2, Pencil } from 'lucide-react';
 import { FeedCard } from '@/shared/ui/feed-card/feed-card';
 import type { FeedPost } from '@/shared/ui/feed-card/feed-card.types';
 import { useFeedInfiniteQuery } from '@/hooks/feed/useFeedInfiniteQuery';
@@ -184,14 +185,14 @@ export default function FeedPage() {
           type="button"
           onClick={handleScrollTopClick}
           className={cn(
-            'right-[max(1.5rem,calc(50%_-_430px))] z-30 flex size-11 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 transition-colors hover:border-gray-400 hover:bg-gray-50 active:bg-gray-100 max-sm:right-4 max-sm:size-9',
+            'right-[max(1.5rem,calc(50%_-_430px))] z-30 flex size-11 items-center justify-center rounded-full transition-opacity hover:opacity-85 active:opacity-75 max-sm:right-4 max-sm:size-9',
             pinActionsToPageBottom
               ? 'absolute bottom-8 max-sm:bottom-6'
               : 'fixed bottom-8 max-sm:bottom-6',
           )}
           aria-label="맨 위로 이동"
         >
-          <ArrowUp size={22} strokeWidth={2.2} className="max-sm:size-5" />
+          <Image src="/icons/direct.svg" alt="" width={36} height={36} aria-hidden />
         </button>
       )}
 
