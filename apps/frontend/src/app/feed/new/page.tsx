@@ -1,45 +1,29 @@
 'use client';
 
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ImagePlus, Loader2, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useCreateFeedPostMutation } from '@/hooks/feed/useCreateFeedPostMutation';
+import { useFeedImagePicker } from '@/hooks/feed/useFeedImagePicker';
 import { useUploadImagesMutation } from '@/hooks/upload/useUploadImagesMutation';
-import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
+import { useLoginStatus } from '@/hooks/auth/useLoginStatus';
+import { useLoginRequiredModal } from '@/hooks/auth/useLoginRequiredModal';
 import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
-
-const MAX_IMAGES = 4;
-const MAX_CONTENT = 2000;
-
-interface ImageItem {
-  previewUrl: string;
-  file: File;
-}
+import { FeedPostForm } from '@/app/feed/components/FeedPostForm';
+import { FEED_POST_MAX_CONTENT, FEED_POST_MAX_IMAGES } from '@/app/feed/constants';
 
 export default function FeedNewPage() {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [content, setContent] = useState('');
-  const [images, setImages] = useState<ImageItem[]>([]);
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const { formImages, newFiles, addFiles, removeImage } = useFeedImagePicker({
+    maxImages: FEED_POST_MAX_IMAGES,
+  });
 
-  const {
-    data: profile,
-    isLoading: isProfileLoading,
-    isError: isProfileError,
-  } = useMyProfileQuery({ retry: false });
-  const isLogged = useMemo(
-    () => !isProfileError && Boolean(profile?.nickname),
-    [profile?.nickname, isProfileError],
-  );
-
-  useEffect(() => {
-    if (!isProfileLoading && !isLogged) {
-      setLoginModalOpen(true);
-    }
-  }, [isProfileLoading, isLogged]);
+  const { isLogged, isLoading: isLoginLoading } = useLoginStatus();
+  const { loginModalOpen, setLoginModalOpen } = useLoginRequiredModal({
+    isLoading: isLoginLoading,
+    isLogged,
+  });
 
   const { mutateAsync: uploadImagesAsync, isPending: isUploading } = useUploadImagesMutation();
 
@@ -54,42 +38,15 @@ export default function FeedNewPage() {
 
   const isSubmitting = isUploading || isCreating;
 
-  useEffect(() => {
-    return () => {
-      images.forEach((img) => URL.revokeObjectURL(img.previewUrl));
-    };
-  }, [images]);
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
-    const remaining = MAX_IMAGES - images.length;
-    const accepted = files.slice(0, remaining);
-
-    const newItems: ImageItem[] = accepted.map((file) => ({
-      previewUrl: URL.createObjectURL(file),
-      file,
-    }));
-
-    setImages((prev) => [...prev, ...newItems]);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const removeImage = (idx: number) => {
-    setImages((prev) => {
-      URL.revokeObjectURL(prev[idx].previewUrl);
-      return prev.filter((_, i) => i !== idx);
-    });
-  };
-
-  const canSubmit = content.trim().length > 0 && content.length <= MAX_CONTENT && !isSubmitting;
+  const canSubmit =
+    content.trim().length > 0 && content.length <= FEED_POST_MAX_CONTENT && !isSubmitting;
 
   const onSubmit = async () => {
     if (!canSubmit) return;
     setUploadError(null);
 
     try {
-      const uploaded =
-        images.length > 0 ? await uploadImagesAsync(images.map((img) => img.file)) : { urls: [] };
+      const uploaded = newFiles.length > 0 ? await uploadImagesAsync(newFiles) : { urls: [] };
 
       mutate({
         content: content.trim(),
@@ -100,106 +57,25 @@ export default function FeedNewPage() {
     }
   };
 
+  const submitLabel = isUploading ? '업로드 중...' : isCreating ? '게시 중...' : '게시';
+  const mutationError = isError ? `게시 실패: ${(error as Error)?.message}` : null;
+
   return (
-    <div className="max-w-[600px] mx-auto py-4">
-      <div className="flex items-center justify-between mb-3 px-1">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="inline-flex items-center gap-1 text-c01-m text-gray-700 hover:text-gray-900 transition-colors"
-          aria-label="뒤로가기"
-        >
-          <ArrowLeft size={18} />
-          <span>뒤로</span>
-        </button>
-        <button
-          type="button"
-          onClick={onSubmit}
-          disabled={!canSubmit}
-          className={cn(
-            'inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-c01-m transition-colors',
-            canSubmit
-              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-              : 'bg-gray-200 text-gray-500 cursor-not-allowed',
-          )}
-        >
-          {isSubmitting && <Loader2 className="animate-spin" size={14} />}
-          <span>{isUploading ? '업로드 중...' : isCreating ? '게시 중...' : '게시'}</span>
-        </button>
-      </div>
-
-      <div className="bg-background rounded-2xl border border-gray-100 p-4">
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="무엇을 공유하고 싶나요?"
-          maxLength={MAX_CONTENT + 100}
-          className="w-full min-h-[200px] resize-none outline-none text-b03-r text-gray-800 placeholder:text-gray-400"
-        />
-
-        {images.length > 0 && (
-          <div className="grid grid-cols-2 gap-1 mt-3">
-            {images.map((img, idx) => (
-              <div
-                key={img.previewUrl}
-                className="relative aspect-square overflow-hidden rounded-lg"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img.previewUrl} alt="" className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => removeImage(idx)}
-                  className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
-                  aria-label="이미지 삭제"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={images.length >= MAX_IMAGES}
-            className={cn(
-              'inline-flex items-center gap-1.5 text-c01-m transition-colors',
-              images.length >= MAX_IMAGES
-                ? 'text-gray-300 cursor-not-allowed'
-                : 'text-gray-700 hover:text-gray-900',
-            )}
-          >
-            <ImagePlus size={18} />
-            <span>
-              사진 {images.length}/{MAX_IMAGES}
-            </span>
-          </button>
-          <span
-            className={cn(
-              'text-c01-r',
-              content.length > MAX_CONTENT ? 'text-red-500' : 'text-gray-400',
-            )}
-          >
-            {content.length}/{MAX_CONTENT}
-          </span>
-        </div>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={handleFileChange}
-          className="hidden"
-        />
-      </div>
-
-      {uploadError && <p className="text-c01-r text-red-500 mt-3 px-1">{uploadError}</p>}
-      {isError && (
-        <p className="text-c01-r text-red-500 mt-3 px-1">게시 실패: {(error as Error)?.message}</p>
-      )}
+    <>
+      <FeedPostForm
+        value={{ content, images: formImages }}
+        submitLabel={submitLabel}
+        submitDisabled={!canSubmit}
+        isSubmitting={isSubmitting}
+        errorMessage={uploadError ?? mutationError}
+        actions={{
+          onContentChange: setContent,
+          onFilesSelected: addFiles,
+          onRemoveImage: removeImage,
+          onBack: () => router.back(),
+          onSubmit,
+        }}
+      />
 
       <LoginRequiredModal
         open={loginModalOpen}
@@ -216,6 +92,6 @@ export default function FeedNewPage() {
         cancelText="피드로 돌아가기"
         showCancel
       />
-    </div>
+    </>
   );
 }

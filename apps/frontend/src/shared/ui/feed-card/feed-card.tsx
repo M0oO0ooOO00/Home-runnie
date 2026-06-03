@@ -5,68 +5,10 @@ import { MessageCircle } from 'lucide-react';
 import { TeamDescription } from '@homerunnie/shared';
 import { TeamProfileAvatar } from '@/shared/ui/profile/team-profile-avatar';
 import { cn } from '@/lib/utils';
+import { formatCompactCount, formatRelativeTime } from '@/lib/format';
 import type { FeedPost } from './feed-card.types';
+import { FeedCardImageGrid } from './FeedCardImageGrid';
 import { FeedCardKebabMenu } from './FeedCardKebabMenu';
-
-function formatRelativeTime(iso: string): string {
-  const now = Date.now();
-  const then = new Date(iso).getTime();
-  const diff = Math.floor((now - then) / 1000);
-  if (diff < 60) return '방금전';
-  if (diff < 3600) return `${Math.floor(diff / 60)}분전`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}시간전`;
-  return new Date(iso).toLocaleDateString('ko-KR');
-}
-
-function formatCompactCount(count: number): string {
-  if (count >= 1_000_000) return `${Number((count / 1_000_000).toFixed(1))}m`;
-  if (count >= 1_000) return `${Number((count / 1_000).toFixed(1))}k`;
-  return String(count);
-}
-
-function ImageGrid({ images }: { images: string[] }) {
-  if (images.length === 0) return null;
-
-  if (images.length === 1) {
-    return (
-      <div className="overflow-hidden rounded-xl">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={images[0]} alt="" className="w-full max-h-[520px] object-cover" />
-      </div>
-    );
-  }
-
-  if (images.length === 2) {
-    return (
-      <div className="grid aspect-[2/1] grid-cols-2 gap-1.5 overflow-hidden rounded-xl">
-        {images.map((src, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img key={`${src}-${i}`} src={src} alt="" className="h-full w-full object-cover" />
-        ))}
-      </div>
-    );
-  }
-
-  const overflowCount = images.length - 3;
-
-  return (
-    <div className="grid aspect-[3/2] grid-cols-2 grid-rows-2 gap-1.5 overflow-hidden rounded-xl">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={images[0]} alt="" className="row-span-2 h-full w-full object-cover" />
-      {images.slice(1, 3).map((src, i) => (
-        <div key={`${src}-${i}`} className="relative h-full w-full overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src} alt="" className="h-full w-full object-cover" />
-          {i === 1 && overflowCount > 0 && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/45 text-t04-b text-white">
-              +{overflowCount}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
 
 export interface FeedCardProps {
   post: FeedPost;
@@ -119,7 +61,7 @@ export function FeedCard({
           </div>
           <div className="mt-1 flex items-center gap-1.5">
             <time className="text-b02-r text-gray-500" dateTime={createdAt}>
-              {formatRelativeTime(createdAt)}
+              {formatRelativeTime(createdAt, 'compact')}
             </time>
             {isEdited && <span className="text-b02-r text-gray-500">· 수정됨</span>}
           </div>
@@ -145,7 +87,7 @@ export function FeedCard({
 
       {images.length > 0 && (
         <div className="-mt-1 pb-7 sm:pb-8">
-          <ImageGrid images={images} />
+          <FeedCardImageGrid images={images} />
         </div>
       )}
 
