@@ -30,7 +30,7 @@ export function useFeedImagePicker({ maxImages, initialImages = [] }: UseFeedIma
   const [images, setImages] = useState<FeedImageItem[]>(() =>
     initialImages.map((url) => ({ kind: 'existing', url })),
   );
-  const imagesRef = useRef<FeedImageItem[]>([]);
+  const imagesRef = useRef<FeedImageItem[]>(images);
 
   useEffect(() => {
     imagesRef.current = images;
@@ -44,39 +44,44 @@ export function useFeedImagePicker({ maxImages, initialImages = [] }: UseFeedIma
 
   const addFiles = useCallback(
     (files: File[]) => {
-      setImages((prev) => {
-        const remaining = maxImages - prev.length;
-        const accepted = files.slice(0, remaining);
+      const currentImages = imagesRef.current;
+      const remaining = maxImages - currentImages.length;
+      const accepted = files.slice(0, remaining);
 
-        if (accepted.length === 0) return prev;
+      if (accepted.length === 0) return;
 
-        const newItems: NewFeedImage[] = accepted.map((file) => ({
-          kind: 'new',
-          previewUrl: URL.createObjectURL(file),
-          file,
-        }));
+      const newItems: NewFeedImage[] = accepted.map((file) => ({
+        kind: 'new',
+        previewUrl: URL.createObjectURL(file),
+        file,
+      }));
 
-        return [...prev, ...newItems];
-      });
+      const nextImages = [...currentImages, ...newItems];
+      imagesRef.current = nextImages;
+      setImages(nextImages);
     },
     [maxImages],
   );
 
   const removeImage = useCallback((index: number) => {
-    setImages((prev) => {
-      const target = prev[index];
-      if (!target) return prev;
+    const currentImages = imagesRef.current;
+    const target = currentImages[index];
 
-      revokePreviewUrl(target);
-      return prev.filter((_, i) => i !== index);
-    });
+    if (!target) return;
+
+    const nextImages = currentImages.filter((_, i) => i !== index);
+    imagesRef.current = nextImages;
+    setImages(nextImages);
+    revokePreviewUrl(target);
   }, []);
 
   const replaceWithExistingImages = useCallback((urls: string[]) => {
-    setImages((prev) => {
-      prev.forEach(revokePreviewUrl);
-      return urls.map((url) => ({ kind: 'existing', url }));
-    });
+    const currentImages = imagesRef.current;
+    const nextImages: ExistingFeedImage[] = urls.map((url) => ({ kind: 'existing', url }));
+
+    imagesRef.current = nextImages;
+    setImages(nextImages);
+    currentImages.forEach(revokePreviewUrl);
   }, []);
 
   const formImages = images.map((image) => {
