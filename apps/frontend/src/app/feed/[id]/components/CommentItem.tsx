@@ -6,62 +6,29 @@ import { MessageCircle, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { TeamDescription } from '@homerunnie/shared';
 import { TeamProfileAvatar } from '@/shared/ui/profile/team-profile-avatar';
 import { cn } from '@/lib/utils';
+import { formatCompactCount, formatRelativeTime } from '@/lib/format';
 import type { FeedComment } from '@/apis/feed/comment';
 import { CommentInput } from './CommentInput';
-
-function formatRelativeTime(iso: string): string {
-  const now = Date.now();
-  const then = new Date(iso).getTime();
-  const diff = Math.floor((now - then) / 1000);
-  if (diff < 60) return '방금 전';
-  if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)}일 전`;
-  return new Date(iso).toLocaleDateString('ko-KR');
-}
-
-function formatCompactCount(count: number): string {
-  if (count >= 1_000_000) return `${Number((count / 1_000_000).toFixed(1))}m`;
-  if (count >= 1_000) return `${Number((count / 1_000).toFixed(1))}k`;
-  return String(count);
-}
+import { useCommentInteraction } from './CommentInteractionContext';
+import type { CommentItemActions } from './comment.types';
 
 interface CommentItemProps {
   comment: FeedComment;
-  viewerMemberId: number | null;
   isReply?: boolean;
-  isReplyingTarget?: boolean;
-  isCreatingReply?: boolean;
-  isUpdatingComment?: boolean;
-  onReplyToggle?: (commentId: number) => void;
-  onReplySubmit?: (parentId: number, content: string) => void;
-  onLikeClick?: (commentId: number) => void;
-  onDelete?: (commentId: number) => void;
-  onUpdate?: (commentId: number, content: string) => void;
-  onAuthRequired?: () => void;
+  actions: CommentItemActions;
 }
 
-export function CommentItem({
-  comment,
-  viewerMemberId,
-  isReply = false,
-  isReplyingTarget = false,
-  isCreatingReply = false,
-  isUpdatingComment = false,
-  onReplyToggle,
-  onReplySubmit,
-  onLikeClick,
-  onDelete,
-  onUpdate,
-  onAuthRequired,
-}: CommentItemProps) {
+export function CommentItem({ comment, isReply = false, actions }: CommentItemProps) {
+  const { viewerMemberId, replyingTo, isCreatingReply, isUpdatingComment } =
+    useCommentInteraction();
   const isMine = viewerMemberId !== null && comment.author.id === viewerMemberId;
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const showMenu = isMine && (onUpdate || onDelete);
+  const showMenu = isMine;
+  const isReplyingTarget = replyingTo === comment.id;
   const likeCount = comment.likeCount ?? 0;
 
   useEffect(() => {
@@ -83,11 +50,7 @@ export function CommentItem({
   }, [menuOpen]);
 
   const handleReplyClick = () => {
-    if (viewerMemberId === null) {
-      onAuthRequired?.();
-      return;
-    }
-    onReplyToggle?.(comment.id);
+    actions.toggleReply(comment.id);
   };
 
   const handleMenuDeleteClick = () => {
@@ -96,7 +59,7 @@ export function CommentItem({
       setTimeout(() => setConfirmDelete(false), 3000);
       return;
     }
-    onDelete?.(comment.id);
+    actions.delete(comment.id);
     setConfirmDelete(false);
     setMenuOpen(false);
   };
@@ -129,7 +92,7 @@ export function CommentItem({
                 submitLabel="저장"
                 submittingLabel="저장 중"
                 onSubmit={(content) => {
-                  onUpdate?.(comment.id, content);
+                  actions.update(comment.id, content);
                   setIsEditing(false);
                 }}
                 onCancel={() => setIsEditing(false)}
@@ -145,11 +108,8 @@ export function CommentItem({
             <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-b01-r text-gray-400">
               <button
                 type="button"
-                onClick={() => onLikeClick?.(comment.id)}
-                className={cn(
-                  'inline-flex items-center gap-3 transition-colors',
-                  onLikeClick ? 'hover:text-gray-700' : 'pointer-events-none',
-                )}
+                onClick={() => actions.like(comment.id)}
+                className="inline-flex items-center gap-3 transition-colors hover:text-gray-700"
                 aria-label={comment.isLiked ? '댓글 좋아요 취소' : '댓글 좋아요'}
               >
                 <Image
@@ -161,7 +121,7 @@ export function CommentItem({
                 />
                 <span>{formatCompactCount(likeCount)}</span>
               </button>
-              {!isReply && onReplyToggle ? (
+              {!isReply ? (
                 <button
                   type="button"
                   onClick={handleReplyClick}
@@ -199,47 +159,43 @@ export function CommentItem({
                 role="menu"
                 className="absolute right-0 top-full z-10 mt-4 min-w-[150px] overflow-hidden rounded-xl bg-card shadow-02"
               >
-                {onUpdate && (
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      setIsEditing(true);
-                      setMenuOpen(false);
-                    }}
-                    className="inline-flex w-full items-center gap-3 px-4 py-3 text-b03-m text-gray-700 transition-colors hover:bg-gray-100"
-                  >
-                    <Pencil size={18} strokeWidth={1.8} />
-                    <span>수정하기</span>
-                  </button>
-                )}
-                {onDelete && (
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={handleMenuDeleteClick}
-                    className={cn(
-                      'inline-flex w-full items-center gap-3 px-4 py-3 text-b03-m transition-colors hover:bg-red-50',
-                      confirmDelete ? 'text-red-600' : 'text-red-500',
-                    )}
-                  >
-                    <Trash2 size={18} strokeWidth={1.8} />
-                    <span>{confirmDelete ? '한번 더 클릭' : '삭제하기'}</span>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsEditing(true);
+                    setMenuOpen(false);
+                  }}
+                  className="inline-flex w-full items-center gap-3 px-4 py-3 text-b03-m text-gray-700 transition-colors hover:bg-gray-100"
+                >
+                  <Pencil size={18} strokeWidth={1.8} />
+                  <span>수정하기</span>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={handleMenuDeleteClick}
+                  className={cn(
+                    'inline-flex w-full items-center gap-3 px-4 py-3 text-b03-m transition-colors hover:bg-red-50',
+                    confirmDelete ? 'text-red-600' : 'text-red-500',
+                  )}
+                >
+                  <Trash2 size={18} strokeWidth={1.8} />
+                  <span>{confirmDelete ? '한번 더 클릭' : '삭제하기'}</span>
+                </button>
               </div>
             )}
           </div>
         )}
       </div>
 
-      {isReplyingTarget && onReplySubmit && (
+      {isReplyingTarget && (
         <div className="ml-[72px]">
           <CommentInput
             placeholder={`${comment.author.nickname}에게 답글 달기`}
-            isSubmitting={isCreatingReply}
-            onSubmit={(content) => onReplySubmit(comment.id, content)}
-            onCancel={() => onReplyToggle?.(comment.id)}
+            isSubmitting={isCreatingReply(comment.id)}
+            onSubmit={(content) => actions.submitReply(comment.id, content)}
+            onCancel={() => actions.toggleReply(comment.id)}
             autoFocus
           />
         </div>
@@ -257,17 +213,7 @@ export function CommentItem({
           </button>
           {showReplies &&
             comment.replies.map((reply) => (
-              <CommentItem
-                key={reply.id}
-                comment={reply}
-                viewerMemberId={viewerMemberId}
-                isReply
-                isUpdatingComment={isUpdatingComment}
-                onLikeClick={onLikeClick}
-                onDelete={onDelete}
-                onUpdate={onUpdate}
-                onAuthRequired={onAuthRequired}
-              />
+              <CommentItem key={reply.id} comment={reply} isReply actions={actions} />
             ))}
         </div>
       )}
