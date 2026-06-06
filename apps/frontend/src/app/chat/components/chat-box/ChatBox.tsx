@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ChatInfo from './ChatInfo';
 import ChatInput from './ChatInput';
@@ -12,6 +12,7 @@ import { useChatRooms } from '@/stores/ChatRoomsContext';
 import { ChatRoomResponse, ChatRoomMemberRole } from '@homerunnie/shared';
 import { useChatMessages } from '@/hooks/chat/useChatMessages';
 import { useChatRoomEvents } from '@/hooks/chat/useChatRoomEvents';
+import { useChatRoomOverlays } from '@/hooks/chat/useChatRoomOverlays';
 import { useChatRoomMembersQuery } from '@/hooks/chat/useChatQuery';
 import { formatKoreanDate, formatTeamName } from '@/lib/format';
 
@@ -42,12 +43,7 @@ const FALLBACK_ROOM_INFO: RoomInfo = {
 const ChatBox = ({ roomId }: { roomId: string }) => {
   const router = useRouter();
   const chatRoomsMap = useChatRooms();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-  const [profileModalTarget, setProfileModalTarget] = useState<{
-    nickname: string;
-    supportTeam: string | null;
-  } | null>(null);
+  const overlays = useChatRoomOverlays();
 
   const { messages, sendMessage, connected } = useChatMessages(roomId);
   const { joinRequestCount, resetJoinRequestCount, kickedFromRoom, roomDeleted } =
@@ -62,7 +58,7 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
 
   const roomResponse = chatRoomsMap.get(roomId);
   const roomInfo = roomResponse ? createRoomInfo(roomResponse) : FALLBACK_ROOM_INFO;
-  const chatContentClassName = isSidebarOpen ? 'px-4 lg:px-[30px]' : 'px-4 lg:px-8';
+  const chatContentClassName = overlays.sidebar.isOpen ? 'px-4 lg:px-[30px]' : 'px-4 lg:px-8';
 
   useEffect(() => {
     if (kickedFromRoom || roomDeleted) {
@@ -78,8 +74,8 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
           title={roomInfo.title}
           matchDate={roomInfo.matchDate}
           matchTeam={roomInfo.matchTeam}
-          onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
-          isSidebarOpen={isSidebarOpen}
+          onToggleSidebar={overlays.sidebar.toggle}
+          isSidebarOpen={overlays.sidebar.isOpen}
           role={roomInfo.role}
           roomId={roomId}
           joinRequestCount={joinRequestCount}
@@ -87,8 +83,8 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
         />
         <section className="flex flex-col flex-1 min-h-0 pb-6 transition-all duration-300 ease-in-out">
           <ReportModal
-            isOpen={isReportModalOpen}
-            onClose={() => setIsReportModalOpen(false)}
+            isOpen={overlays.report.isOpen}
+            onClose={overlays.report.close}
             participants={reportParticipants}
           />
 
@@ -96,7 +92,7 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
             messages={messages}
             connected={connected}
             contentClassName={chatContentClassName}
-            onProfileClick={setProfileModalTarget}
+            onProfileClick={overlays.profile.open}
           />
 
           <div className={`shrink-0 ${chatContentClassName}`}>
@@ -106,9 +102,9 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
       </div>
 
       <ChatInfoSidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        onReport={() => setIsReportModalOpen(true)}
+        isOpen={overlays.sidebar.isOpen}
+        onClose={overlays.sidebar.close}
+        onReport={overlays.report.open}
         matchDate={roomInfo.matchDate}
         matchTeam={roomInfo.matchTeam}
         role={roomInfo.role}
@@ -116,10 +112,10 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
       />
 
       <MemberProfileModal
-        isOpen={!!profileModalTarget}
-        onClose={() => setProfileModalTarget(null)}
-        nickname={profileModalTarget?.nickname ?? ''}
-        supportTeam={profileModalTarget?.supportTeam ?? null}
+        isOpen={overlays.profile.isOpen}
+        onClose={overlays.profile.close}
+        nickname={overlays.profile.target?.nickname ?? ''}
+        supportTeam={overlays.profile.target?.supportTeam ?? null}
       />
     </div>
   );
