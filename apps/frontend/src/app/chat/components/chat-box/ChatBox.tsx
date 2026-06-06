@@ -1,10 +1,10 @@
 'use client';
 
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ChatInfo from './ChatInfo';
 import ChatInput from './ChatInput';
-import MessageBubble from './MessageBubble';
+import ChatMessageList from './ChatMessageList';
 import ChatInfoSidebar from '../sidebar/ChatInfoSidebar';
 import ReportModal, { ReportParticipant } from '@/shared/ui/modal/ReportModal';
 import { MemberProfileModal } from '@/shared/ui/modal';
@@ -13,7 +13,7 @@ import { ChatRoomResponse, ChatRoomMemberRole } from '@homerunnie/shared';
 import { useChatMessages } from '@/hooks/chat/useChatMessages';
 import { useChatRoomEvents } from '@/hooks/chat/useChatRoomEvents';
 import { useChatRoomMembersQuery } from '@/hooks/chat/useChatQuery';
-import { formatKoreanDate, formatKoreanFullDate, formatTeamName, isSameDay } from '@/lib/format';
+import { formatKoreanDate, formatTeamName } from '@/lib/format';
 
 interface RoomInfo {
   title: string;
@@ -42,7 +42,6 @@ const FALLBACK_ROOM_INFO: RoomInfo = {
 const ChatBox = ({ roomId }: { roomId: string }) => {
   const router = useRouter();
   const chatRoomsMap = useChatRooms();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [profileModalTarget, setProfileModalTarget] = useState<{
@@ -63,10 +62,7 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
 
   const roomResponse = chatRoomsMap.get(roomId);
   const roomInfo = roomResponse ? createRoomInfo(roomResponse) : FALLBACK_ROOM_INFO;
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  const chatContentClassName = isSidebarOpen ? 'px-4 lg:px-[30px]' : 'px-4 lg:px-8';
 
   useEffect(() => {
     if (kickedFromRoom || roomDeleted) {
@@ -96,40 +92,14 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
             participants={reportParticipants}
           />
 
-          <div className="grow overflow-y-auto min-h-0">
-            <div
-              className={`flex flex-col justify-end gap-4 min-h-full ${
-                isSidebarOpen ? 'px-4 lg:px-[30px]' : 'px-4 lg:px-8'
-              }`}
-            >
-              {!connected && <p className="text-center text-sm text-gray-400">서버에 연결 중...</p>}
-              {messages.map((msg, idx) => {
-                const currentDate = msg.createdAt ? new Date(msg.createdAt) : null;
-                const isCurrentValid = !!currentDate && !isNaN(currentDate.getTime());
-                const prev = messages[idx - 1];
-                const prevDate = prev?.createdAt ? new Date(prev.createdAt) : null;
-                const isPrevValid = !!prevDate && !isNaN(prevDate.getTime());
-                const showDateDivider =
-                  isCurrentValid && (!isPrevValid || !isSameDay(prevDate!, currentDate!));
+          <ChatMessageList
+            messages={messages}
+            connected={connected}
+            contentClassName={chatContentClassName}
+            onProfileClick={setProfileModalTarget}
+          />
 
-                return (
-                  <Fragment key={msg.id}>
-                    {showDateDivider && (
-                      <div className="flex justify-center my-2">
-                        <span className="text-xs text-gray-500 bg-gray-200 rounded-full px-3 py-1">
-                          {formatKoreanFullDate(currentDate!)}
-                        </span>
-                      </div>
-                    )}
-                    <MessageBubble msg={msg} onProfileClick={setProfileModalTarget} />
-                  </Fragment>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
-
-          <div className={`shrink-0 ${isSidebarOpen ? 'px-4 lg:px-[30px]' : 'px-4 lg:px-8'}`}>
+          <div className={`shrink-0 ${chatContentClassName}`}>
             <ChatInput onSend={sendMessage} />
           </div>
         </section>
