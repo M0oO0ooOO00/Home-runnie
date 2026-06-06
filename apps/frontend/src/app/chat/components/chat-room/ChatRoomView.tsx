@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import ChatInfo from './ChatInfo';
+import ChatRoomHeader from './ChatRoomHeader';
 import ChatInput from './ChatInput';
 import ChatMessageList from './ChatMessageList';
 import ChatInfoSidebar from '../sidebar/ChatInfoSidebar';
@@ -41,7 +41,7 @@ const FALLBACK_ROOM_INFO: RoomInfo = {
   role: ChatRoomMemberRole.MEMBER,
 };
 
-const ChatBox = ({ roomId }: { roomId: string }) => {
+const ChatRoomView = ({ roomId }: { roomId: string }) => {
   const router = useRouter();
   const chatRoomsMap = useChatRooms();
   const overlays = useChatRoomOverlays();
@@ -72,7 +72,7 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
   return (
     <div className="flex flex-row h-full w-full bg-gray-100 relative">
       <div className="flex flex-col h-full flex-1 min-w-0 transition-all duration-300 ease-in-out">
-        <ChatInfo
+        <ChatRoomHeader
           title={roomInfo.title}
           matchDate={roomInfo.matchDate}
           matchTeam={roomInfo.matchTeam}
@@ -130,4 +130,4 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
   );
 };
 
-export default ChatBox;
+export default ChatRoomView;

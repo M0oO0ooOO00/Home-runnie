@@ -1,4 +1,4 @@
-import ChatBox from '../components/chat-box/ChatBox';
+import ChatRoomView from '../components/chat-room/ChatRoomView';
 
 interface ChatRoomPageProps {
   params: {
@@ -9,7 +9,7 @@ interface ChatRoomPageProps {
 export default function ChatRoomPage({ params }: ChatRoomPageProps) {
   return (
     <section className="flex flex-col w-full h-full">
-      <ChatBox roomId={params.id} />
+      <ChatRoomView roomId={params.id} />
     </section>
   );
 }

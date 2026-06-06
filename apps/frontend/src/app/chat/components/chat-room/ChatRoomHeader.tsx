@@ -4,7 +4,7 @@ import { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Menu } from 'lucide-react';
 
-interface ChatInfoProps {
+interface ChatRoomHeaderProps {
   title: string;
   matchDate: string;
   matchTeam: string;
@@ -15,7 +15,7 @@ interface ChatInfoProps {
   actions?: ReactNode;
 }
 
-const ChatInfo = ({ title, matchDate, matchTeam, sidebar, actions }: ChatInfoProps) => {
+const ChatRoomHeader = ({ title, matchDate, matchTeam, sidebar, actions }: ChatRoomHeaderProps) => {
   const router = useRouter();
 
   return (
@@ -61,4 +61,4 @@ const ChatInfo = ({ title, matchDate, matchTeam, sidebar, actions }: ChatInfoPro
   );
 };
 
-export default ChatInfo;
+export default ChatRoomHeader;
