@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { Team, TEAM_ASSETS, DEFAULT_PROFILE_IMAGE } from '@homerunnie/shared';
-import { ChatMessage } from '@/hooks/chat/useSocket';
+import type { ChatMessage } from '@/types/chat';
 import { formatKoreanTime } from '@/lib/format';
 
 interface MessageBubbleProps {

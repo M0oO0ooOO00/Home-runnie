@@ -10,7 +10,8 @@ import ReportModal, { ReportParticipant } from '@/shared/ui/modal/ReportModal';
 import { MemberProfileModal } from '@/shared/ui/modal';
 import { useChatRooms } from '@/stores/ChatRoomsContext';
 import { ChatRoomResponse, ChatRoomMemberRole } from '@homerunnie/shared';
-import { useSocket } from '@/hooks/chat/useSocket';
+import { useChatMessages } from '@/hooks/chat/useChatMessages';
+import { useChatRoomEvents } from '@/hooks/chat/useChatRoomEvents';
 import { useChatRoomMembersQuery } from '@/hooks/chat/useChatQuery';
 import { formatKoreanDate, formatKoreanFullDate, formatTeamName, isSameDay } from '@/lib/format';
 
@@ -49,15 +50,9 @@ const ChatBox = ({ roomId }: { roomId: string }) => {
     supportTeam: string | null;
   } | null>(null);
 
-  const {
-    messages,
-    sendMessage,
-    connected,
-    joinRequestCount,
-    resetJoinRequestCount,
-    kickedFromRoom,
-    roomDeleted,
-  } = useSocket(roomId);
+  const { messages, sendMessage, connected } = useChatMessages(roomId);
+  const { joinRequestCount, resetJoinRequestCount, kickedFromRoom, roomDeleted } =
+    useChatRoomEvents(roomId);
 
   const { data: members = [] } = useChatRoomMembersQuery(Number(roomId));
 
