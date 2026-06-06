@@ -17,6 +17,8 @@ export function useChatMessages(roomId: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   useEffect(() => {
+    setMessages([]);
+
     if (!socket || !connected) return;
 
     socket.emit('join_room', { roomId });

@@ -5,6 +5,7 @@ import type {
 } from '@/types/chat';
 
 const SYSTEM_PREFIX = '[SYSTEM]';
+let tempIdCounter = 0;
 
 const getCreatedAt = (createdAt?: string) => createdAt ?? new Date().toISOString();
 
@@ -32,7 +33,7 @@ export const mapReceivedMessageToChatMessage = (
   const system = isSystemMessage(message.message);
 
   return {
-    id: Date.now(),
+    id: Date.now() + (tempIdCounter++ % 1000),
     text: stripSystemPrefix(message.message),
     sender: system ? 'system' : message.isOwn ? 'me' : 'other',
     nickname: system ? '' : message.nickname,
