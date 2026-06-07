@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import type { ChatMessage } from '@/types/chat';
 import { formatKoreanFullDate } from '@/lib/format';
 import { getMessageDateDividerDate, parseMessageDate } from '@/shared/utils/message-date';
-import MessageBubble from './MessageBubble';
+import MessageBubble from '@/app/chat/components/chat-room/MessageBubble';
 
 type MessageListRenderItem =
   | { type: 'date-divider'; id: string; date: Date }

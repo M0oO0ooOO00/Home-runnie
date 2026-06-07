@@ -1,4 +1,4 @@
-import ChatRoomView from '../components/chat-room/ChatRoomView';
+import ChatRoomView from '@/app/chat/components/chat-room/ChatRoomView';
 
 interface ChatRoomPageProps {
   params: {

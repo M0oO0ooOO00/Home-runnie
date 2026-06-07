@@ -1,6 +1,6 @@
 'use client';
 
-import ChatConfirmDialog from './ChatConfirmDialog';
+import ChatConfirmDialog from '@/app/chat/components/sidebar/ChatConfirmDialog';
 
 interface DeleteRoomDialogProps {
   open: boolean;
