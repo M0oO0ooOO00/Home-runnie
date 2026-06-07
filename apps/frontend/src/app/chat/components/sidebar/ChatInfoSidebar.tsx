@@ -7,9 +7,9 @@ import { kickMember, deleteChatRoom } from '@/apis/chat/chat';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useChatRoomMembersQuery, chatKeys } from '@/hooks/chat/useChatQuery';
-import MemberList from './MemberList';
-import KickConfirmDialog from './KickConfirmDialog';
-import DeleteRoomDialog from './DeleteRoomDialog';
+import MemberList from '@/app/chat/components/sidebar/MemberList';
+import KickConfirmDialog from '@/app/chat/components/sidebar/KickConfirmDialog';
+import DeleteRoomDialog from '@/app/chat/components/sidebar/DeleteRoomDialog';
 
 interface ChatInfoSidebarProps {
   isOpen: boolean;

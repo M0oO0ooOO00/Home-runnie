@@ -1,7 +1,7 @@
 'use client';
 
 import { ChatRoomMemberResponse } from '@homerunnie/shared';
-import ChatConfirmDialog from './ChatConfirmDialog';
+import ChatConfirmDialog from '@/app/chat/components/sidebar/ChatConfirmDialog';
 
 interface KickConfirmDialogProps {
   targets: ChatRoomMemberResponse[];

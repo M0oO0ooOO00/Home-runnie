@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Mail } from 'lucide-react';
-import JoinRequestDropdown from './JoinRequestDropdown';
+import JoinRequestDropdown from '@/app/chat/components/join-request/JoinRequestDropdown';
 
 interface JoinRequestMenuProps {
   roomId: string;

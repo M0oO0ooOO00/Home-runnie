@@ -2,11 +2,11 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import ChatRoomHeader from './ChatRoomHeader';
-import ChatInput from './ChatInput';
-import ChatMessageList from './ChatMessageList';
-import ChatInfoSidebar from '../sidebar/ChatInfoSidebar';
-import JoinRequestMenu from '../join-request/JoinRequestMenu';
+import ChatRoomHeader from '@/app/chat/components/chat-room/ChatRoomHeader';
+import ChatInput from '@/app/chat/components/chat-room/ChatInput';
+import ChatMessageList from '@/app/chat/components/chat-room/ChatMessageList';
+import ChatInfoSidebar from '@/app/chat/components/sidebar/ChatInfoSidebar';
+import JoinRequestMenu from '@/app/chat/components/join-request/JoinRequestMenu';
 import ReportModal, { ReportParticipant } from '@/shared/ui/modal/ReportModal';
 import { MemberProfileModal } from '@/shared/ui/modal';
 import { useChatRooms } from '@/stores/ChatRoomsContext';

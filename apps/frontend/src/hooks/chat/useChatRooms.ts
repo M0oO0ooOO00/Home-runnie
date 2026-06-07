@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { ChatRoomResponse, ChatRoomMemberRole } from '@homerunnie/shared';
 import { getChatRoomMembers } from '@/apis/chat/chat';
-import { useChatSocket } from './ChatSocketProvider';
-import { useChatRoomsQuery } from './useChatQuery';
+import { useChatSocket } from '@/hooks/chat/ChatSocketProvider';
+import { useChatRoomsQuery } from '@/hooks/chat/useChatQuery';
 
 export interface ChatListItem {
   id: string;
