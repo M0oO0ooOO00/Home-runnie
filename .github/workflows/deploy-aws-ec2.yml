@@ -76,6 +76,13 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Get ECR login password
+        id: ecr-password
+        run: |
+          ECR_PASSWORD="$(aws ecr get-login-password --region "$AWS_REGION")"
+          echo "::add-mask::$ECR_PASSWORD"
+          echo "password=$ECR_PASSWORD" >> "$GITHUB_OUTPUT"
+
       - name: Build, tag, and push image to Amazon ECR
         run: |
           ECR_IMAGE="${{ steps.login-ecr.outputs.registry }}/${ECR_REPOSITORY}"
@@ -101,23 +108,21 @@ jobs:
       - name: Deploy to Server
         uses: appleboy/ssh-action@master
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
+          ECR_PASSWORD: ${{ steps.ecr-password.outputs.password }}
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG
+          envs: ECR_REGISTRY,ECR_REPOSITORY,ECR_PASSWORD,IMAGE_TAG
           script: |
             set -e
             mkdir -p ~/homerunnie
             cd ~/homerunnie
 
-            aws ecr get-login-password --region "$AWS_REGION" \
+            echo "$ECR_PASSWORD" \
               | docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
             cat <<EOF > docker-compose.prod.yaml
