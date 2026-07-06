@@ -20,7 +20,7 @@ export default function MateListBanner() {
   return (
     <div className="w-full flex flex-col gap-5 pb-20">
       <div className="flex justify-between items-end gap-3 mt-10 lg:mt-20">
-        <h1 className="text-t04-sb lg:text-t02-sb">나의 직관 메이트를 찾아보세요!</h1>
+        <h2 className="text-t04-sb lg:text-t02-sb">나의 직관 메이트를 찾아보세요!</h2>
         <Link
           href="/home/list"
           className="shrink-0 text-[#0ABF00] text-b03-r lg:text-b02-r hover:opacity-80 whitespace-nowrap"
