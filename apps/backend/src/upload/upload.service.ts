@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { extname } from 'node:path';
@@ -11,6 +11,8 @@ interface BufferedUploadedFile extends Express.Multer.File {
 
 @Injectable()
 export class UploadService {
+  private s3Client: S3Client | null = null;
+
   constructor(private readonly configService: ConfigService) {}
 
   async uploadImages(
@@ -21,7 +23,7 @@ export class UploadService {
     const bucket = this.configService.get<string>('storage.aws.bucket') ?? '';
 
     if (!region || !bucket) {
-      throw new Error(
+      throw new InternalServerErrorException(
         'AWS S3 설정이 누락되었습니다. AWS_REGION / AWS_S3_BUCKET 환경변수를 확인하세요.',
       );
     }
@@ -58,7 +60,11 @@ export class UploadService {
   }
 
   private createS3Client(region: string): S3Client {
-    return new S3Client({ region });
+    if (!this.s3Client) {
+      this.s3Client = new S3Client({ region });
+    }
+
+    return this.s3Client;
   }
 
   private createObjectKey(memberId: number, originalName: string): string {

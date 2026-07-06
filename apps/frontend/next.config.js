@@ -9,11 +9,11 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '**.amazonaws.com',
+        hostname: 'homerunnie-s3.s3.ap-northeast-2.amazonaws.com',
       },
       {
         protocol: 'https',
-        hostname: '*.cloudfront.net',
+        hostname: 'd1ryhj30hm9eg1.cloudfront.net',
       },
       {
         protocol: 'http',
