@@ -87,7 +87,7 @@ export function FeedCard({
 
       {images.length > 0 && (
         <div className="-mt-1 pb-7 sm:pb-8">
-          <FeedCardImageGrid images={images} />
+          <FeedCardImageGrid images={images} showAll={expanded} />
         </div>
       )}
 

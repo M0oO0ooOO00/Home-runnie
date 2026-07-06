@@ -18,7 +18,7 @@ export const UploadImagesSwagger = applyDecorators(
   ApiOperation({
     summary: '이미지 업로드',
     description:
-      '피드 작성/수정에 사용할 이미지 파일을 Azure Blob Storage에 업로드합니다. 최대 4장, 파일당 5MB까지 허용합니다.',
+      '피드 작성/수정에 사용할 이미지 파일을 AWS S3에 업로드합니다. 최대 4장, 파일당 5MB까지 허용합니다.',
   }),
   ApiBody({
     schema: {
@@ -50,6 +50,6 @@ export const UploadImagesSwagger = applyDecorators(
   }),
   ApiInternalServerErrorResponse({
     type: ErrorResponseDto,
-    description: '서버 내부 오류 또는 Azure Blob Storage 업로드 실패',
+    description: '서버 내부 오류 또는 AWS S3 업로드 실패',
   }),
 );

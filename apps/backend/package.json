@@ -35,7 +35,7 @@
     "db:fresh": "npm run db:clear && npm run db:seed"
   },
   "dependencies": {
-    "@azure/storage-blob": "^12.31.0",
+    "@aws-sdk/client-s3": "^3.1079.0",
     "@homerunnie/shared": "workspace:*",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",

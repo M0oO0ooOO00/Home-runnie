@@ -4,6 +4,7 @@ import { ChangeEvent, useRef } from 'react';
 import { ArrowLeft, ImagePlus, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FEED_POST_MAX_CONTENT, FEED_POST_MAX_IMAGES } from '@/app/feed/constants';
+import { showToast, ToastIconType } from '@/shared/ui/toast/toast';
 
 export interface FeedPostFormImage {
   key: string;
@@ -44,7 +45,19 @@ export function FeedPostForm({
   const { content, images } = value;
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    actions.onFilesSelected(Array.from(event.target.files ?? []));
+    const selectedFiles = Array.from(event.target.files ?? []);
+    const remaining = FEED_POST_MAX_IMAGES - images.length;
+
+    if (selectedFiles.length > remaining) {
+      showToast(
+        `이미지는 최대 ${FEED_POST_MAX_IMAGES}장까지 선택할 수 있어요.`,
+        ToastIconType.INFO,
+      );
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    actions.onFilesSelected(selectedFiles);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 

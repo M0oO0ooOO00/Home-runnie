@@ -9,7 +9,11 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '*.blob.core.windows.net',
+        hostname: '**.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.cloudfront.net',
       },
       {
         protocol: 'http',

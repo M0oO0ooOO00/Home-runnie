@@ -46,11 +46,10 @@ export function useFeedImagePicker({ maxImages, initialImages = [] }: UseFeedIma
     (files: File[]) => {
       const currentImages = imagesRef.current;
       const remaining = maxImages - currentImages.length;
-      const accepted = files.slice(0, remaining);
 
-      if (accepted.length === 0) return;
+      if (remaining <= 0 || files.length > remaining) return;
 
-      const newItems: NewFeedImage[] = accepted.map((file) => ({
+      const newItems: NewFeedImage[] = files.map((file) => ({
         kind: 'new',
         previewUrl: URL.createObjectURL(file),
         file,
