@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BlobServiceClient, ContainerClient } from '@azure/storage-blob';
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { extname } from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
 import { UploadImagesResponseDto } from '@/upload/dto';
@@ -11,27 +11,28 @@ interface BufferedUploadedFile extends Express.Multer.File {
 
 @Injectable()
 export class UploadService {
+  private s3Client: S3Client | null = null;
+
   constructor(private readonly configService: ConfigService) {}
 
   async uploadImages(
     memberId: number,
     files: Express.Multer.File[],
   ): Promise<UploadImagesResponseDto> {
-    const connectionString = this.configService.get<string>('storage.azure.connectionString') ?? '';
-    const containerName = this.configService.get<string>('storage.azure.container') ?? '';
+    const region = this.configService.get<string>('storage.aws.region') ?? '';
+    const bucket = this.configService.get<string>('storage.aws.bucket') ?? '';
 
-    if (!connectionString || !containerName) {
-      throw new Error(
-        'Azure Blob Storage 설정이 누락되었습니다. AZURE_STORAGE_CONNECTION_STRING / AZURE_STORAGE_CONTAINER 환경변수를 확인하세요.',
+    if (!region || !bucket) {
+      throw new InternalServerErrorException(
+        'AWS S3 설정이 누락되었습니다. AWS_REGION / AWS_S3_BUCKET 환경변수를 확인하세요.',
       );
     }
 
-    const containerClient =
-      BlobServiceClient.fromConnectionString(connectionString).getContainerClient(containerName);
+    const s3Client = this.createS3Client(region);
 
     const urls = await Promise.all(
       files.map(async (file) =>
-        this.uploadImage(containerClient, memberId, file as BufferedUploadedFile),
+        this.uploadImage(s3Client, bucket, memberId, file as BufferedUploadedFile),
       ),
     );
 
@@ -39,34 +40,46 @@ export class UploadService {
   }
 
   private async uploadImage(
-    containerClient: ContainerClient,
+    s3Client: S3Client,
+    bucket: string,
     memberId: number,
     file: BufferedUploadedFile,
   ): Promise<string> {
-    const blobName = this.createBlobName(memberId, file.originalname);
-    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+    const key = this.createObjectKey(memberId, file.originalname);
 
-    await blockBlobClient.uploadData(file.buffer, {
-      blobHTTPHeaders: {
-        blobContentType: file.mimetype,
-      },
-    });
+    await s3Client.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      }),
+    );
 
-    return this.toPublicUrl(blobName, blockBlobClient.url);
+    return this.toPublicUrl(bucket, key);
   }
 
-  private createBlobName(memberId: number, originalName: string): string {
+  private createS3Client(region: string): S3Client {
+    if (!this.s3Client) {
+      this.s3Client = new S3Client({ region });
+    }
+
+    return this.s3Client;
+  }
+
+  private createObjectKey(memberId: number, originalName: string): string {
     const ext = extname(originalName).toLowerCase();
     return `feed/${memberId}/${uuidv4()}${ext}`;
   }
 
-  private toPublicUrl(blobName: string, fallbackUrl: string): string {
-    const publicBaseUrl = this.configService.get<string>('storage.azure.publicBaseUrl') ?? '';
+  private toPublicUrl(bucket: string, key: string): string {
+    const publicBaseUrl = this.configService.get<string>('storage.aws.publicBaseUrl') ?? '';
 
     if (!publicBaseUrl) {
-      return fallbackUrl;
+      const region = this.configService.get<string>('storage.aws.region') ?? '';
+      return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
     }
 
-    return `${publicBaseUrl.replace(/\/$/, '')}/${blobName}`;
+    return `${publicBaseUrl.replace(/\/$/, '')}/${key}`;
   }
 }
