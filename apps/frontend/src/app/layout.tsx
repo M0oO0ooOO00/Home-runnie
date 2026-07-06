@@ -6,6 +6,7 @@ import Header from '@/shared/ui/header/header';
 import Footer from '@/shared/ui/footer/footer';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.homerunnie.app';
+const SITE_DESCRIPTION = '홈러니는 야구 직관 메이트를 모집하고 함께 응원할 팬을 연결합니다.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -13,8 +14,7 @@ export const metadata: Metadata = {
     default: '홈러니(Homerunnie) | 직관 메이트 찾기',
     template: '%s | 홈러니(Homerunnie)',
   },
-  description:
-    '홈러니(Homerunnie)는 야구 직관 메이트를 찾고 함께 응원하는 커뮤니티입니다. KBO 경기에 같이 갈 메이트를 모집하고 채팅으로 소통하세요.',
+  description: SITE_DESCRIPTION,
   keywords: [
     '홈러니',
     'Homerunnie',
@@ -35,8 +35,7 @@ export const metadata: Metadata = {
     locale: 'ko_KR',
     siteName: '홈러니(Homerunnie)',
     title: '홈러니(Homerunnie) | 직관 메이트 찾기',
-    description:
-      '홈러니(Homerunnie)는 야구 직관 메이트를 찾고 함께 응원하는 커뮤니티입니다. KBO 경기에 같이 갈 메이트를 모집하고 채팅으로 소통하세요.',
+    description: SITE_DESCRIPTION,
     images: [
       {
         url: '/bg.png',
@@ -49,7 +48,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: '홈러니(Homerunnie) | 직관 메이트 찾기',
-    description: '홈러니는 야구 직관 메이트를 찾고 함께 응원하는 커뮤니티입니다.',
+    description: SITE_DESCRIPTION,
     images: ['/bg.png'],
   },
   robots: {
@@ -67,6 +66,9 @@ export const metadata: Metadata = {
   },
   verification: {
     google: 'HkyRdKLVQFDNB4zYYTWLXNFs_b-StRh6Vah7R0UPieM',
+    other: {
+      'naver-site-verification': '14f34ceefc8667901ddd2839f036ec3f875b79a8',
+    },
   },
 };
 

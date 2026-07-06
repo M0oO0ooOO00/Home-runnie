@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /chat
+Disallow: /chat/
+Disallow: /my
+Disallow: /edit-profile
+Disallow: /test-chat
+Disallow: /api/
+
+Sitemap: https://www.homerunnie.app/sitemap.xml
