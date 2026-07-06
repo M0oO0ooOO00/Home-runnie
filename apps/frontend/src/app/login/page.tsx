@@ -1,4 +1,4 @@
-import LottieLogo from './components/LottieLogo';
+import Image from 'next/image';
 import KakaoLoginButton from './components/KakaoLoginButton';
 
 export default function LoginPage() {
@@ -6,7 +6,14 @@ export default function LoginPage() {
     <div className="flex flex-col items-center justify-center gap-20 md:gap-[156px] min-h-[calc(100vh-84px)]">
       <div className="w-full max-w-[564px] flex flex-col m-auto gap-10 md:gap-[77px] items-center justify-center px-4 md:px-0">
         <div className="w-full h-[350px] md:h-[546px] flex items-center justify-center rounded-2xl">
-          <LottieLogo />
+          <Image
+            src="/images/typo.1.svg"
+            alt="Homerunnie 로고"
+            width={336}
+            height={60}
+            className="w-full max-w-[564px] h-auto object-contain"
+            priority
+          />
         </div>
         <KakaoLoginButton />
       </div>
