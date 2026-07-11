@@ -85,7 +85,7 @@ export default function Edit() {
 
   if (isLoading) {
     return (
-      <div className="bg-gray-100 min-h-screen w-full flex items-center justify-center">
+      <div className="flex min-h-screen w-full items-center justify-center bg-gray-100">
         로딩 중...
       </div>
     );
@@ -93,13 +93,13 @@ export default function Edit() {
 
   return (
     <>
-      <div className="bg-gray-100 min-h-screen w-full flex flex-col items-center px-40 pt-15 pb-20">
-        <h1 className="text-t01 font-bold w-full pb-15">마이페이지</h1>
-        <div className="flex flex-col rounded-[20px] border p-[30px] gap-[10px] bg-white shadow-md w-full mb-10">
-          <div className="flex mt-0 mb-4 border-b">
-            <div className="flex items-center gap-4 mb-6 w-full">
+      <div className="flex min-h-screen w-full flex-col items-center bg-gray-100 px-5 pb-10 pt-8 lg:px-40 lg:pb-20 lg:pt-15">
+        <h1 className="text-t03-b w-full pb-8 font-bold lg:pb-15 lg:text-t01">마이페이지</h1>
+        <div className="mb-8 flex w-full flex-col gap-[10px] rounded-[20px] border bg-white p-5 shadow-md lg:mb-10 lg:p-[30px]">
+          <div className="mb-4 mt-0 flex border-b">
+            <div className="mb-6 flex w-full min-w-0 items-center gap-4">
               {/* 프로필 이미지 */}
-              <div className="w-12 h-12 rounded-full bg-pink-500 flex items-center justify-center flex-shrink-0">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-pink-500 lg:h-[68px] lg:w-[68px]">
                 <Image
                   src="/images/pink.png"
                   alt="유저"
@@ -108,21 +108,21 @@ export default function Edit() {
                   className="cursor-pointer"
                 />
               </div>
-              <div className="flex flex-col gap-2 flex-1">
+              <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <span className="text-sm text-gray-500">닉네임</span>
                 <Input
                   type="text"
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
-                  className="focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="min-w-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                   placeholder="닉네임을 입력하세요"
                 />
               </div>
             </div>
           </div>
-          <div className="flex flex-row gap-2 w-full ">
-            <div className="flex-1 flex flex-col gap-2">
-              <p className="text-b01 text-gray-600 font-weight-r">응원하는 팀</p>
+          <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-2">
+            <div className="flex min-w-0 flex-col gap-2">
+              <p className="font-weight-r text-b02-r text-gray-600 lg:text-b01">응원하는 팀</p>
               <Select value={supportTeam} onValueChange={(value) => setSupportTeam(value as Team)}>
                 <SelectTrigger className="w-full focus-visible:ring-0 focus-visible:ring-offset-0">
                   <SelectValue placeholder="팀 선택" />
@@ -140,25 +140,25 @@ export default function Edit() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex-1 flex flex-col items-center gap-2">
-              <p className="text-b01 text-gray-600 font-weight-r">로그인 방법</p>
+            <div className="flex min-w-0 flex-col items-start gap-2 sm:items-center">
+              <p className="font-weight-r text-b02-r text-gray-600 lg:text-b01">로그인 방법</p>
               <Image
                 src="/icons/kakao_login.svg"
                 alt="카카오"
                 width={68}
                 height={68}
-                className="cursor-pointer"
+                className="h-14 w-14 cursor-pointer lg:h-[68px] lg:w-[68px]"
               />
             </div>
-            <div className="flex-1 flex flex-col items-center gap-2">
-              <p className="text-b01 text-gray-600 font-weight-r">누적 경고 횟수</p>
-              <p className="text-t04 font-weight-r leading-140">
+            <div className="flex min-w-0 flex-col items-start gap-2 sm:items-center">
+              <p className="font-weight-r text-b02-r text-gray-600 lg:text-b01">누적 경고 횟수</p>
+              <p className="font-weight-r text-t04 leading-140">
                 {String(myProfile?.warnCount || 0).padStart(2, '0')}
               </p>
             </div>
-            <div className="flex-1 flex flex-col items-center gap-2">
-              <p className="text-b01 text-gray-600 font-weight-r">활동상태</p>
-              <p className="text-t04 font-weight-r leading-140 text-main-green">
+            <div className="flex min-w-0 flex-col items-start gap-2 sm:items-center">
+              <p className="font-weight-r text-b02-r text-gray-600 lg:text-b01">활동상태</p>
+              <p className="font-weight-r text-t04 leading-140 text-main-green">
                 {myProfile?.accountStatus === 'ACTIVE' ? '활동중' : '활동중지'}
               </p>
             </div>
@@ -167,7 +167,7 @@ export default function Edit() {
         <Button
           onClick={handleSave}
           disabled={isPending}
-          className="w-[310px] h-[70px] self-end py-[20px] px-[180px] gap-2.5 cursor-pointer"
+          className="h-14 w-full cursor-pointer gap-2.5 self-stretch py-4 sm:w-[310px] sm:self-end lg:h-[70px] lg:py-[20px]"
         >
           <span className="text-b01 font-weight-sb leading-150">
             {isPending ? '저장 중...' : '저장하기'}
