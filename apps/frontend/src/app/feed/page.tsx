@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Loader2, Pencil } from 'lucide-react';
+import PullToRefresh from 'react-simple-pull-to-refresh';
 import { FeedCard } from '@/shared/ui/feed-card/feed-card';
 import type { FeedPost } from '@/shared/ui/feed-card/feed-card.types';
 import { useFeedInfiniteQuery } from '@/hooks/feed/useFeedInfiniteQuery';
@@ -16,8 +17,16 @@ import { cn } from '@/lib/utils';
 
 export default function FeedPage() {
   const router = useRouter();
-  const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useFeedInfiniteQuery();
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useFeedInfiniteQuery();
   const { data: profile, isError: isProfileError } = useMyProfileQuery({ retry: false });
   const isLogged = useMemo(
     () => !isProfileError && Boolean(profile?.nickname),
@@ -38,6 +47,7 @@ export default function FeedPage() {
   const [deleteTarget, setDeleteTarget] = useState<FeedPost | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [pinActionsToPageBottom, setPinActionsToPageBottom] = useState(false);
+  const [isPullableViewport, setIsPullableViewport] = useState(false);
 
   const toggleLikeMutation = useToggleLikeMutation();
   const deletePostMutation = useDeleteFeedPostMutation({
@@ -68,7 +78,22 @@ export default function FeedPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleRefresh = async () => {
+    await refetch();
+  };
+
   const items = data?.pages.flatMap((p) => p.items) ?? [];
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 640px)');
+    const updatePullableViewport = () => {
+      setIsPullableViewport(mediaQuery.matches);
+    };
+
+    updatePullableViewport();
+    mediaQuery.addEventListener('change', updatePullableViewport);
+    return () => mediaQuery.removeEventListener('change', updatePullableViewport);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -117,53 +142,63 @@ export default function FeedPage() {
 
   return (
     <div ref={pageRef} className="relative">
-      <div className="mx-auto max-w-[680px] px-4 pb-28 pt-6 sm:px-6">
-        {isLoading && (
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <Loader2 className="animate-spin text-gray-500" size={32} />
-          </div>
-        )}
-
-        {isError && (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-2">
-            <p className="text-b02-sb text-gray-700">피드를 불러오지 못했어요.</p>
-            <p className="text-c01-r text-gray-500">{error?.message}</p>
-          </div>
-        )}
-
-        {!isLoading && !isError && items.length === 0 && (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-2">
-            <p className="text-b02-sb text-gray-700">아직 게시글이 없어요</p>
-            <p className="text-c01-r text-gray-500">첫 글을 작성해보세요!</p>
-          </div>
-        )}
-
-        {!isLoading && !isError && items.length > 0 && (
-          <>
-            <div className="space-y-5">
-              {items.map((post) => (
-                <FeedCard
-                  key={post.id}
-                  post={post}
-                  viewerMemberId={viewerMemberId}
-                  onCardClick={(p) => router.push(`/feed/${p.id}`)}
-                  onLikeClick={handleLikeClick}
-                  onEditClick={(p) => router.push(`/feed/${p.id}/edit`)}
-                  onDeleteClick={(p) => setDeleteTarget(p)}
-                />
-              ))}
+      <PullToRefresh
+        isPullable={isPullableViewport}
+        onRefresh={handleRefresh}
+        pullingContent={<FeedPullRefreshIndicator label="손을 놓으면 새로고침" />}
+        refreshingContent={<FeedPullRefreshIndicator label="새 글 불러오는 중" loading />}
+        pullDownThreshold={74}
+        maxPullDownDistance={96}
+        resistance={2.1}
+      >
+        <div className="mx-auto max-w-[680px] px-4 pb-28 pt-6 sm:px-6">
+          {isLoading && (
+            <div className="flex min-h-[60vh] items-center justify-center">
+              <Loader2 className="animate-spin text-gray-500" size={32} />
             </div>
-            <div
-              ref={sentinelRef}
-              className="h-16 flex items-center justify-center"
-              aria-hidden="true"
-            >
-              {isFetchingNextPage && <Loader2 className="animate-spin text-gray-500" size={20} />}
-              {!hasNextPage && <p className="text-c01-r text-gray-400">마지막 글입니다</p>}
+          )}
+
+          {isError && (
+            <div className="flex min-h-[60vh] flex-col items-center justify-center gap-2">
+              <p className="text-b02-sb text-gray-700">피드를 불러오지 못했어요.</p>
+              <p className="text-c01-r text-gray-500">{error?.message}</p>
             </div>
-          </>
-        )}
-      </div>
+          )}
+
+          {!isLoading && !isError && items.length === 0 && (
+            <div className="flex min-h-[60vh] flex-col items-center justify-center gap-2">
+              <p className="text-b02-sb text-gray-700">아직 게시글이 없어요</p>
+              <p className="text-c01-r text-gray-500">첫 글을 작성해보세요!</p>
+            </div>
+          )}
+
+          {!isLoading && !isError && items.length > 0 && (
+            <>
+              <div className="space-y-5">
+                {items.map((post) => (
+                  <FeedCard
+                    key={post.id}
+                    post={post}
+                    viewerMemberId={viewerMemberId}
+                    onCardClick={(p) => router.push(`/feed/${p.id}`)}
+                    onLikeClick={handleLikeClick}
+                    onEditClick={(p) => router.push(`/feed/${p.id}/edit`)}
+                    onDeleteClick={(p) => setDeleteTarget(p)}
+                  />
+                ))}
+              </div>
+              <div
+                ref={sentinelRef}
+                className="flex h-16 items-center justify-center"
+                aria-hidden="true"
+              >
+                {isFetchingNextPage && <Loader2 className="animate-spin text-gray-500" size={20} />}
+                {!hasNextPage && <p className="text-c01-r text-gray-400">마지막 글입니다</p>}
+              </div>
+            </>
+          )}
+        </div>
+      </PullToRefresh>
 
       <button
         type="button"
@@ -222,6 +257,28 @@ export default function FeedPage() {
         destructive
         isPending={deletePostMutation.isPending}
       />
+    </div>
+  );
+}
+
+function FeedPullRefreshIndicator({
+  label,
+  loading = false,
+}: {
+  label: string;
+  loading?: boolean;
+}) {
+  return (
+    <div className="flex h-20 items-center justify-center sm:hidden">
+      <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-b03-sb text-gray-700 shadow-03 ring-1 ring-gray-100">
+        <Loader2
+          size={18}
+          strokeWidth={2.2}
+          className={cn('text-gray-500', loading && 'animate-spin')}
+          aria-hidden
+        />
+        <span>{label}</span>
+      </div>
     </div>
   );
 }
