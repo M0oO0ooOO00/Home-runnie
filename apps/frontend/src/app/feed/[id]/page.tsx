@@ -1,135 +1,50 @@
-'use client';
-
-import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import { FeedCard } from '@/shared/ui/feed-card/feed-card';
-import type { FeedPost } from '@/shared/ui/feed-card/feed-card.types';
-import { useFeedPostQuery } from '@/hooks/feed/useFeedPostQuery';
-import { useToggleLikeMutation } from '@/hooks/feed/useToggleLikeMutation';
-import { useDeleteFeedPostMutation } from '@/hooks/feed/useDeleteFeedPostMutation';
-import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
-import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
-import ConfirmModal from '@/shared/ui/modal/ConfirmModal';
-import { CommentList } from './components/CommentList';
+import type { Metadata } from 'next';
+import { TeamDescription } from '@homerunnie/shared';
+import FeedDetailPageClient from './FeedDetailPageClient';
+import { absoluteUrl, buildSeoDescription, fetchFeedPostForSeo } from '@/lib/seo-api';
 
 interface FeedDetailPageProps {
   params: { id: string };
 }
 
-export default function FeedDetailPage({ params }: FeedDetailPageProps) {
-  const router = useRouter();
+export async function generateMetadata({ params }: FeedDetailPageProps): Promise<Metadata> {
   const postId = Number(params.id);
+  const post = await fetchFeedPostForSeo(postId);
+  const canonical = absoluteUrl(`/feed/${params.id}`);
 
-  const { data: post, isLoading, isError, error } = useFeedPostQuery(postId);
-  const { data: profile, isError: isProfileError } = useMyProfileQuery({ retry: false });
-  const isLogged = useMemo(
-    () => !isProfileError && Boolean(profile?.nickname),
-    [profile?.nickname, isProfileError],
-  );
-  const viewerMemberId = useMemo(
-    () => (isLogged && profile?.memberId ? profile.memberId : null),
-    [isLogged, profile?.memberId],
-  );
+  if (!post) {
+    return {
+      title: '커뮤니티 게시글 | 홈러니(Homerunnie)',
+      alternates: {
+        canonical,
+      },
+    };
+  }
 
-  const [loginModal, setLoginModal] = useState<{ open: boolean; message: string }>({
-    open: false,
-    message: '',
-  });
-  const [deleteOpen, setDeleteOpen] = useState(false);
+  const team = post.author.supportTeam
+    ? (TeamDescription[post.author.supportTeam] ?? post.author.supportTeam)
+    : '야구 팬';
+  const title = `${post.author.nickname}님의 ${team} 이야기`;
+  const description = buildSeoDescription(post.content, '홈러니 야구 팬 커뮤니티 게시글입니다.');
 
-  const toggleLikeMutation = useToggleLikeMutation();
-  const deletePostMutation = useDeleteFeedPostMutation({
-    onSuccess: () => {
-      setDeleteOpen(false);
-      router.push('/feed');
+  return {
+    title: `${title} | 홈러니(Homerunnie)`,
+    description,
+    alternates: {
+      canonical,
     },
-  });
-
-  const showLoginModal = (message: string) => {
-    setLoginModal({ open: true, message });
+    openGraph: {
+      title: `${title} | 홈러니(Homerunnie)`,
+      description,
+      url: canonical,
+      type: 'article',
+      images: post.images.slice(0, 1),
+    },
   };
+}
 
-  const handleLikeClick = (p: FeedPost) => {
-    if (!isLogged) {
-      showLoginModal('이 글에 좋아요를 누르려면 로그인이 필요합니다.');
-      return;
-    }
-    toggleLikeMutation.mutate(p.id);
-  };
+export default async function FeedDetailPage({ params }: FeedDetailPageProps) {
+  const initialPost = await fetchFeedPostForSeo(Number(params.id));
 
-  return (
-    <div className="mx-auto max-w-[680px] px-4 py-4 sm:px-6">
-      <button
-        type="button"
-        onClick={() => router.back()}
-        className="inline-flex items-center gap-1 text-c01-m text-gray-700 hover:text-gray-900 transition-colors mb-3 px-1"
-        aria-label="뒤로가기"
-      >
-        <ArrowLeft size={18} />
-        <span>뒤로</span>
-      </button>
-
-      {isLoading && (
-        <div className="flex items-center justify-center min-h-[40vh]">
-          <Loader2 className="animate-spin text-gray-500" size={28} />
-        </div>
-      )}
-
-      {isError && (
-        <div className="flex flex-col items-center justify-center min-h-[40vh] gap-2">
-          <p className="text-b02-sb text-gray-700">게시글을 불러오지 못했어요.</p>
-          <p className="text-c01-r text-gray-500">{error?.message}</p>
-        </div>
-      )}
-
-      {post && (
-        <>
-          <FeedCard
-            post={post}
-            viewerMemberId={viewerMemberId}
-            expanded
-            className="mx-auto"
-            onLikeClick={handleLikeClick}
-            onEditClick={(p) => router.push(`/feed/${p.id}/edit`)}
-            onDeleteClick={() => setDeleteOpen(true)}
-          />
-
-          <div className="mt-3">
-            <CommentList
-              postId={post.id}
-              viewerMemberId={viewerMemberId}
-              viewerSupportTeam={profile?.supportTeam}
-              onAuthRequired={showLoginModal}
-            />
-          </div>
-        </>
-      )}
-
-      <ConfirmModal
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        onConfirm={() => {
-          if (post) deletePostMutation.mutate(post.id);
-        }}
-        title="게시글을 삭제하시겠어요?"
-        description="삭제된 게시글은 복구할 수 없습니다."
-        confirmText="삭제"
-        cancelText="취소"
-        destructive
-        isPending={deletePostMutation.isPending}
-      />
-
-      <LoginRequiredModal
-        open={loginModal.open}
-        onOpenChange={(open) => setLoginModal((s) => ({ ...s, open }))}
-        onConfirm={() => router.push('/login')}
-        title="로그인이 필요해요"
-        description={loginModal.message}
-        confirmText="로그인 하러가기"
-        cancelText="다음에"
-        showCancel
-      />
-    </div>
-  );
+  return <FeedDetailPageClient params={params} initialPost={initialPost} />;
 }

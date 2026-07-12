@@ -1,10 +1,15 @@
 User-agent: *
 Allow: /
+Allow: /api/post/recruitment
+Allow: /api/post/feed
 Disallow: /chat
 Disallow: /chat/
 Disallow: /my
 Disallow: /edit-profile
 Disallow: /test-chat
+Disallow: /write
+Disallow: /feed/new
+Disallow: /feed/*/edit
 Disallow: /api/
 
 Sitemap: https://www.homerunnie.app/sitemap.xml
