@@ -16,7 +16,7 @@ export const CreateFeedCommentSwagger = applyDecorators(
   ApiOperation({
     summary: '피드 댓글/대댓글 작성',
     description:
-      'parentId 없으면 root 댓글, parentId 있으면 대댓글. 대댓글의 parent는 root여야 함 (depth 1 제한).',
+      'parentId 없으면 root 댓글, parentId 있으면 대댓글. 대댓글의 parent는 root여야 함 (depth 1 제한). 본문 또는 이미지 URL 중 하나는 필수이며, 이미지는 댓글당 1개만 허용합니다.',
   }),
   ApiParam({ name: 'postId', type: Number, example: 1 }),
   ApiBody({ type: CreateFeedCommentRequestDto }),

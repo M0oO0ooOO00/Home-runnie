@@ -87,22 +87,38 @@ export function CommentItem({ comment, isReply = false, actions }: CommentItemPr
             <div className="mt-3">
               <CommentInput
                 initialValue={comment.content}
+                initialImageUrl={comment.imageUrl}
                 placeholder="댓글을 입력하세요"
                 isSubmitting={isUpdatingComment}
                 submitLabel="저장"
                 submittingLabel="저장 중"
-                onSubmit={(content) => {
-                  actions.update(comment.id, content);
+                onSubmit={(value) => {
+                  actions.update(comment.id, value);
                   setIsEditing(false);
                 }}
                 onCancel={() => setIsEditing(false)}
                 autoFocus
+                allowImage
               />
             </div>
           ) : (
-            <p className="mt-8 whitespace-pre-wrap text-b01-r text-gray-950 max-sm:mt-5 max-sm:text-b02-r">
-              {comment.content}
-            </p>
+            <div className="mt-8 flex flex-col gap-3 max-sm:mt-5">
+              {comment.content && (
+                <p className="whitespace-pre-wrap text-b01-r text-gray-950 max-sm:text-b02-r">
+                  {comment.content}
+                </p>
+              )}
+              {comment.imageUrl && (
+                <div className="relative aspect-square w-full max-w-[220px] overflow-hidden rounded-2xl bg-gray-100 ring-1 ring-gray-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={comment.imageUrl}
+                    alt="댓글 첨부 이미지"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              )}
+            </div>
           )}
           {!isEditing && (
             <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-b01-r text-gray-400">
@@ -197,6 +213,7 @@ export function CommentItem({ comment, isReply = false, actions }: CommentItemPr
             onSubmit={(content) => actions.submitReply(comment.id, content)}
             onCancel={() => actions.toggleReply(comment.id)}
             autoFocus
+            allowImage
           />
         </div>
       )}

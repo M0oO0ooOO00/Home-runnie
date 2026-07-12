@@ -16,7 +16,8 @@ import { ErrorResponseDto } from '@/common';
 export const UpdateFeedCommentSwagger = applyDecorators(
   ApiOperation({
     summary: '피드 댓글 수정',
-    description: '작성자 본인만 수정 가능. content를 새 값으로 교체합니다.',
+    description:
+      '작성자 본인만 수정 가능. 댓글 본문과 이미지 URL을 교체할 수 있으며, imageUrl이 null이면 기존 이미지를 제거합니다.',
   }),
   ApiParam({ name: 'postId', type: Number, example: 1 }),
   ApiParam({ name: 'commentId', type: Number, example: 10 }),

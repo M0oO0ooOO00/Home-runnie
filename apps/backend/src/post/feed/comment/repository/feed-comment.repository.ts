@@ -25,7 +25,13 @@ export class FeedCommentRepository
     private readonly db: ReturnType<typeof drizzle>,
   ) {}
 
-  async createComment(authorId: number, postId: number, content: string, parentId: number | null) {
+  async createComment(
+    authorId: number,
+    postId: number,
+    content: string,
+    parentId: number | null,
+    imageUrl: string | null,
+  ) {
     const [comment] = await this.db
       .insert(Comment)
       .values({
@@ -34,6 +40,7 @@ export class FeedCommentRepository
         content,
         postStatus: PostStatusEnum.ACTIVE,
         parentId,
+        imageUrl,
       })
       .returning();
     return comment;
@@ -47,6 +54,8 @@ export class FeedCommentRepository
         postId: Comment.postId,
         parentId: Comment.parentId,
         deleted: Comment.deleted,
+        content: Comment.content,
+        imageUrl: Comment.imageUrl,
       })
       .from(Comment)
       .where(eq(Comment.id, commentId))
@@ -62,6 +71,7 @@ export class FeedCommentRepository
         authorNickname: Profile.nickname,
         supportTeam: Profile.supportTeam,
         content: Comment.content,
+        imageUrl: Comment.imageUrl,
         parentId: Comment.parentId,
         createdAt: Comment.createdAt,
       })
@@ -81,6 +91,7 @@ export class FeedCommentRepository
         authorNickname: Profile.nickname,
         supportTeam: Profile.supportTeam,
         content: Comment.content,
+        imageUrl: Comment.imageUrl,
         parentId: Comment.parentId,
         createdAt: Comment.createdAt,
       })
@@ -108,10 +119,10 @@ export class FeedCommentRepository
       .where(eq(Comment.id, commentId));
   }
 
-  async updateCommentContent(commentId: number, content: string) {
+  async updateComment(commentId: number, content: string, imageUrl: string | null) {
     await this.db
       .update(Comment)
-      .set({ content, updatedAt: new Date() })
+      .set({ content, imageUrl, updatedAt: new Date() })
       .where(eq(Comment.id, commentId));
   }
 

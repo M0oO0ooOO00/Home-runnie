@@ -6,7 +6,7 @@ import type { FeedComment } from '@/apis/feed/comment';
 import { formatCompactCount } from '@/lib/format';
 import { CommentInput } from './CommentInput';
 import { CommentItem } from './CommentItem';
-import type { CommentItemActions } from './comment.types';
+import type { CommentItemActions, CommentSubmitValue } from './comment.types';
 
 interface CommentListViewProps {
   comments?: FeedComment[];
@@ -19,7 +19,7 @@ interface CommentListViewProps {
     isLogged: boolean;
     isSubmitting: boolean;
     supportTeam?: Team | string | null;
-    onSubmit: (content: string) => void;
+    onSubmit: (value: CommentSubmitValue) => void;
   };
   actions: CommentItemActions;
 }
@@ -47,6 +47,7 @@ export function CommentListView({ comments, queryState, composer, actions }: Com
         submitLabel="게시하기"
         submittingLabel="게시 중"
         onSubmit={composer.onSubmit}
+        allowImage
       />
 
       <div className="mt-[10px] rounded-[28px] bg-card px-5 py-7 shadow-02 sm:px-8 sm:py-9">

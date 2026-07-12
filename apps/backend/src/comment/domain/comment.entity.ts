@@ -19,6 +19,7 @@ export const Comment = pgTable(
       .notNull()
       .references(() => Post.id),
     parentId: integer('parent_id').references((): AnyPgColumn => Comment.id),
+    imageUrl: text('image_url'),
   },
   (table) => [index('comment_parent_id_idx').on(table.parentId)],
 );

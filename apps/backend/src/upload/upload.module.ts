@@ -6,7 +6,7 @@ import storageConfig from '@/common/config/storage.config';
 import { UploadController } from '@/upload/upload.controller';
 import { UploadService } from '@/upload/upload.service';
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_FILE_SIZE = 15 * 1024 * 1024;
 const MAX_FILES = 4;
 const ALLOWED_MIME = /^image\/(png|jpe?g|gif|webp|heic|heif)$/i;
 

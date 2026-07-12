@@ -29,11 +29,13 @@ export const commentHandlers = [
     await new Promise((resolve) => setTimeout(resolve, 250));
     const postId = Number(params.postId);
     const body = (await request.json()) as CreateFeedCommentRequest;
+    const content = body.content?.trim() ?? '';
+    const imageUrl = body.imageUrl?.trim() || null;
 
-    if (!body.content || body.content.trim().length === 0) {
-      return HttpResponse.json({ message: '본문은 필수입니다.' }, { status: 400 });
+    if (!content && !imageUrl) {
+      return HttpResponse.json({ message: '본문 또는 이미지는 필수입니다.' }, { status: 400 });
     }
-    if (body.content.length > 1000) {
+    if (content.length > 1000) {
       return HttpResponse.json({ message: '댓글은 1000자 이하여야 합니다.' }, { status: 400 });
     }
 
@@ -47,7 +49,8 @@ export const commentHandlers = [
         nickname: '나',
         supportTeam: Team.DOOSAN,
       },
-      content: body.content.trim(),
+      content,
+      imageUrl,
       parentId: body.parentId ?? null,
       replies: [],
       createdAt: new Date().toISOString(),

@@ -8,6 +8,7 @@ export interface FeedCommentQueryResult {
   authorNickname: string | null;
   supportTeam: string | null;
   content: string;
+  imageUrl: string | null;
   parentId: number | null;
   createdAt: Date;
 }
@@ -18,6 +19,8 @@ export interface FeedCommentMeta {
   postId: number;
   parentId: number | null;
   deleted: boolean | null;
+  content: string;
+  imageUrl: string | null;
 }
 
 export interface FeedCommentReader {
@@ -33,8 +36,9 @@ export interface FeedCommentWriter {
     postId: number,
     content: string,
     parentId: number | null,
+    imageUrl: string | null,
   ): Promise<{ id: number } | undefined>;
-  updateCommentContent(commentId: number, content: string): Promise<void>;
+  updateComment(commentId: number, content: string, imageUrl: string | null): Promise<void>;
   softDeleteComment(commentId: number): Promise<void>;
 }
 

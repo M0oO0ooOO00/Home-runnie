@@ -6,15 +6,51 @@ import {
   type CreateFeedCommentRequest,
   type FeedComment,
 } from '@/apis/feed/comment';
+import { uploadImages } from '@/apis/upload/upload';
 import type { GetFeedPostsResponse } from '@/apis/feed/feed';
 import type { FeedPost } from '@/shared/ui/feed-card/feed-card.types';
 
-export const useCreateFeedCommentMutation = (postId: number) => {
+export interface CreateFeedCommentVariables extends Omit<CreateFeedCommentRequest, 'imageUrl'> {
+  imageFile?: File;
+}
+
+interface Options {
+  onError?: (error: Error) => void;
+}
+
+function appendComment(comments: FeedComment[], comment: FeedComment): FeedComment[] {
+  if (comment.parentId === null) {
+    return [...comments, comment];
+  }
+
+  return comments.map((item) => {
+    if (item.id === comment.parentId) {
+      return {
+        ...item,
+        replies: [...item.replies, comment],
+      };
+    }
+
+    return item;
+  });
+}
+
+export const useCreateFeedCommentMutation = (postId: number, { onError }: Options = {}) => {
   const queryClient = useQueryClient();
 
-  return useMutation<FeedComment, Error, CreateFeedCommentRequest>({
-    mutationFn: (body) => createFeedComment(postId, body),
-    onSuccess: () => {
+  return useMutation<FeedComment, Error, CreateFeedCommentVariables>({
+    mutationFn: async ({ imageFile, ...body }) => {
+      const imageUrl = imageFile ? (await uploadImages([imageFile])).urls[0] : undefined;
+      if (imageFile && !imageUrl) {
+        throw new Error('이미지 업로드 결과를 확인할 수 없습니다.');
+      }
+
+      return createFeedComment(postId, { ...body, imageUrl });
+    },
+    onSuccess: (comment) => {
+      queryClient.setQueryData<FeedComment[]>(['feed-comments', postId], (old) =>
+        old ? appendComment(old, comment) : old,
+      );
       queryClient.invalidateQueries({ queryKey: ['feed-comments', postId] });
 
       queryClient.setQueryData<FeedPost>(['feed-post', postId], (old) =>
@@ -37,5 +73,6 @@ export const useCreateFeedCommentMutation = (postId: number) => {
         };
       });
     },
+    onError,
   });
 };
