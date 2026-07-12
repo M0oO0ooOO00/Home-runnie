@@ -165,6 +165,7 @@ export default function RecruitmentPostDetailClient({
     month: '2-digit',
     day: '2-digit',
     weekday: 'short',
+    timeZone: 'Asia/Seoul',
   });
   const stadiumLabel = STADIUM_LABEL_MAP.get(
     data.stadium as (typeof baseBallStadiumItems)[number]['value'],

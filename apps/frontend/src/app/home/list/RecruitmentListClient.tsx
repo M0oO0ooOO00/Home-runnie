@@ -17,22 +17,31 @@ import {
   baseBallStadiumItems,
 } from '@homerunnie/shared';
 
+const KOREA_DATE_FORMATTER = new Intl.DateTimeFormat('ko-KR', {
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  timeZone: 'Asia/Seoul',
+});
+
 const formatGameDate = (gameDate: string) => {
   const date = new Date(gameDate);
   if (Number.isNaN(date.getTime())) return '-';
 
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
+  const parts = KOREA_DATE_FORMATTER.formatToParts(date);
+  const year = parts.find((part) => part.type === 'year')?.value;
+  const month = parts.find((part) => part.type === 'month')?.value;
+  const day = parts.find((part) => part.type === 'day')?.value;
+  if (!year || !month || !day) return '-';
+
   return `${year}/${month}/${day}`;
 };
 
 type RowStatus = '모집 중' | '모집 완료';
 type InfoTab = 'game' | 'recruit' | 'author';
 
-const getStatusFromItem = (item: unknown): RowStatus => {
-  const postStatus = (item as { postStatus?: string })?.postStatus;
-  return postStatus === 'CLOSE' ? '모집 완료' : '모집 중';
+const getStatusFromItem = (item: RecruitmentPostItemResponse): RowStatus => {
+  return item.postStatus === 'CLOSE' ? '모집 완료' : '모집 중';
 };
 
 export default function RecruitmentListClient({
@@ -156,7 +165,7 @@ export default function RecruitmentListClient({
                     </p>
                     <input
                       value={headcount}
-                      onChange={(e) => setHeadcount(e.target.value)}
+                      onChange={(e) => setHeadcount(e.target.value.replace(/[^0-9]/g, ''))}
                       inputMode="numeric"
                       pattern="[0-9]*"
                       placeholder="00"
