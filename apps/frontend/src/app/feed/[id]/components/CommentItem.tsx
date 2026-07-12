@@ -18,6 +18,10 @@ interface CommentItemProps {
   actions: CommentItemActions;
 }
 
+function countReplies(comment: FeedComment): number {
+  return comment.replies.reduce((acc, reply) => acc + 1 + countReplies(reply), 0);
+}
+
 export function CommentItem({ comment, isReply = false, actions }: CommentItemProps) {
   const { viewerMemberId, replyingTo, isCreatingReply, isUpdatingComment } =
     useCommentInteraction();
@@ -30,6 +34,8 @@ export function CommentItem({ comment, isReply = false, actions }: CommentItemPr
   const showMenu = isMine;
   const isReplyingTarget = replyingTo === comment.id;
   const likeCount = comment.likeCount ?? 0;
+  const replyCount = countReplies(comment);
+  const hasReplies = replyCount > 0;
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -51,6 +57,11 @@ export function CommentItem({ comment, isReply = false, actions }: CommentItemPr
 
   const handleReplyClick = () => {
     actions.toggleReply(comment.id);
+  };
+
+  const handleToggleRepliesClick = () => {
+    if (!hasReplies) return;
+    setShowReplies((prev) => !prev);
   };
 
   const handleMenuDeleteClick = () => {
@@ -138,22 +149,45 @@ export function CommentItem({ comment, isReply = false, actions }: CommentItemPr
                 />
                 <span>{formatCompactCount(likeCount)}</span>
               </button>
-              {!isReply ? (
-                <button
-                  type="button"
-                  onClick={handleReplyClick}
-                  className="inline-flex items-center gap-3 transition-colors hover:text-gray-700"
-                  aria-label="답글"
-                >
-                  <MessageCircle size={28} strokeWidth={1.8} />
-                  <span>{formatCompactCount(comment.replies.length)}</span>
-                </button>
-              ) : (
-                <span className="inline-flex items-center gap-3">
-                  <MessageCircle size={28} strokeWidth={1.8} />
-                  <span>{formatCompactCount(0)}</span>
-                </span>
-              )}
+              <button
+                type="button"
+                onClick={handleToggleRepliesClick}
+                disabled={!hasReplies}
+                className={cn(
+                  'inline-flex items-center gap-3 transition-colors',
+                  hasReplies
+                    ? 'hover:text-gray-700'
+                    : 'cursor-default text-gray-300 hover:text-gray-300',
+                )}
+                aria-label={showReplies ? '답글 숨기기' : '답글 보기'}
+                aria-expanded={hasReplies ? showReplies : undefined}
+              >
+                <MessageCircle size={28} strokeWidth={1.8} />
+                <span>{formatCompactCount(replyCount)}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleReplyClick}
+                className="group inline-flex size-7 items-center justify-center transition-opacity hover:opacity-90"
+                aria-label="답글 작성"
+              >
+                <Image
+                  src="/icons/enter-default.svg"
+                  alt=""
+                  width={28}
+                  height={28}
+                  aria-hidden
+                  className="block group-hover:hidden"
+                />
+                <Image
+                  src="/icons/enter-hover.svg"
+                  alt=""
+                  width={28}
+                  height={28}
+                  aria-hidden
+                  className="hidden group-hover:block"
+                />
+              </button>
             </div>
           )}
         </div>
@@ -211,7 +245,11 @@ export function CommentItem({ comment, isReply = false, actions }: CommentItemPr
           <CommentInput
             placeholder={`${comment.author.nickname}에게 답글 달기`}
             isSubmitting={isCreatingReply(comment.id)}
-            onSubmit={(value) => actions.submitReply(comment.id, value)}
+            submitLabel="답글 달기"
+            onSubmit={(value) => {
+              actions.submitReply(comment.id, value);
+              setShowReplies(true);
+            }}
             onCancel={() => actions.toggleReply(comment.id)}
             autoFocus
             allowImage
@@ -219,20 +257,11 @@ export function CommentItem({ comment, isReply = false, actions }: CommentItemPr
         </div>
       )}
 
-      {comment.replies.length > 0 && (
+      {comment.replies.length > 0 && showReplies && (
         <div className="flex flex-col gap-10">
-          <button
-            type="button"
-            onClick={() => setShowReplies((prev) => !prev)}
-            className="ml-[88px] self-start text-b01-r text-gray-500 transition-colors hover:text-gray-800 max-sm:ml-8"
-            aria-expanded={showReplies}
-          >
-            {showReplies ? '답글 숨기기' : `답글 더 보기 (${comment.replies.length})`}
-          </button>
-          {showReplies &&
-            comment.replies.map((reply) => (
-              <CommentItem key={reply.id} comment={reply} isReply actions={actions} />
-            ))}
+          {comment.replies.map((reply) => (
+            <CommentItem key={reply.id} comment={reply} isReply actions={actions} />
+          ))}
         </div>
       )}
     </article>

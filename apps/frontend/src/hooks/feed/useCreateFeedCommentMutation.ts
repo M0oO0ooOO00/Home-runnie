@@ -31,7 +31,12 @@ function appendComment(comments: FeedComment[], comment: FeedComment): FeedComme
       };
     }
 
-    return item;
+    if (item.replies.length === 0) return item;
+
+    return {
+      ...item,
+      replies: appendComment(item.replies, comment),
+    };
   });
 }
 

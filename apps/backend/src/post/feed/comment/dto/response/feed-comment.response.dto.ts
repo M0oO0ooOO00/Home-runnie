@@ -26,7 +26,7 @@ export class FeedCommentResponseDto {
   parentId: number | null;
 
   @ApiProperty({
-    description: '대댓글 목록 (root 댓글에만 포함, 작성 시간 ASC). 대댓글 자체에는 빈 배열.',
+    description: '답글 목록 (작성 시간 ASC). 답글도 하위 답글을 가질 수 있습니다.',
     type: [FeedCommentResponseDto],
   })
   replies: FeedCommentResponseDto[];
