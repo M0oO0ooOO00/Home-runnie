@@ -14,7 +14,7 @@ import type { CommentItemActions } from './comment.types';
 
 interface CommentItemProps {
   comment: FeedComment;
-  isReply?: boolean;
+  depth?: number;
   actions: CommentItemActions;
 }
 
@@ -22,9 +22,10 @@ function countReplies(comment: FeedComment): number {
   return comment.replies.reduce((acc, reply) => acc + 1 + countReplies(reply), 0);
 }
 
-export function CommentItem({ comment, isReply = false, actions }: CommentItemProps) {
+export function CommentItem({ comment, depth = 0, actions }: CommentItemProps) {
   const { viewerMemberId, replyingTo, isCreatingReply, isUpdatingComment } =
     useCommentInteraction();
+  const isReply = depth > 0;
   const isMine = viewerMemberId !== null && comment.author.id === viewerMemberId;
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -76,7 +77,13 @@ export function CommentItem({ comment, isReply = false, actions }: CommentItemPr
   };
 
   return (
-    <article className={cn('flex flex-col', isReply ? 'ml-[88px] gap-4 max-sm:ml-8' : 'gap-6')}>
+    <article
+      className={cn(
+        'flex flex-col',
+        isReply ? 'gap-4' : 'gap-6',
+        depth === 1 && 'ml-[88px] max-sm:ml-8',
+      )}
+    >
       <div className="flex items-start gap-4">
         <TeamProfileAvatar
           supportTeam={comment.author.supportTeam}
@@ -241,7 +248,7 @@ export function CommentItem({ comment, isReply = false, actions }: CommentItemPr
       </div>
 
       {isReplyingTarget && (
-        <div className="ml-[72px]">
+        <div className={isReply ? 'ml-16' : 'ml-[72px]'}>
           <CommentInput
             placeholder={`${comment.author.nickname}에게 답글 달기`}
             isSubmitting={isCreatingReply(comment.id)}
@@ -260,7 +267,7 @@ export function CommentItem({ comment, isReply = false, actions }: CommentItemPr
       {comment.replies.length > 0 && showReplies && (
         <div className="flex flex-col gap-10">
           {comment.replies.map((reply) => (
-            <CommentItem key={reply.id} comment={reply} isReply actions={actions} />
+            <CommentItem key={reply.id} comment={reply} depth={depth + 1} actions={actions} />
           ))}
         </div>
       )}

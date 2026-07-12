@@ -23,8 +23,10 @@ function appendComment(comments: FeedComment[], comment: FeedComment): FeedComme
     return [...comments, comment];
   }
 
-  return comments.map((item) => {
+  let updated = false;
+  const nextComments = comments.map((item) => {
     if (item.id === comment.parentId) {
+      updated = true;
       return {
         ...item,
         replies: [...item.replies, comment],
@@ -33,11 +35,17 @@ function appendComment(comments: FeedComment[], comment: FeedComment): FeedComme
 
     if (item.replies.length === 0) return item;
 
+    const nextReplies = appendComment(item.replies, comment);
+    if (nextReplies === item.replies) return item;
+
+    updated = true;
     return {
       ...item,
-      replies: appendComment(item.replies, comment),
+      replies: nextReplies,
     };
   });
+
+  return updated ? nextComments : comments;
 }
 
 export const useCreateFeedCommentMutation = (postId: number, { onError }: Options = {}) => {
