@@ -9,9 +9,19 @@ function flattenForLookup(list: FeedComment[]): FeedComment[] {
   const out: FeedComment[] = [];
   for (const c of list) {
     out.push(c);
-    out.push(...c.replies);
+    out.push(...flattenForLookup(c.replies));
   }
   return out;
+}
+
+function removeCommentById(list: FeedComment[], commentId: number): boolean {
+  const index = list.findIndex((comment) => comment.id === commentId);
+  if (index >= 0) {
+    list.splice(index, 1);
+    return true;
+  }
+
+  return list.some((comment) => removeCommentById(comment.replies, commentId));
 }
 
 export const commentHandlers = [
@@ -57,12 +67,9 @@ export const commentHandlers = [
     };
 
     if (body.parentId !== undefined && body.parentId !== null) {
-      const parent = list.find((c) => c.id === body.parentId);
+      const parent = flattenForLookup(list).find((c) => c.id === body.parentId);
       if (!parent) {
         return HttpResponse.json({ message: '부모 댓글을 찾을 수 없습니다.' }, { status: 404 });
-      }
-      if (parent.parentId !== null) {
-        return HttpResponse.json({ message: '대댓글에는 답글을 달 수 없습니다.' }, { status: 400 });
       }
       parent.replies.push(newComment);
     } else {
@@ -89,15 +96,7 @@ export const commentHandlers = [
       return HttpResponse.json({ message: '댓글 없음' }, { status: 404 });
     }
 
-    if (target.parentId === null) {
-      const idx = list.findIndex((c) => c.id === commentId);
-      if (idx >= 0) list.splice(idx, 1);
-    } else {
-      const parent = list.find((c) => c.id === target.parentId);
-      if (parent) {
-        parent.replies = parent.replies.filter((r) => r.id !== commentId);
-      }
-    }
+    removeCommentById(list, commentId);
 
     commentsByPostId.set(postId, list);
     return HttpResponse.json({ id: commentId });

@@ -24,9 +24,13 @@ interface CommentListViewProps {
   actions: CommentItemActions;
 }
 
+function countComments(comments: FeedComment[]): number {
+  return comments.reduce((acc, comment) => acc + 1 + countComments(comment.replies), 0);
+}
+
 export function CommentListView({ comments, queryState, composer, actions }: CommentListViewProps) {
   const commentItems = comments ?? [];
-  const totalCount = commentItems.reduce((acc, comment) => acc + 1 + comment.replies.length, 0);
+  const totalCount = countComments(commentItems);
 
   return (
     <section className="mx-auto mt-16 w-full max-w-[585px]">
@@ -35,22 +39,7 @@ export function CommentListView({ comments, queryState, composer, actions }: Com
         <span className="text-b01-sb text-gray-400">{formatCompactCount(totalCount)}</span>
       </div>
 
-      <CommentInput
-        placeholder={
-          composer.isLogged
-            ? '지금 무슨 생각을 하고 계신가요?'
-            : '로그인 후 댓글을 작성할 수 있어요'
-        }
-        isSubmitting={composer.isSubmitting}
-        supportTeam={composer.supportTeam}
-        variant="composer"
-        submitLabel="게시하기"
-        submittingLabel="게시 중"
-        onSubmit={composer.onSubmit}
-        allowImage
-      />
-
-      <div className="mt-[10px] rounded-[28px] bg-card px-5 py-7 shadow-02 sm:px-8 sm:py-9">
+      <div className="rounded-[28px] bg-card px-5 py-7 shadow-02 sm:px-8 sm:py-9">
         {queryState.isLoading && (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="animate-spin text-gray-500" size={20} />
@@ -68,12 +57,31 @@ export function CommentListView({ comments, queryState, composer, actions }: Com
         )}
 
         {commentItems.length > 0 && (
-          <div className="flex flex-col gap-12">
+          <div className="divide-y divide-gray-200">
             {commentItems.map((comment) => (
-              <CommentItem key={comment.id} comment={comment} actions={actions} />
+              <div key={comment.id} className="py-10 first:pt-0 last:pb-0">
+                <CommentItem comment={comment} actions={actions} />
+              </div>
             ))}
           </div>
         )}
+      </div>
+
+      <div className="mt-8 sm:mt-10">
+        <CommentInput
+          placeholder={
+            composer.isLogged
+              ? '지금 무슨 생각을 하고 계신가요?'
+              : '로그인 후 댓글을 작성할 수 있어요'
+          }
+          isSubmitting={composer.isSubmitting}
+          supportTeam={composer.supportTeam}
+          variant="composer"
+          submitLabel="댓글 달기"
+          submittingLabel="등록 중"
+          onSubmit={composer.onSubmit}
+          allowImage
+        />
       </div>
     </section>
   );

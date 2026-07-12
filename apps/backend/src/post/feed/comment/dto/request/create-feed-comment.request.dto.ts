@@ -24,7 +24,7 @@ export class CreateFeedCommentRequestDto {
   imageUrl?: string;
 
   @ApiPropertyOptional({
-    description: '대댓글일 경우 부모 댓글 ID. 부모 댓글 자체는 root여야 함 (depth 1 제한).',
+    description: '답글일 경우 부모 댓글 ID. 댓글/답글 모두 부모가 될 수 있습니다.',
     example: 1,
   })
   @IsOptional()

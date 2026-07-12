@@ -55,9 +55,6 @@ export class FeedCommentService {
       if (parent.postId !== postId) {
         throw new BadRequestException('부모 댓글이 다른 게시글에 속해 있습니다.');
       }
-      if (parent.parentId !== null) {
-        throw new BadRequestException('대댓글에는 답글을 달 수 없습니다 (depth 1 제한).');
-      }
       parentId = dto.parentId;
     }
 
@@ -88,25 +85,29 @@ export class FeedCommentService {
 
     const rows = await this.feedCommentReader.findCommentsByPostId(postId);
 
-    const rootById = new Map<number, FeedCommentResponseDto>();
-    const replies: FeedCommentQueryResult[] = [];
+    const commentById = new Map<number, FeedCommentResponseDto>();
+    const roots: FeedCommentResponseDto[] = [];
 
     for (const row of rows) {
+      commentById.set(row.id, this.toResponse(row));
+    }
+
+    for (const row of rows) {
+      const comment = commentById.get(row.id);
+      if (!comment) continue;
+
       if (row.parentId === null) {
-        rootById.set(row.id, this.toResponse(row));
-      } else {
-        replies.push(row);
+        roots.push(comment);
+        continue;
+      }
+
+      const parent = commentById.get(row.parentId);
+      if (parent) {
+        parent.replies.push(comment);
       }
     }
 
-    for (const reply of replies) {
-      const root = rootById.get(reply.parentId!);
-      if (root) {
-        root.replies.push(this.toResponse(reply));
-      }
-    }
-
-    return Array.from(rootById.values());
+    return roots;
   }
 
   async updateComment(
