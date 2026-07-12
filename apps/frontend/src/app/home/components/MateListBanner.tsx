@@ -4,6 +4,7 @@ import Link from 'next/link';
 import MateItem from './MateItem';
 import { useRecruitmentPostsQuery } from '@/hooks/post/usePostQuery';
 import { TeamDescription, Team } from '@homerunnie/shared';
+import type { GetRecruitmentPostsResponse } from '@/apis/post/post';
 
 const formatDate = (value: string) => {
   const date = new Date(value);
@@ -13,8 +14,15 @@ const formatDate = (value: string) => {
 
 const PAGE_SIZE = 5;
 
-export default function MateListBanner() {
-  const { data, isLoading } = useRecruitmentPostsQuery({ page: 1, pageSize: PAGE_SIZE });
+export default function MateListBanner({
+  initialData,
+}: {
+  initialData?: GetRecruitmentPostsResponse | null;
+}) {
+  const { data, isLoading } = useRecruitmentPostsQuery(
+    { page: 1, pageSize: PAGE_SIZE },
+    initialData,
+  );
   const posts = data?.data ?? [];
 
   return (

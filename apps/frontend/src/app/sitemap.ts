@@ -1,11 +1,15 @@
 import type { MetadataRoute } from 'next';
+import { fetchFeedPostsForSeo, fetchRecruitmentPostsForSeo, getSiteUrl } from '@/lib/seo-api';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.homerunnie.app';
-
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const SITE_URL = getSiteUrl();
   const now = new Date();
+  const [recruitments, feed] = await Promise.all([
+    fetchRecruitmentPostsForSeo({ page: 1, pageSize: 100 }),
+    fetchFeedPostsForSeo(100),
+  ]);
 
-  return [
+  const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: `${SITE_URL}/home`,
       lastModified: now,
@@ -25,4 +29,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
   ];
+
+  const recruitmentRoutes: MetadataRoute.Sitemap =
+    recruitments?.data.map((post) => ({
+      url: `${SITE_URL}/home/${post.id}`,
+      lastModified: new Date(post.createdAt),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    })) ?? [];
+
+  const feedRoutes: MetadataRoute.Sitemap =
+    feed?.items.map((post) => ({
+      url: `${SITE_URL}/feed/${post.id}`,
+      lastModified: new Date(post.updatedAt ?? post.createdAt),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    })) ?? [];
+
+  return [...staticRoutes, ...recruitmentRoutes, ...feedRoutes];
 }

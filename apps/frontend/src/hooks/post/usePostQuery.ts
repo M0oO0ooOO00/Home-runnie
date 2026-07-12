@@ -5,22 +5,32 @@ import {
   getRecruitmentComments,
   getRecruitmentPostDetail,
   getRecruitmentPosts,
+  type GetRecruitmentPostDetailResponse,
+  type GetRecruitmentPostsResponse,
   type GetRecruitmentPostsQueryParams,
 } from '@/apis/post/post';
 
-export const useRecruitmentPostsQuery = (params: GetRecruitmentPostsQueryParams = {}) => {
+export const useRecruitmentPostsQuery = (
+  params: GetRecruitmentPostsQueryParams = {},
+  initialData?: GetRecruitmentPostsResponse | null,
+) => {
   return useQuery({
     queryKey: ['recruitment-posts', params],
     queryFn: () => getRecruitmentPosts(params),
+    initialData: initialData ?? undefined,
     retry: false,
   });
 };
 
-export const useRecruitmentPostDetailQuery = (postId: number) => {
+export const useRecruitmentPostDetailQuery = (
+  postId: number,
+  initialData?: GetRecruitmentPostDetailResponse | null,
+) => {
   return useQuery({
     queryKey: ['recruitment-post-detail', postId],
     queryFn: () => getRecruitmentPostDetail(postId),
     enabled: Number.isFinite(postId) && postId > 0,
+    initialData: initialData ?? undefined,
   });
 };
 
