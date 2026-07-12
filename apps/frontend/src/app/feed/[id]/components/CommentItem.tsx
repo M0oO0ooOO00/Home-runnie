@@ -110,11 +110,12 @@ export function CommentItem({ comment, isReply = false, actions }: CommentItemPr
               )}
               {comment.imageUrl && (
                 <div className="relative aspect-square w-full max-w-[220px] overflow-hidden rounded-2xl bg-gray-100 ring-1 ring-gray-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={comment.imageUrl}
                     alt="댓글 첨부 이미지"
-                    className="h-full w-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 220px"
+                    className="object-cover"
                   />
                 </div>
               )}
@@ -210,7 +211,7 @@ export function CommentItem({ comment, isReply = false, actions }: CommentItemPr
           <CommentInput
             placeholder={`${comment.author.nickname}에게 답글 달기`}
             isSubmitting={isCreatingReply(comment.id)}
-            onSubmit={(content) => actions.submitReply(comment.id, content)}
+            onSubmit={(value) => actions.submitReply(comment.id, value)}
             onCancel={() => actions.toggleReply(comment.id)}
             autoFocus
             allowImage

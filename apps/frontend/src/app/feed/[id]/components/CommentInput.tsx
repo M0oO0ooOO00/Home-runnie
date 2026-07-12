@@ -56,8 +56,10 @@ export function CommentInput({
       existingImageUrl !== initialImageUrl);
 
   useEffect(() => {
+    const currentPreviewUrl = previewUrl;
+
     return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (currentPreviewUrl) URL.revokeObjectURL(currentPreviewUrl);
     };
   }, [previewUrl]);
 
@@ -78,7 +80,6 @@ export function CommentInput({
       return;
     }
 
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setImageFile(file);
     setExistingImageUrl(null);
     setPreviewUrl(URL.createObjectURL(file));
@@ -89,7 +90,6 @@ export function CommentInput({
   };
 
   const handleRemoveImage = () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setImageFile(undefined);
     setExistingImageUrl(null);
     setPreviewUrl(undefined);
@@ -97,7 +97,6 @@ export function CommentInput({
 
   const resetInput = () => {
     setValue(initialValue);
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setImageFile(undefined);
     setPreviewUrl(undefined);
     setExistingImageUrl(initialImageUrl);
