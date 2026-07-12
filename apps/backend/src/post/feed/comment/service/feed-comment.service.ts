@@ -40,6 +40,12 @@ export class FeedCommentService {
       throw new NotFoundException('해당 피드 게시글을 찾을 수 없습니다.');
     }
 
+    const content = dto.content?.trim() ?? '';
+    const imageUrl = dto.imageUrl?.trim() || null;
+    if (!content && !imageUrl) {
+      throw new BadRequestException('댓글 본문 또는 이미지 중 하나는 필요합니다.');
+    }
+
     let parentId: number | null = null;
     if (dto.parentId !== undefined && dto.parentId !== null) {
       const parent = await this.feedCommentReader.findCommentById(dto.parentId);
@@ -58,8 +64,9 @@ export class FeedCommentService {
     const created = await this.feedCommentWriter.createComment(
       memberId,
       postId,
-      dto.content,
+      content,
       parentId,
+      imageUrl,
     );
     if (!created) {
       throw new InternalServerErrorException('댓글 생성 실패');
@@ -119,7 +126,14 @@ export class FeedCommentService {
       throw new ForbiddenException('작성자만 수정할 수 있습니다.');
     }
 
-    await this.feedCommentWriter.updateCommentContent(commentId, dto.content);
+    const content = dto.content?.trim() ?? comment.content;
+    const imageUrl = dto.imageUrl === undefined ? comment.imageUrl : dto.imageUrl?.trim() || null;
+
+    if (!content && !imageUrl) {
+      throw new BadRequestException('댓글 본문 또는 이미지 중 하나는 필요합니다.');
+    }
+
+    await this.feedCommentWriter.updateComment(commentId, content, imageUrl);
 
     const joined = await this.feedCommentReader.findFeedCommentJoined(commentId);
     if (!joined) {
@@ -154,6 +168,7 @@ export class FeedCommentService {
         supportTeam: detail.supportTeam as Team | null,
       }),
       content: detail.content,
+      imageUrl: detail.imageUrl,
       parentId: detail.parentId,
       replies: [],
       createdAt: detail.createdAt.toISOString(),

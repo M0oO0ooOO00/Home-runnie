@@ -5,7 +5,8 @@ import { useCreateFeedCommentMutation } from '@/hooks/feed/useCreateFeedCommentM
 import { useDeleteFeedCommentMutation } from '@/hooks/feed/useDeleteFeedCommentMutation';
 import { useToggleFeedCommentLikeMutation } from '@/hooks/feed/useToggleFeedCommentLikeMutation';
 import { useUpdateFeedCommentMutation } from '@/hooks/feed/useUpdateFeedCommentMutation';
-import type { CommentItemActions } from './comment.types';
+import { showToast, ToastIconType } from '@/shared/ui/toast/toast';
+import type { CommentItemActions, CommentSubmitValue } from './comment.types';
 
 interface UseFeedCommentActionsOptions {
   postId: number;
@@ -18,35 +19,41 @@ export function useFeedCommentActions({
   viewerMemberId,
   onAuthRequired,
 }: UseFeedCommentActionsOptions) {
-  const { mutate: createComment, isPending: isCreatingComment } =
-    useCreateFeedCommentMutation(postId);
+  const { mutate: createComment, isPending: isCreatingComment } = useCreateFeedCommentMutation(
+    postId,
+    {
+      onError: (error) => showToast(error.message || '댓글 작성에 실패했어요.', ToastIconType.INFO),
+    },
+  );
   const { mutate: deleteCommentMutation } = useDeleteFeedCommentMutation(postId);
   const { mutate: updateCommentMutation, isPending: isUpdatingComment } =
-    useUpdateFeedCommentMutation(postId);
+    useUpdateFeedCommentMutation(postId, {
+      onError: (error) => showToast(error.message || '댓글 수정에 실패했어요.', ToastIconType.INFO),
+    });
   const { mutate: toggleCommentLike } = useToggleFeedCommentLikeMutation(postId);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
 
   const isLogged = viewerMemberId !== null;
 
   const submitRootComment = useCallback(
-    (content: string) => {
+    ({ content, imageFile }: CommentSubmitValue) => {
       if (!isLogged) {
         onAuthRequired('댓글을 작성하려면 로그인이 필요합니다.');
         return;
       }
-      createComment({ content });
+      createComment({ content, imageFile });
     },
     [createComment, isLogged, onAuthRequired],
   );
 
   const submitReply = useCallback(
-    (parentId: number, content: string) => {
+    (parentId: number, { content, imageFile }: CommentSubmitValue) => {
       if (!isLogged) {
         onAuthRequired('답글을 작성하려면 로그인이 필요합니다.');
         return;
       }
       createComment(
-        { content, parentId },
+        { content, imageFile, parentId },
         {
           onSuccess: () => setReplyingTo(null),
         },
@@ -63,8 +70,8 @@ export function useFeedCommentActions({
   );
 
   const updateComment = useCallback(
-    (commentId: number, content: string) => {
-      updateCommentMutation({ commentId, content });
+    (commentId: number, { content, imageFile, imageUrl }: CommentSubmitValue) => {
+      updateCommentMutation({ commentId, content, imageFile, imageUrl });
     },
     [updateCommentMutation],
   );

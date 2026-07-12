@@ -4,6 +4,7 @@ import { ChangeEvent, useRef } from 'react';
 import { ArrowLeft, ImagePlus, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FEED_POST_MAX_CONTENT, FEED_POST_MAX_IMAGES } from '@/app/feed/constants';
+import { validateUploadImageFiles } from '@/apis/upload/upload';
 import { showToast, ToastIconType } from '@/shared/ui/toast/toast';
 
 export interface FeedPostFormImage {
@@ -51,6 +52,17 @@ export function FeedPostForm({
     if (selectedFiles.length > remaining) {
       showToast(
         `이미지는 최대 ${FEED_POST_MAX_IMAGES}장까지 선택할 수 있어요.`,
+        ToastIconType.INFO,
+      );
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    try {
+      validateUploadImageFiles(selectedFiles);
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : '업로드할 수 없는 이미지가 포함되어 있어요.',
         ToastIconType.INFO,
       );
       if (fileInputRef.current) fileInputRef.current.value = '';

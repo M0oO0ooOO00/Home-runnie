@@ -5,6 +5,7 @@ export interface FeedComment {
   id: number;
   author: FeedAuthor;
   content: string;
+  imageUrl: string | null;
   parentId: number | null;
   replies: FeedComment[];
   createdAt: string;
@@ -13,7 +14,8 @@ export interface FeedComment {
 }
 
 export interface CreateFeedCommentRequest {
-  content: string;
+  content?: string;
+  imageUrl?: string;
   parentId?: number;
 }
 
@@ -40,7 +42,8 @@ export async function deleteFeedComment(
 }
 
 export interface UpdateFeedCommentRequest {
-  content: string;
+  content?: string;
+  imageUrl?: string | null;
 }
 
 export async function updateFeedComment(

@@ -12,6 +12,13 @@ export class FeedCommentResponseDto {
   content: string;
 
   @ApiProperty({
+    description: '댓글 첨부 이미지 URL',
+    nullable: true,
+    example: 'https://homerunnie-s3.s3.ap-northeast-2.amazonaws.com/feed/1/comment.jpg',
+  })
+  imageUrl: string | null;
+
+  @ApiProperty({
     description: '부모 댓글 ID (root 댓글이면 null)',
     nullable: true,
     example: null,
