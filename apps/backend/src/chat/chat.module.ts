@@ -8,6 +8,7 @@ import { ChatRepository } from '@/chat/repository';
 import { ChatController } from '@/chat/controller';
 import { DbModule } from '@/common/db/db.module';
 import { MemberModule } from '@/member/member.module';
+import { UploadModule } from '@/upload';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { MemberModule } from '@/member/member.module';
       }),
     }),
     MemberModule,
+    UploadModule,
   ],
   controllers: [ChatController],
   providers: [ChatGateway, WsJwtGuard, ChatService, ChatRepository],

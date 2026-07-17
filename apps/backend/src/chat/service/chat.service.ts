@@ -71,13 +71,19 @@ export class ChatService {
     chatRoomId: number,
     requesterId: number,
   ): Promise<ChatRoomMemberResponseDto[]> {
-    const requester = await this.chatRepository.findChatRoomMember(chatRoomId, requesterId);
-    if (!requester) {
-      throw new ForbiddenException('채팅방 멤버만 조회할 수 있습니다.');
-    }
+    await this.assertChatRoomMember(chatRoomId, requesterId);
 
     const members = await this.chatRepository.findChatRoomMembersByRoomId(chatRoomId);
     return members.map((m) => ChatRoomMemberResponseDto.from(m));
+  }
+
+  async assertChatRoomMember(chatRoomId: number, memberId: number) {
+    const member = await this.chatRepository.findChatRoomMember(chatRoomId, memberId);
+    if (!member) {
+      throw new ForbiddenException('채팅방 멤버만 이용할 수 있습니다.');
+    }
+
+    return member;
   }
 
   async requestJoinChatRoom(chatRoomId: number, memberId: number) {

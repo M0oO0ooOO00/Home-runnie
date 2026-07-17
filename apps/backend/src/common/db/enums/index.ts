@@ -12,4 +12,5 @@ export * from '@/common/db/enums/oauth-provider.pg-enum';
 export * from '@/common/db/enums/account-status.pg-enum';
 export * from '@/common/db/enums/chat-room-member-role.pg-enum';
 export * from '@/common/db/enums/chat-join-request-status.pg-enum';
+export * from '@/common/db/enums/chat-message-type.pg-enum';
 export * from '@/common/db/enums/reaction-target-type.pg-enum';

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -8,10 +9,14 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { ChatService } from '@/chat/service';
+import { UploadService, UploadedImageMetadata } from '@/upload';
 import { CurrentMember } from '@/common';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { CreateChatRoomRequestDto, GetChatRoomsRequestDto } from '@/chat/dto/request';
@@ -23,11 +28,16 @@ import {
 } from '@/chat/dto/response';
 import { CreateChatRoomSwagger, GetChatRoomsSwagger } from '@/chat/swagger';
 
+const MAX_CHAT_IMAGE_FILES = 4;
+
 @ApiTags('채팅방')
 @Controller('chat')
 @UseGuards(JwtAuthGuard)
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly uploadService: UploadService,
+  ) {}
 
   @Post('rooms')
   @CreateChatRoomSwagger
@@ -36,6 +46,28 @@ export class ChatController {
     @Body() createChatRoomDto: CreateChatRoomRequestDto,
   ): Promise<ChatRoomResponseDto> {
     return this.chatService.createChatRoom(createChatRoomDto.postId, memberId);
+  }
+
+  @Post('rooms/:roomId/images')
+  @UseInterceptors(FilesInterceptor('files', MAX_CHAT_IMAGE_FILES))
+  async uploadChatImages(
+    @CurrentMember() memberId: number,
+    @Param('roomId', ParseIntPipe) roomId: number,
+    @UploadedFiles() files: Express.Multer.File[],
+  ): Promise<{ files: UploadedImageMetadata[] }> {
+    await this.chatService.assertChatRoomMember(roomId, memberId);
+
+    if (!files || files.length === 0) {
+      throw new BadRequestException('업로드할 이미지가 없습니다.');
+    }
+
+    const uploadedImages = await this.uploadService.uploadImagesWithMetadata(
+      memberId,
+      files,
+      `chat/${roomId}`,
+    );
+
+    return { files: uploadedImages };
   }
 
   @Get('rooms/by-post/:postId')

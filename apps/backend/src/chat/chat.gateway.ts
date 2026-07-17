@@ -9,14 +9,17 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { JoinRoomDto } from '@/chat/dto/room-join.dto';
-import { CreateMessageDto } from '@/chat/dto/create-message.dto';
+import { CreateMessageDto, CreateMessageImageDto } from '@/chat/dto/create-message.dto';
 import { Injectable, Logger, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { MemberRepository } from '@/member/repository';
 import { ChatRepository } from '@/chat/repository';
+import { ChatMessageImage } from '@/chat/domain';
 import { JwtPayload } from '@/auth/types';
 import { WsJwtGuard, WsSocketUser, WsUser, extractTokenFromSocket } from '@/chat/ws-jwt.guard';
+import { ChatMessageType } from '@homerunnie/shared';
+import { UploadService } from '@/upload';
 
 @Injectable()
 @WebSocketGateway({
@@ -39,6 +42,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly configService: ConfigService,
     private readonly memberRepository: MemberRepository,
     private readonly chatRepository: ChatRepository,
+    private readonly uploadService: UploadService,
   ) {}
 
   async handleConnection(socket: Socket) {
@@ -88,7 +92,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const { roomId } = data;
     const { nickname } = user;
-    const chatRoomId = parseInt(roomId, 10);
+    const chatRoomId = this.parseRoomId(roomId);
+    if (chatRoomId === null) return;
+
+    const roomMember = await this.chatRepository.findChatRoomMember(chatRoomId, user.memberId);
+    if (!roomMember) return;
 
     socket.join(roomId);
     user.roomIds.add(roomId);
@@ -101,7 +109,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       'message_history',
       history.map((msg) => ({
         id: msg.id,
-        message: msg.content,
+        message: msg.content ?? '',
+        type: msg.messageType,
+        attachments: msg.images.map((image) => this.mapImage(image)),
         isOwn: msg.senderId === user.memberId,
         nickname: msg.nickname,
         supportTeam: msg.supportTeam,
@@ -124,31 +134,98 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!user.roomIds.has(roomId)) return;
 
     const { nickname, memberId, supportTeam } = user;
-    const chatRoomId = parseInt(roomId, 10);
+    const chatRoomId = this.parseRoomId(roomId);
+    if (chatRoomId === null) return;
 
-    const [savedMessage] = await Promise.all([
-      this.chatRepository.saveMessage(chatRoomId, memberId, message),
-      this.chatRepository.updateChatRoomUpdatedAt(chatRoomId),
-    ]);
+    const roomMember = await this.chatRepository.findChatRoomMember(chatRoomId, memberId);
+    if (!roomMember) {
+      user.roomIds.delete(roomId);
+      return;
+    }
 
-    const createdAt = savedMessage.createdAt;
+    const attachments = data.attachments ?? [];
+    const messageType =
+      data.type ?? (attachments.length > 0 ? ChatMessageType.IMAGE : ChatMessageType.TEXT);
+    const content = message?.trim() || null;
+
+    if (messageType === ChatMessageType.TEXT && !content) return;
+    if (messageType === ChatMessageType.IMAGE && attachments.length === 0) return;
+    if (messageType === ChatMessageType.TEXT && attachments.length > 0) return;
+
+    if (
+      messageType === ChatMessageType.IMAGE &&
+      !attachments.every((image) => this.isValidChatImage(chatRoomId, memberId, image))
+    ) {
+      return;
+    }
+
+    let savedMessage;
+    let savedImages: (typeof ChatMessageImage.$inferSelect)[] = [];
+
+    if (messageType === ChatMessageType.IMAGE) {
+      const saved = await this.chatRepository.saveImageMessage(
+        chatRoomId,
+        memberId,
+        content,
+        attachments,
+      );
+      savedMessage = saved.message;
+      savedImages = saved.images;
+    } else {
+      [savedMessage] = await Promise.all([
+        this.chatRepository.saveMessage(chatRoomId, memberId, content as string),
+        this.chatRepository.updateChatRoomUpdatedAt(chatRoomId),
+      ]);
+    }
+
+    const receivedMessage = {
+      id: savedMessage.id,
+      nickname,
+      message: savedMessage.content ?? '',
+      type: savedMessage.messageType,
+      attachments: savedImages.map((image) => this.mapImage(image)),
+      roomId,
+      supportTeam,
+      createdAt: savedMessage.createdAt,
+    };
 
     socket.to(roomId).emit('received_message', {
-      nickname,
-      message,
+      ...receivedMessage,
       isOwn: false,
-      roomId,
-      supportTeam,
-      createdAt,
     });
     socket.emit('received_message', {
-      nickname,
-      message,
+      ...receivedMessage,
       isOwn: true,
-      roomId,
-      supportTeam,
-      createdAt,
     });
+  }
+
+  private parseRoomId(roomId: string): number | null {
+    const parsed = Number(roomId);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+  }
+
+  private isValidChatImage(
+    roomId: number,
+    memberId: number,
+    image: CreateMessageImageDto,
+  ): boolean {
+    return this.uploadService.isValidChatImageMetadata(roomId, memberId, image);
+  }
+
+  private mapImage(image: {
+    id: number;
+    imageUrl: string;
+    mimeType: string;
+    fileSize: number;
+    imageOrder: number;
+  }) {
+    return {
+      id: image.id,
+      imageUrl: image.imageUrl,
+      mimeType: image.mimeType,
+      fileSize: image.fileSize,
+      imageOrder: image.imageOrder,
+    };
   }
 
   emitToRoom(roomId: string, event: string, data: unknown) {
