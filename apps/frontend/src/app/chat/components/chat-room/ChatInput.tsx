@@ -151,7 +151,7 @@ const ChatInput = ({ connected, onSend }: ChatInputProps) => {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/png,image/jpeg,image/gif,image/webp,image/heic,image/heif"
+          accept="image/png,image/jpeg,image/gif,image/webp,image/heic,image/heif,.png,.jpg,.jpeg,.gif,.webp,.heic,.heif"
           multiple
           onChange={handleFileChange}
           className="hidden"

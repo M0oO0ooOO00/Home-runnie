@@ -1,7 +1,7 @@
 import { CHAT_IMAGE_MAX_FILES, CHAT_IMAGE_MAX_SIZE_BYTES, validateChatImageFiles } from './chat';
 
-const createFile = (type: string, size = 1) =>
-  new File([new Uint8Array(size)], 'chat-image', { type });
+const createFile = (type: string, size = 1, name = 'chat-image.png') =>
+  new File([new Uint8Array(size)], name, { type });
 
 describe('validateChatImageFiles', () => {
   it(`allows up to ${CHAT_IMAGE_MAX_FILES} supported image files`, () => {
@@ -25,6 +25,13 @@ describe('validateChatImageFiles', () => {
 
   it('rejects unsupported MIME types', () => {
     expect(() => validateChatImageFiles([createFile('application/pdf')])).toThrow(
+      'PNG, JPEG, GIF, WebP, HEIC 이미지만 업로드할 수 있어요.',
+    );
+  });
+
+  it('falls back to the extension when the browser does not provide a MIME type', () => {
+    expect(() => validateChatImageFiles([createFile('', 1, 'chat-image.heic')])).not.toThrow();
+    expect(() => validateChatImageFiles([createFile('', 1, 'chat-image.pdf')])).toThrow(
       'PNG, JPEG, GIF, WebP, HEIC 이미지만 업로드할 수 있어요.',
     );
   });

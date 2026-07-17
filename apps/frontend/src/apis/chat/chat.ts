@@ -14,6 +14,7 @@ export const CHAT_IMAGE_MAX_SIZE_MB = 15;
 export const CHAT_IMAGE_MAX_SIZE_BYTES = CHAT_IMAGE_MAX_SIZE_MB * 1024 * 1024;
 
 const ALLOWED_CHAT_IMAGE_MIME = /^image\/(png|jpe?g|gif|webp|heic|heif)$/i;
+const ALLOWED_CHAT_IMAGE_EXTENSION = /.(png|jpe?g|gif|webp|heic|heif)$/i;
 
 export interface UploadChatImagesResponse {
   files: ChatImageUploadMetadata[];
@@ -24,7 +25,14 @@ export function validateChatImageFiles(files: File[]): void {
     throw new Error(`채팅 이미지는 최대 ${CHAT_IMAGE_MAX_FILES}장까지 선택할 수 있어요.`);
   }
 
-  const invalidFile = files.find((file) => !ALLOWED_CHAT_IMAGE_MIME.test(file.type));
+  const invalidFile = files.find((file) => {
+    const mimeType = file.type.trim();
+    const hasValidMimeType = ALLOWED_CHAT_IMAGE_MIME.test(mimeType);
+    const hasValidExtension = ALLOWED_CHAT_IMAGE_EXTENSION.test(file.name);
+
+    // HEIC/HEIF MIME 타입을 전달하지 않는 브라우저에서는 확장자를 폴백으로 사용합니다.
+    return mimeType ? !hasValidMimeType : !hasValidExtension;
+  });
   if (invalidFile) {
     throw new Error('PNG, JPEG, GIF, WebP, HEIC 이미지만 업로드할 수 있어요.');
   }
