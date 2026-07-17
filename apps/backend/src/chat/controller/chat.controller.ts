@@ -26,9 +26,15 @@ import {
   ChatRoomMemberResponseDto,
   JoinRequestResponseDto,
 } from '@/chat/dto/response';
-import { CreateChatRoomSwagger, GetChatRoomsSwagger } from '@/chat/swagger';
+import {
+  CreateChatRoomSwagger,
+  GetChatRoomsSwagger,
+  UploadChatImagesSwagger,
+} from '@/chat/swagger';
 
 const MAX_CHAT_IMAGE_FILES = 4;
+const MAX_CHAT_IMAGE_FILE_SIZE = 15 * 1024 * 1024;
+const ALLOWED_CHAT_IMAGE_MIME = /^image\/(png|jpe?g|gif|webp|heic|heif)$/i;
 
 @ApiTags('채팅방')
 @Controller('chat')
@@ -49,7 +55,19 @@ export class ChatController {
   }
 
   @Post('rooms/:roomId/images')
-  @UseInterceptors(FilesInterceptor('files', MAX_CHAT_IMAGE_FILES))
+  @UploadChatImagesSwagger
+  @UseInterceptors(
+    FilesInterceptor('files', MAX_CHAT_IMAGE_FILES, {
+      limits: { fileSize: MAX_CHAT_IMAGE_FILE_SIZE },
+      fileFilter: (_request, file, callback) => {
+        if (!ALLOWED_CHAT_IMAGE_MIME.test(file.mimetype)) {
+          return callback(new BadRequestException('이미지 파일만 업로드할 수 있습니다.'), false);
+        }
+
+        callback(null, true);
+      },
+    }),
+  )
   async uploadChatImages(
     @CurrentMember() memberId: number,
     @Param('roomId', ParseIntPipe) roomId: number,
