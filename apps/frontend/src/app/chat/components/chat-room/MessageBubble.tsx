@@ -19,6 +19,7 @@ const MessageBubble = ({ msg, onProfileClick }: MessageBubbleProps) => {
 
   const isMe = msg.sender === 'me';
   const showProfile = !isMe && msg.nickname;
+  const hasImages = msg.attachments.length > 0;
   const date = msg.createdAt ? new Date(msg.createdAt) : null;
   const time = date && !isNaN(date.getTime()) ? formatKoreanTime(date) : '';
 
@@ -62,13 +63,40 @@ const MessageBubble = ({ msg, onProfileClick }: MessageBubbleProps) => {
           {isMe && time && <span className="text-xs text-gray-400 shrink-0">{time}</span>}
           <div
             className={[
-              'rounded-2xl px-4 py-2 max-w-xs lg:max-w-md',
+              'max-w-xs overflow-hidden lg:max-w-md',
+              hasImages ? 'rounded-2xl' : 'rounded-2xl px-4 py-2',
               isMe
                 ? 'bg-green-500 text-white rounded-br-none'
                 : 'bg-white text-black rounded-bl-none',
             ].join(' ')}
           >
-            {msg.text}
+            {hasImages && (
+              <div
+                className={`grid gap-1 bg-white p-1 ${
+                  msg.attachments.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+                }`}
+              >
+                {msg.attachments.map((attachment) => (
+                  <a
+                    key={attachment.id}
+                    href={attachment.imageUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block overflow-hidden rounded-lg bg-white"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={attachment.imageUrl}
+                      alt="채팅 이미지"
+                      className={`w-full bg-white object-cover ${
+                        msg.attachments.length === 1 ? 'max-h-72' : 'aspect-square'
+                      }`}
+                    />
+                  </a>
+                ))}
+              </div>
+            )}
+            {msg.text && <p className={hasImages ? 'px-3 py-2' : undefined}>{msg.text}</p>}
           </div>
           {!isMe && time && <span className="text-xs text-gray-400 shrink-0">{time}</span>}
         </div>

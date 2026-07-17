@@ -7,6 +7,59 @@ import {
 } from '@homerunnie/shared';
 
 import { apiClient } from '@/lib/fetchClient';
+import type { ChatImageUploadMetadata } from '@/types/chat';
+
+export const CHAT_IMAGE_MAX_FILES = 4;
+export const CHAT_IMAGE_MAX_SIZE_MB = 15;
+export const CHAT_IMAGE_MAX_SIZE_BYTES = CHAT_IMAGE_MAX_SIZE_MB * 1024 * 1024;
+
+const ALLOWED_CHAT_IMAGE_MIME = /^image\/(png|jpe?g|gif|webp|heic|heif)$/i;
+const ALLOWED_CHAT_IMAGE_EXTENSION = /.(png|jpe?g|gif|webp|heic|heif)$/i;
+
+export interface UploadChatImagesResponse {
+  files: ChatImageUploadMetadata[];
+}
+
+export function validateChatImageFiles(files: File[]): void {
+  if (files.length > CHAT_IMAGE_MAX_FILES) {
+    throw new Error(`채팅 이미지는 최대 ${CHAT_IMAGE_MAX_FILES}장까지 선택할 수 있어요.`);
+  }
+
+  const invalidFile = files.find((file) => {
+    const mimeType = file.type.trim();
+    const hasValidMimeType = ALLOWED_CHAT_IMAGE_MIME.test(mimeType);
+    const hasValidExtension = ALLOWED_CHAT_IMAGE_EXTENSION.test(file.name);
+
+    // HEIC/HEIF MIME 타입을 전달하지 않는 브라우저에서는 확장자를 폴백으로 사용합니다.
+    return mimeType ? !hasValidMimeType : !hasValidExtension;
+  });
+  if (invalidFile) {
+    throw new Error('PNG, JPEG, GIF, WebP, HEIC 이미지만 업로드할 수 있어요.');
+  }
+
+  const oversizedFile = files.find((file) => file.size > CHAT_IMAGE_MAX_SIZE_BYTES);
+  if (oversizedFile) {
+    throw new Error(`이미지는 파일당 ${CHAT_IMAGE_MAX_SIZE_MB}MB 이하만 업로드할 수 있어요.`);
+  }
+}
+
+export async function uploadChatImages(
+  roomId: number,
+  files: File[],
+): Promise<UploadChatImagesResponse> {
+  validateChatImageFiles(files);
+
+  const formData = new FormData();
+  files.forEach((file) => formData.append('files', file));
+
+  return apiClient.postFormData<UploadChatImagesResponse>(
+    `/chat/rooms/${roomId}/images`,
+    formData,
+    {
+      authRequired: true,
+    },
+  );
+}
 
 /**
  * 채팅방 생성

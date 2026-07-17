@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { ChatMessageType } from '@homerunnie/shared';
 import {
   mapHistoryMessageToChatMessage,
   mapReceivedMessageToChatMessage,
@@ -10,6 +11,7 @@ import type {
   ChatMessage,
   ChatReceivedMessagePayload,
 } from '@/types/chat';
+import { uploadChatImages } from '@/apis/chat/chat';
 import { useChatSocket } from '@/hooks/chat/ChatSocketProvider';
 
 export function useChatMessages(roomId: string) {
@@ -43,10 +45,33 @@ export function useChatMessages(roomId: string) {
   }, [socket, connected, roomId]);
 
   const sendMessage = useCallback(
-    (text: string) => {
-      socket?.emit('message', { roomId, message: text });
+    async (text: string, imageFiles: File[] = []) => {
+      const trimmedText = text.trim();
+
+      if (!socket || !connected) {
+        throw new Error('채팅 서버에 연결되지 않았습니다. 잠시 후 다시 시도해주세요.');
+      }
+
+      if (!trimmedText && imageFiles.length === 0) return;
+
+      if (imageFiles.length > 0) {
+        const { files } = await uploadChatImages(Number(roomId), imageFiles);
+
+        socket.emit('message', {
+          roomId,
+          message: trimmedText || undefined,
+          type: ChatMessageType.IMAGE,
+          attachments: files.map((file, imageOrder) => ({
+            ...file,
+            imageOrder,
+          })),
+        });
+        return;
+      }
+
+      socket.emit('message', { roomId, message: trimmedText });
     },
-    [socket, roomId],
+    [socket, connected, roomId],
   );
 
   return {
