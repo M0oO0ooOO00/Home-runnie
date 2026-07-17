@@ -105,7 +105,7 @@ const ChatRoomView = ({ roomId }: { roomId: string }) => {
           />
 
           <div className={`shrink-0 ${chatContentClassName}`}>
-            <ChatInput onSend={sendMessage} />
+            <ChatInput connected={connected} onSend={sendMessage} />
           </div>
         </section>
       </div>
