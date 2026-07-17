@@ -7,6 +7,8 @@ import { ChatGateway } from './chat.gateway';
 import { MemberRepository } from '@/member/repository';
 import { ChatRepository } from '@/chat/repository';
 import { WsSocketUser } from './ws-jwt.guard';
+import { UploadService } from '@/upload';
+import { ChatMessageType } from '@homerunnie/shared';
 
 type MockSocket = {
   id: string;
@@ -34,15 +36,49 @@ describe('ChatGateway', () => {
   let mockServer: { to: jest.Mock };
   let mockJwtService: { verifyAsync: jest.Mock };
   let mockMemberRepository: { findMemberWithProfile: jest.Mock };
-  let mockChatRepository: { findMessagesByRoomId: jest.Mock; saveMessage: jest.Mock };
+  let mockChatRepository: {
+    findMessagesByRoomId: jest.Mock;
+    findChatRoomMember: jest.Mock;
+    saveMessage: jest.Mock;
+    saveImageMessage: jest.Mock;
+    updateChatRoomUpdatedAt: jest.Mock;
+    updateLastReadAt: jest.Mock;
+  };
+  let mockUploadService: { isValidChatImageMetadata: jest.Mock };
 
   beforeEach(async () => {
     mockJwtService = { verifyAsync: jest.fn() };
     mockMemberRepository = { findMemberWithProfile: jest.fn() };
     mockChatRepository = {
       findMessagesByRoomId: jest.fn().mockResolvedValue([]),
-      saveMessage: jest.fn().mockResolvedValue(undefined),
+      findChatRoomMember: jest.fn().mockResolvedValue({ memberId: 1 }),
+      saveMessage: jest.fn().mockImplementation(async (_roomId, _memberId, content) => ({
+        id: 1,
+        content,
+        messageType: 'TEXT',
+        createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      })),
+      saveImageMessage: jest.fn().mockResolvedValue({
+        message: {
+          id: 2,
+          content: '사진입니다',
+          messageType: ChatMessageType.IMAGE,
+          createdAt: new Date('2026-01-01T00:00:00.000Z'),
+        },
+        images: [
+          {
+            id: 10,
+            imageUrl: 'https://example.com/image.jpg',
+            mimeType: 'image/jpeg',
+            fileSize: 100,
+            imageOrder: 0,
+          },
+        ],
+      }),
+      updateChatRoomUpdatedAt: jest.fn().mockResolvedValue(undefined),
+      updateLastReadAt: jest.fn().mockResolvedValue(undefined),
     };
+    mockUploadService = { isValidChatImageMetadata: jest.fn().mockReturnValue(true) };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -51,6 +87,7 @@ describe('ChatGateway', () => {
         { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('test-secret') } },
         { provide: MemberRepository, useValue: mockMemberRepository },
         { provide: ChatRepository, useValue: mockChatRepository },
+        { provide: UploadService, useValue: mockUploadService },
       ],
     }).compile();
 
@@ -118,7 +155,7 @@ describe('ChatGateway', () => {
       expect(socket.to).not.toHaveBeenCalled();
     });
 
-    it('socket.data.user가 있으면 참여 중인 방에 퇴장 알림을 보낸다', () => {
+    it('socket.data.user가 있어도 현재는 퇴장 알림을 보내지 않는다', () => {
       const user: WsSocketUser = {
         memberId: 1,
         nickname: '테스터',
@@ -129,7 +166,7 @@ describe('ChatGateway', () => {
 
       gateway.handleDisconnect(socket as unknown as Socket);
 
-      expect(socket.to).toHaveBeenCalledWith('room1');
+      expect(socket.to).not.toHaveBeenCalled();
     });
   });
 
@@ -144,14 +181,14 @@ describe('ChatGateway', () => {
       const socket = createMockSocket('user-1', user);
       mockChatRepository.findMessagesByRoomId.mockResolvedValue([]);
 
-      await gateway.handleJoinRoom(user, { roomId: 'room1' }, socket as unknown as Socket);
+      await gateway.handleJoinRoom(user, { roomId: '1' }, socket as unknown as Socket);
 
-      expect(socket.join).toHaveBeenCalledWith('room1');
-      expect(user.roomIds.has('room1')).toBe(true);
+      expect(socket.join).toHaveBeenCalledWith('1');
+      expect(user.roomIds.has('1')).toBe(true);
       expect(socket.emit).toHaveBeenCalledWith('message_history', []);
     });
 
-    it('방 전체에 입장 메시지를 보낸다', async () => {
+    it('채팅방 멤버가 아니면 방에 입장하지 않는다', async () => {
       const user: WsSocketUser = {
         memberId: 1,
         nickname: '테스터',
@@ -160,15 +197,12 @@ describe('ChatGateway', () => {
       };
       const socket = createMockSocket('user-1', user);
       mockChatRepository.findMessagesByRoomId.mockResolvedValue([]);
+      mockChatRepository.findChatRoomMember.mockResolvedValue(null);
 
-      await gateway.handleJoinRoom(user, { roomId: 'room1' }, socket as unknown as Socket);
+      await gateway.handleJoinRoom(user, { roomId: '1' }, socket as unknown as Socket);
 
-      expect(socket.to).toHaveBeenCalledWith('room1');
-      const toResult = socket.to('room1');
-      expect(toResult.emit).toHaveBeenCalledWith('user_joined', {
-        nickname: '테스터',
-        message: '테스터님이 입장하셨습니다.',
-      });
+      expect(socket.join).not.toHaveBeenCalled();
+      expect(socket.emit).not.toHaveBeenCalled();
     });
   });
 
@@ -184,7 +218,7 @@ describe('ChatGateway', () => {
 
       await gateway.handleMessage(
         user,
-        { message: '안녕', roomId: 'room1' },
+        { message: '안녕', roomId: '1' },
         socket as unknown as Socket,
       );
 
@@ -197,23 +231,29 @@ describe('ChatGateway', () => {
         memberId: 1,
         nickname: '테스터',
         supportTeam: null,
-        roomIds: new Set(['room1']),
+        roomIds: new Set(['1']),
       };
       const socket = createMockSocket('user-1', user);
 
       await gateway.handleMessage(
         user,
-        { message: '안녕하세요', roomId: 'room1' },
+        { message: '안녕하세요', roomId: '1' },
         socket as unknown as Socket,
       );
 
-      expect(socket.to).toHaveBeenCalledWith('room1');
-      const toResult = socket.to('room1');
-      expect(toResult.emit).toHaveBeenCalledWith('received_message', {
-        nickname: '테스터',
-        message: '안녕하세요',
-        isOwn: false,
-      });
+      expect(socket.to).toHaveBeenCalledWith('1');
+      const toResult = socket.to('1');
+      expect(toResult.emit).toHaveBeenCalledWith(
+        'received_message',
+        expect.objectContaining({
+          id: 1,
+          nickname: '테스터',
+          message: '안녕하세요',
+          type: 'TEXT',
+          attachments: [],
+          isOwn: false,
+        }),
+      );
     });
 
     it('나에게 isOwn: true로 메시지를 전송한다', async () => {
@@ -221,21 +261,78 @@ describe('ChatGateway', () => {
         memberId: 1,
         nickname: '테스터',
         supportTeam: null,
-        roomIds: new Set(['room1']),
+        roomIds: new Set(['1']),
       };
       const socket = createMockSocket('user-1', user);
 
       await gateway.handleMessage(
         user,
-        { message: '안녕하세요', roomId: 'room1' },
+        { message: '안녕하세요', roomId: '1' },
         socket as unknown as Socket,
       );
 
-      expect(socket.emit).toHaveBeenCalledWith('received_message', {
+      expect(socket.emit).toHaveBeenCalledWith(
+        'received_message',
+        expect.objectContaining({
+          id: 1,
+          nickname: '테스터',
+          message: '안녕하세요',
+          type: 'TEXT',
+          attachments: [],
+          isOwn: true,
+        }),
+      );
+    });
+
+    it('이미지 메시지를 저장하고 첨부파일 정보를 전송한다', async () => {
+      const user: WsSocketUser = {
+        memberId: 1,
         nickname: '테스터',
-        message: '안녕하세요',
-        isOwn: true,
-      });
+        supportTeam: null,
+        roomIds: new Set(['1']),
+      };
+      const socket = createMockSocket('user-1', user);
+
+      await gateway.handleMessage(
+        user,
+        {
+          roomId: '1',
+          type: ChatMessageType.IMAGE,
+          message: '사진입니다',
+          attachments: [
+            {
+              objectKey: 'chat/1/1/image.jpg',
+              imageUrl: 'https://example.com/image.jpg',
+              mimeType: 'image/jpeg',
+              fileSize: 100,
+              imageOrder: 0,
+            },
+          ],
+        },
+        socket as unknown as Socket,
+      );
+
+      expect(mockChatRepository.saveImageMessage).toHaveBeenCalledWith(
+        1,
+        1,
+        '사진입니다',
+        expect.any(Array),
+      );
+      expect(socket.emit).toHaveBeenCalledWith(
+        'received_message',
+        expect.objectContaining({
+          id: 2,
+          type: ChatMessageType.IMAGE,
+          message: '사진입니다',
+          attachments: [
+            expect.objectContaining({
+              id: 10,
+              imageUrl: 'https://example.com/image.jpg',
+            }),
+          ],
+          isOwn: true,
+        }),
+      );
     });
   });
 });

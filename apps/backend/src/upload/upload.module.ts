@@ -27,6 +27,6 @@ const ALLOWED_MIME = /^image\/(png|jpe?g|gif|webp|heic|heif)$/i;
   ],
   controllers: [UploadController],
   providers: [UploadService],
-  exports: [UploadService],
+  exports: [UploadService, MulterModule],
 })
 export class UploadModule {}

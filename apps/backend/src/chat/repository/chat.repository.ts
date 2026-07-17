@@ -1,9 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { eq, and, desc, count, sql } from 'drizzle-orm';
+import { eq, and, asc, desc, count, inArray, sql } from 'drizzle-orm';
 import { DATABASE_CONNECTION } from '@/common';
-import { ChatRoom, ChatRoomMember, ChatMessage, ChatJoinRequest } from '@/chat/domain';
-import { ChatRoomMemberRole, ChatJoinRequestStatus } from '@homerunnie/shared';
+import {
+  ChatRoom,
+  ChatRoomMember,
+  ChatMessage,
+  ChatMessageImage,
+  ChatJoinRequest,
+} from '@/chat/domain';
+import { ChatMessageType, ChatRoomMemberRole, ChatJoinRequestStatus } from '@homerunnie/shared';
 import { Member } from '@/member/domain/member.entity';
 import { Profile } from '@/member/domain/profile.entity';
 import { Post } from '@/post/shared/domain';
@@ -14,6 +20,14 @@ type ChatRoomType = typeof ChatRoom.$inferSelect;
 type ChatRoomMemberType = typeof ChatRoomMember.$inferSelect;
 type DbType = NodePgDatabase<typeof schema>;
 type DbTransaction = Parameters<Parameters<DbType['transaction']>[0]>[0];
+
+export interface ChatImageMessageInput {
+  objectKey: string;
+  imageUrl: string;
+  mimeType: string;
+  fileSize: number;
+  imageOrder: number;
+}
 
 @Injectable()
 export class ChatRepository {
@@ -60,7 +74,11 @@ export class ChatRepository {
         teamAway: RecruitmentDetail.teamAway,
         gameDate: RecruitmentDetail.gameDate,
         lastMessage: sql<string | null>`(
-          SELECT ${ChatMessage.content} FROM ${ChatMessage}
+          SELECT CASE
+            WHEN ${ChatMessage.messageType} = 'IMAGE' THEN '[사진]'
+            ELSE ${ChatMessage.content}
+          END
+          FROM ${ChatMessage}
           WHERE ${ChatMessage.chatRoomId} = ${ChatRoom.id}
           ORDER BY ${ChatMessage.createdAt} DESC
           LIMIT 1
@@ -187,11 +205,49 @@ export class ChatRepository {
     return message;
   }
 
+  async saveImageMessage(
+    chatRoomId: number,
+    senderId: number,
+    content: string | null,
+    images: ChatImageMessageInput[],
+  ) {
+    return this.db.transaction(async (tx) => {
+      const [message] = await tx
+        .insert(ChatMessage)
+        .values({
+          chatRoomId,
+          senderId,
+          content,
+          messageType: ChatMessageType.IMAGE,
+        })
+        .returning();
+
+      const savedImages = await tx
+        .insert(ChatMessageImage)
+        .values(
+          images.map((image) => ({
+            chatMessageId: message.id,
+            objectKey: image.objectKey,
+            imageUrl: image.imageUrl,
+            mimeType: image.mimeType,
+            fileSize: image.fileSize,
+            imageOrder: image.imageOrder,
+          })),
+        )
+        .returning();
+
+      await tx.update(ChatRoom).set({ updatedAt: new Date() }).where(eq(ChatRoom.id, chatRoomId));
+
+      return { message, images: savedImages };
+    });
+  }
+
   async findMessagesByRoomId(chatRoomId: number, limit = 50) {
     const messages = await this.db
       .select({
         id: ChatMessage.id,
         content: ChatMessage.content,
+        messageType: ChatMessage.messageType,
         senderId: ChatMessage.senderId,
         createdAt: ChatMessage.createdAt,
         nickname: Profile.nickname,
@@ -203,7 +259,32 @@ export class ChatRepository {
       .orderBy(desc(ChatMessage.createdAt))
       .limit(limit);
 
-    return messages.reverse();
+    const orderedMessages = messages.reverse();
+    const messageIds = orderedMessages.map((message) => message.id);
+    const images = messageIds.length
+      ? await this.db
+          .select()
+          .from(ChatMessageImage)
+          .where(
+            and(
+              inArray(ChatMessageImage.chatMessageId, messageIds),
+              eq(ChatMessageImage.deleted, false),
+            ),
+          )
+          .orderBy(asc(ChatMessageImage.imageOrder), asc(ChatMessageImage.createdAt))
+      : [];
+
+    const imagesByMessageId = new Map<number, typeof images>();
+    images.forEach((image) => {
+      const current = imagesByMessageId.get(image.chatMessageId) ?? [];
+      current.push(image);
+      imagesByMessageId.set(image.chatMessageId, current);
+    });
+
+    return orderedMessages.map((message) => ({
+      ...message,
+      images: imagesByMessageId.get(message.id) ?? [],
+    }));
   }
 
   async findChatRoomMember(chatRoomId: number, memberId: number, tx?: DbTransaction) {

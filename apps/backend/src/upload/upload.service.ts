@@ -9,6 +9,16 @@ interface BufferedUploadedFile extends Express.Multer.File {
   buffer: Buffer;
 }
 
+const MAX_IMAGE_SIZE = 15 * 1024 * 1024;
+const ALLOWED_IMAGE_MIME = /^image\/(png|jpe?g|gif|webp|heic|heif)$/i;
+
+export interface UploadedImageMetadata {
+  objectKey: string;
+  imageUrl: string;
+  mimeType: string;
+  fileSize: number;
+}
+
 @Injectable()
 export class UploadService {
   private s3Client: S3Client | null = null;
@@ -19,6 +29,15 @@ export class UploadService {
     memberId: number,
     files: Express.Multer.File[],
   ): Promise<UploadImagesResponseDto> {
+    const images = await this.uploadImagesWithMetadata(memberId, files, 'feed');
+    return new UploadImagesResponseDto(images.map((image) => image.imageUrl));
+  }
+
+  async uploadImagesWithMetadata(
+    memberId: number,
+    files: Express.Multer.File[],
+    prefix: string,
+  ): Promise<UploadedImageMetadata[]> {
     const region = this.configService.get<string>('storage.aws.region') ?? '';
     const bucket = this.configService.get<string>('storage.aws.bucket') ?? '';
 
@@ -30,22 +49,38 @@ export class UploadService {
 
     const s3Client = this.createS3Client(region);
 
-    const urls = await Promise.all(
+    return Promise.all(
       files.map(async (file) =>
-        this.uploadImage(s3Client, bucket, memberId, file as BufferedUploadedFile),
+        this.uploadImage(s3Client, bucket, memberId, prefix, file as BufferedUploadedFile),
       ),
     );
+  }
 
-    return new UploadImagesResponseDto(urls);
+  isValidChatImageMetadata(
+    roomId: number,
+    memberId: number,
+    image: UploadedImageMetadata,
+  ): boolean {
+    const expectedPrefix = `chat/${roomId}/${memberId}/`;
+    if (!image.objectKey.startsWith(expectedPrefix)) return false;
+    if (!ALLOWED_IMAGE_MIME.test(image.mimeType)) return false;
+    if (image.fileSize < 1 || image.fileSize > MAX_IMAGE_SIZE) return false;
+
+    const bucket = this.configService.get<string>('storage.aws.bucket') ?? '';
+    const region = this.configService.get<string>('storage.aws.region') ?? '';
+    if (!bucket || !region) return false;
+
+    return image.imageUrl === this.toPublicUrl(bucket, image.objectKey);
   }
 
   private async uploadImage(
     s3Client: S3Client,
     bucket: string,
     memberId: number,
+    prefix: string,
     file: BufferedUploadedFile,
-  ): Promise<string> {
-    const key = this.createObjectKey(memberId, file.originalname);
+  ): Promise<UploadedImageMetadata> {
+    const key = this.createObjectKey(memberId, prefix, file.originalname);
 
     await s3Client.send(
       new PutObjectCommand({
@@ -56,7 +91,12 @@ export class UploadService {
       }),
     );
 
-    return this.toPublicUrl(bucket, key);
+    return {
+      objectKey: key,
+      imageUrl: this.toPublicUrl(bucket, key),
+      mimeType: file.mimetype,
+      fileSize: file.size ?? file.buffer.length,
+    };
   }
 
   private createS3Client(region: string): S3Client {
@@ -67,9 +107,10 @@ export class UploadService {
     return this.s3Client;
   }
 
-  private createObjectKey(memberId: number, originalName: string): string {
+  private createObjectKey(memberId: number, prefix: string, originalName: string): string {
     const ext = extname(originalName).toLowerCase();
-    return `feed/${memberId}/${uuidv4()}${ext}`;
+    const normalizedPrefix = prefix.replace(/^\/+|\/+$/g, '');
+    return `${normalizedPrefix}/${memberId}/${uuidv4()}${ext}`;
   }
 
   private toPublicUrl(bucket: string, key: string): string {

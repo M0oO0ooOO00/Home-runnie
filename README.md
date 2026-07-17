@@ -85,11 +85,18 @@ pnpm install
 
 ```bash
 # Docker Compose로 PostgreSQL 실행
-cd apps/backend
-docker-compose up -d
+docker compose -f apps/backend/docker-compose.postgresql.yaml up -d
 ```
 
 #### 2. 환경 변수 설정
+
+`apps/backend/secret`은 별도의 private Git submodule입니다. 처음 clone한 경우 먼저 submodule을 초기화해야 합니다.
+
+```bash
+git submodule update --init --recursive
+```
+
+환경 변수 파일의 실제 값은 저장소나 문서에 기록하지 않습니다. 팀원이 필요한 경우 secret submodule의 접근 권한을 받아 로컬 파일을 사용합니다.
 
 **Backend** (`apps/backend/secret/.env`):
 
@@ -126,7 +133,8 @@ NEXT_PUBLIC_API_URL=http://localhost:3030
 # 백엔드 디렉토리로 이동
 cd apps/backend
 
-# 데이터베이스 스키마 생성
+# 로컬 데이터베이스에 현재 Entity 스키마 반영
+# Homerunnie 로컬 개발의 기본 방식은 db:push입니다.
 pnpm db:push
 
 # 시드 데이터 입력
@@ -337,16 +345,51 @@ nest g service module-name
 
 #### 데이터베이스 마이그레이션
 
+Homerunnie는 Drizzle ORM의 `db:push`와 migration 기능을 함께 사용합니다.
+
+- 로컬 기능 개발: 기존 데이터와 빠른 반복을 위해 `db:push` 사용
+- 운영 반영: migration 파일을 생성하고 CI/CD에서 적용
+- 운영 DB에는 `db:push`를 직접 실행하지 않음
+
 ```bash
-# 스키마 변경 후 마이그레이션 파일 생성
+# 스키마 변경 후 운영 반영용 migration 파일 생성
 pnpm db:generate
 
-# 데이터베이스에 적용
+# migration 기반 DB에서 적용하거나 CI/CD에서 사용
 pnpm db:migrate
 
-# 또는 직접 push (개발 환경)
+# 로컬 개발 DB에 Entity 스키마를 직접 반영
 pnpm db:push
 ```
+
+현재 로컬 `jikgwan` DB는 기존 `db:push` 방식으로 구성되어 있으므로, migration history가 없는 로컬 DB에서 `db:migrate`를 실행하지 않습니다. 로컬에서는 `db:push`를 사용하고, 운영 배포가 필요한 스키마 변경은 반드시 `db:generate`로 migration 파일을 생성해 함께 커밋합니다.
+
+새 Entity를 추가하거나 Entity를 변경할 때는 다음 순서를 따릅니다.
+
+1. `src/[module]/domain/[entity].entity.ts` 수정 또는 추가
+2. 해당 도메인의 `domain/index.ts`에 export 추가
+3. `src/common/db/schema/index.ts`에서 schema가 export되는지 확인
+4. 로컬 DB에는 `pnpm db:push` 실행
+5. 운영 반영 전 `pnpm db:generate` 실행
+6. `apps/backend/drizzle/migrations/`의 SQL, `meta` snapshot, `_journal.json` 변경을 검토하고 커밋
+
+현재 migration 폴더에는 `_journal.json`에 등록된 migration과 과거에 생성된 미등록 SQL 파일이 함께 있습니다. 기존 migration 파일을 임의로 삭제하거나 이름을 변경하지 말고, 새 migration은 반드시 `db:generate`로 생성합니다.
+
+운영 배포 workflow는 다음 순서로 동작합니다.
+
+```text
+Entity 변경 시 migration 존재 여부 검사
+→ 백엔드 빌드 및 테스트
+→ Docker image 생성
+→ 운영 서버에서 node dist/scripts/migrate.js 실행
+→ 백엔드 컨테이너 실행
+```
+
+관련 파일:
+
+- `.github/workflows/deploy-aws-ec2.yml`
+- `apps/backend/src/scripts/migrate.ts`
+- `scripts/check-drizzle-migration.sh`
 
 #### Entity 추가하기
 
@@ -424,6 +467,28 @@ pnpm db:drop          # 데이터베이스 삭제
 pnpm db:reset         # DB 삭제 후 재생성
 ```
 
+### 채팅 이미지 기능의 DB·파일 저장 원칙
+
+채팅 이미지는 WebSocket으로 바이너리 파일을 직접 전송하지 않고, 기존 S3 업로드 구조를 재사용합니다.
+
+```text
+이미지 선택
+→ 채팅방 권한 확인 후 S3 업로드
+→ chat/{roomId}/{memberId}/... 경로의 object key 반환
+→ Socket.IO로 이미지 메시지 전송
+→ chat_message와 첨부파일 정보 저장
+```
+
+이미지 기능을 추가할 때는 다음 구조를 권장합니다.
+
+- `chat_message`: `TEXT`/`IMAGE` 메시지 타입과 본문 저장
+- `chat_message_image`: S3 object key, URL, MIME type, 파일 크기, 정렬 순서 저장
+- 이미지 전용 메시지는 본문이 없을 수 있으므로 `content` nullable 검토
+- `objectKey`를 저장해 추후 S3 이미지 삭제가 가능하도록 처리
+- 메시지와 첨부파일 INSERT는 하나의 DB transaction으로 처리
+
+이미지 업로드 API는 현재 피드용 `/upload/images`와 목적을 분리하는 것을 권장합니다. S3 bucket과 AWS 환경 변수는 기존 설정을 재사용하고, 채팅용 prefix와 파일 제한은 백엔드 코드에서 관리합니다.
+
 ---
 
 ## 🔧 환경 변수
@@ -437,6 +502,9 @@ pnpm db:reset         # DB 삭제 후 재생성
 - `PORT`: 서버 포트 (기본: 3030)
 - `JWT_SECRET`: JWT 토큰 시크릿
 - `KAKAO_CLIENT_ID`, `KAKAO_CLIENT_SECRET`: Kakao OAuth 인증 정보
+- `AWS_REGION`, `AWS_S3_BUCKET`, `AWS_S3_PUBLIC_BASE_URL`: 이미지 저장 및 공개 URL 설정
+
+운영 환경은 `apps/backend/secret/prod.env`를 사용합니다. 운영 배포 시에는 GitHub Actions와 서버의 secret 관리 방식을 사용하며, 실제 AWS access key나 JWT secret을 README, issue, 로그에 기록하지 않습니다.
 
 ### Frontend
 
