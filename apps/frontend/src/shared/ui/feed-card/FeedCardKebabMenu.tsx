@@ -39,7 +39,7 @@ export function FeedCardKebabMenu({ onEdit, onDelete }: FeedCardKebabMenuProps) 
           e.stopPropagation();
           setOpen((v) => !v);
         }}
-        className="-m-2 rounded-full p-2 text-gray-400 transition-colors hover:text-gray-600"
+        className="-m-2 rounded-full p-2 text-gray-600 transition-colors hover:text-gray-700"
         aria-label="더보기"
         aria-haspopup="menu"
         aria-expanded={open}

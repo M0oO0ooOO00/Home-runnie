@@ -166,6 +166,10 @@ export default function Header() {
         aria-hidden="true"
       />
       <aside
+        role="dialog"
+        aria-modal={isSidebarOpen}
+        aria-label="모바일 메뉴"
+        inert={!isSidebarOpen}
         className={`lg:hidden fixed top-0 right-0 h-full w-72 max-w-[80%] bg-white z-50 shadow-lg transform transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
         }`}

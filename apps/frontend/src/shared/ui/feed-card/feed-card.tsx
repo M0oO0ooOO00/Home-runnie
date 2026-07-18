@@ -12,6 +12,7 @@ import { FeedCardKebabMenu } from './FeedCardKebabMenu';
 
 export interface FeedCardProps {
   post: FeedPost;
+  priorityImage?: boolean;
   viewerMemberId?: number | null;
   onLikeClick?: (post: FeedPost) => void;
   onCommentClick?: (post: FeedPost) => void;
@@ -24,6 +25,7 @@ export interface FeedCardProps {
 
 export function FeedCard({
   post,
+  priorityImage = false,
   viewerMemberId,
   onLikeClick,
   onCommentClick,
@@ -54,16 +56,16 @@ export function FeedCard({
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
             <span className="truncate text-b01-sb text-gray-850">{author.nickname}</span>
             {author.supportTeam && (
-              <span className="shrink-0 text-b02-m text-gray-500">
+              <span className="shrink-0 text-b02-m text-gray-600">
                 {TeamDescription[author.supportTeam] ?? author.supportTeam}
               </span>
             )}
           </div>
           <div className="mt-1 flex items-center gap-1.5">
-            <time className="text-b02-r text-gray-500" dateTime={createdAt}>
+            <time className="text-b02-r text-gray-600" dateTime={createdAt}>
               {formatRelativeTime(createdAt, 'compact')}
             </time>
-            {isEdited && <span className="text-b02-r text-gray-500">· 수정됨</span>}
+            {isEdited && <span className="text-b02-r text-gray-600">· 수정됨</span>}
           </div>
         </div>
         {showKebab && (
@@ -87,11 +89,11 @@ export function FeedCard({
 
       {images.length > 0 && (
         <div className="-mt-1 pb-7 sm:pb-8">
-          <FeedCardImageGrid images={images} showAll={expanded} />
+          <FeedCardImageGrid images={images} showAll={expanded} priority={priorityImage} />
         </div>
       )}
 
-      <footer className="flex items-center gap-8 text-gray-400">
+      <footer className="flex items-center gap-8 text-gray-600">
         <button
           type="button"
           onClick={(e) => {
@@ -101,7 +103,7 @@ export function FeedCard({
           }}
           className={cn(
             'inline-flex items-center gap-2 text-b01-m transition-colors',
-            isLiked ? 'text-red-500' : 'text-gray-400',
+            isLiked ? 'text-red-500' : 'text-gray-600',
             onLikeClick ? 'cursor-pointer' : 'pointer-events-none',
             onLikeClick && !isLiked && 'hover:text-red-500',
           )}
@@ -124,7 +126,7 @@ export function FeedCard({
             onCommentClick(post);
           }}
           className={cn(
-            'inline-flex items-center gap-2 text-b01-m text-gray-400 transition-colors',
+            'inline-flex items-center gap-2 text-b01-m text-gray-600 transition-colors',
             onCommentClick ? 'cursor-pointer' : 'pointer-events-none',
             onCommentClick && 'hover:text-gray-700',
           )}
