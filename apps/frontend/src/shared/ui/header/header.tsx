@@ -17,6 +17,7 @@ export default function Header() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const lastScrollY = useRef(0);
+  const sidebarRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     lastScrollY.current = window.scrollY;
@@ -47,6 +48,13 @@ export default function Header() {
       if (rafId !== null) window.cancelAnimationFrame(rafId);
     };
   }, []);
+
+  useEffect(() => {
+    const sidebar = sidebarRef.current;
+    if (!sidebar) return;
+
+    sidebar.toggleAttribute('inert', !isSidebarOpen);
+  }, [isSidebarOpen]);
 
   const closeSidebar = () => setIsSidebarOpen(false);
   const { data, isLoading, isError } = useMyProfileQuery({
@@ -166,6 +174,10 @@ export default function Header() {
         aria-hidden="true"
       />
       <aside
+        ref={sidebarRef}
+        role="dialog"
+        aria-modal={isSidebarOpen}
+        aria-label="모바일 메뉴"
         className={`lg:hidden fixed top-0 right-0 h-full w-72 max-w-[80%] bg-white z-50 shadow-lg transform transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
         }`}

@@ -92,6 +92,7 @@ export default function FeedDetailPageClient({
         <>
           <FeedCard
             post={post}
+            priorityImage={Boolean(post.images[0])}
             viewerMemberId={viewerMemberId}
             expanded
             className="mx-auto"

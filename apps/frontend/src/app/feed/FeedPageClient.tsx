@@ -181,13 +181,14 @@ export default function FeedPageClient({
           {!isLoading && !isError && items.length > 0 && (
             <>
               <div className="space-y-5">
-                {items.map((post) => (
+                {items.map((post, index) => (
                   <div key={post.id}>
                     <Link href={`/feed/${post.id}`} className="sr-only">
                       {post.content.slice(0, 80)} 상세 보기
                     </Link>
                     <FeedCard
                       post={post}
+                      priorityImage={index === 0}
                       viewerMemberId={viewerMemberId}
                       onCardClick={(p) => router.push(`/feed/${p.id}`)}
                       onLikeClick={handleLikeClick}
@@ -203,7 +204,7 @@ export default function FeedPageClient({
                 aria-hidden="true"
               >
                 {isFetchingNextPage && <Loader2 className="animate-spin text-gray-500" size={20} />}
-                {!hasNextPage && <p className="text-c01-r text-gray-400">마지막 글입니다</p>}
+                {!hasNextPage && <p className="text-c01-r text-gray-600">마지막 글입니다</p>}
               </div>
             </>
           )}
