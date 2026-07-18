@@ -89,6 +89,7 @@ export default function FeedPageClient({
   };
 
   const items = data?.pages.flatMap((p) => p.items) ?? [];
+  const firstImagePostIndex = items.findIndex((post) => post.images.length > 0);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 640px)');
@@ -188,7 +189,7 @@ export default function FeedPageClient({
                     </Link>
                     <FeedCard
                       post={post}
-                      priorityImage={index === 0}
+                      priorityImage={index === firstImagePostIndex}
                       viewerMemberId={viewerMemberId}
                       onCardClick={(p) => router.push(`/feed/${p.id}`)}
                       onLikeClick={handleLikeClick}
