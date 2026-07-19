@@ -9,15 +9,42 @@ import {
 import { apiClient } from '@/lib/fetchClient';
 import type { ChatImageUploadMetadata } from '@/types/chat';
 
+type ChatImageUploadResponseMetadata = Omit<ChatImageUploadMetadata, 'imageOrder'>;
+
 export const CHAT_IMAGE_MAX_FILES = 4;
 export const CHAT_IMAGE_MAX_SIZE_MB = 15;
 export const CHAT_IMAGE_MAX_SIZE_BYTES = CHAT_IMAGE_MAX_SIZE_MB * 1024 * 1024;
 
 const ALLOWED_CHAT_IMAGE_MIME = /^image\/(png|jpe?g|gif|webp|heic|heif)$/i;
-const ALLOWED_CHAT_IMAGE_EXTENSION = /.(png|jpe?g|gif|webp|heic|heif)$/i;
+const ALLOWED_CHAT_IMAGE_EXTENSION = /\.(png|jpe?g|gif|webp|heic|heif)$/i;
 
 export interface UploadChatImagesResponse {
-  files: ChatImageUploadMetadata[];
+  files: ChatImageUploadResponseMetadata[];
+}
+
+interface PresignedChatImageUpload extends ChatImageUploadResponseMetadata {
+  uploadUrl: string;
+}
+
+interface ChatImagePresignResponse {
+  files: PresignedChatImageUpload[];
+}
+
+function getChatImageMimeType(file: File): string {
+  if (file.type.trim()) return file.type.trim();
+
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  const mimeTypesByExtension: Record<string, string> = {
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    gif: 'image/gif',
+    webp: 'image/webp',
+    heic: 'image/heic',
+    heif: 'image/heif',
+  };
+
+  return extension ? (mimeTypesByExtension[extension] ?? '') : '';
 }
 
 export function validateChatImageFiles(files: File[]): void {
@@ -49,16 +76,48 @@ export async function uploadChatImages(
 ): Promise<UploadChatImagesResponse> {
   validateChatImageFiles(files);
 
-  const formData = new FormData();
-  files.forEach((file) => formData.append('files', file));
-
-  return apiClient.postFormData<UploadChatImagesResponse>(
-    `/chat/rooms/${roomId}/images`,
-    formData,
+  const { files: presignedFiles } = await apiClient.post<ChatImagePresignResponse>(
+    `/chat/rooms/${roomId}/images/presign`,
+    {
+      files: files.map((file) => ({
+        fileName: file.name,
+        mimeType: getChatImageMimeType(file),
+        fileSize: file.size,
+      })),
+    },
     {
       authRequired: true,
+      retries: 0,
     },
   );
+
+  await Promise.all(
+    presignedFiles.map(async (presignedFile, index) => {
+      const file = files[index];
+      if (!file) throw new Error('업로드할 원본 이미지를 찾을 수 없습니다.');
+
+      const response = await fetch(presignedFile.uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': presignedFile.mimeType,
+        },
+        body: file,
+      });
+
+      if (!response.ok) {
+        throw new Error('이미지 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      }
+    }),
+  );
+
+  return {
+    files: presignedFiles.map((file) => ({
+      objectKey: file.objectKey,
+      imageUrl: file.imageUrl,
+      mimeType: file.mimeType,
+      fileSize: file.fileSize,
+    })),
+  };
 }
 
 /**
