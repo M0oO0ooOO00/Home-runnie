@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,17 +8,18 @@ import {
   Patch,
   Post,
   Query,
-  UploadedFiles,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { ChatService } from '@/chat/service';
-import { UploadService, UploadedImageMetadata } from '@/upload';
+import { PresignedChatImageUpload, UploadService } from '@/upload';
 import { CurrentMember } from '@/common';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
-import { CreateChatRoomRequestDto, GetChatRoomsRequestDto } from '@/chat/dto/request';
+import {
+  CreateChatImagePresignRequestDto,
+  CreateChatRoomRequestDto,
+  GetChatRoomsRequestDto,
+} from '@/chat/dto/request';
 import {
   ChatRoomResponseDto,
   GetChatRoomsResponseDto,
@@ -31,10 +31,6 @@ import {
   GetChatRoomsSwagger,
   UploadChatImagesSwagger,
 } from '@/chat/swagger';
-
-const MAX_CHAT_IMAGE_FILES = 4;
-const MAX_CHAT_IMAGE_FILE_SIZE = 15 * 1024 * 1024;
-const ALLOWED_CHAT_IMAGE_MIME = /^image\/(png|jpe?g|gif|webp|heic|heif)$/i;
 
 @ApiTags('채팅방')
 @Controller('chat')
@@ -54,38 +50,22 @@ export class ChatController {
     return this.chatService.createChatRoom(createChatRoomDto.postId, memberId);
   }
 
-  @Post('rooms/:roomId/images')
+  @Post('rooms/:roomId/images/presign')
   @UploadChatImagesSwagger
-  @UseInterceptors(
-    FilesInterceptor('files', MAX_CHAT_IMAGE_FILES, {
-      limits: { fileSize: MAX_CHAT_IMAGE_FILE_SIZE },
-      fileFilter: (_request, file, callback) => {
-        if (!ALLOWED_CHAT_IMAGE_MIME.test(file.mimetype)) {
-          return callback(new BadRequestException('이미지 파일만 업로드할 수 있습니다.'), false);
-        }
-
-        callback(null, true);
-      },
-    }),
-  )
-  async uploadChatImages(
+  async createChatImagePresignedUploads(
     @CurrentMember() memberId: number,
     @Param('roomId', ParseIntPipe) roomId: number,
-    @UploadedFiles() files: Express.Multer.File[],
-  ): Promise<{ files: UploadedImageMetadata[] }> {
+    @Body() request: CreateChatImagePresignRequestDto,
+  ): Promise<{ files: PresignedChatImageUpload[] }> {
     await this.chatService.assertChatRoomMember(roomId, memberId);
 
-    if (!files || files.length === 0) {
-      throw new BadRequestException('업로드할 이미지가 없습니다.');
-    }
-
-    const uploadedImages = await this.uploadService.uploadImagesWithMetadata(
+    const files = await this.uploadService.createPresignedChatImageUploads(
       memberId,
-      files,
-      `chat/${roomId}`,
+      roomId,
+      request.files,
     );
 
-    return { files: uploadedImages };
+    return { files };
   }
 
   @Get('rooms/by-post/:postId')
