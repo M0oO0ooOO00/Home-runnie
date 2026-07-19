@@ -20,15 +20,19 @@ export interface UploadedImageMetadata {
   fileSize: number;
 }
 
-export interface PresignedChatImageUpload extends UploadedImageMetadata {
+export interface PresignedImageUpload extends UploadedImageMetadata {
   uploadUrl: string;
 }
 
-export interface ChatImagePresignInput {
+export interface ImagePresignInput {
   fileName: string;
   mimeType: string;
   fileSize: number;
 }
+
+export type PresignedChatImageUpload = PresignedImageUpload;
+
+export type ChatImagePresignInput = ImagePresignInput;
 
 @Injectable()
 export class UploadService {
@@ -67,11 +71,11 @@ export class UploadService {
     );
   }
 
-  async createPresignedChatImageUploads(
+  async createPresignedImageUploads(
     memberId: number,
-    roomId: number,
-    files: ChatImagePresignInput[],
-  ): Promise<PresignedChatImageUpload[]> {
+    files: ImagePresignInput[],
+    prefix = 'feed',
+  ): Promise<PresignedImageUpload[]> {
     const region = this.configService.get<string>('storage.aws.region') ?? '';
     const bucket = this.configService.get<string>('storage.aws.bucket') ?? '';
 
@@ -95,7 +99,7 @@ export class UploadService {
           throw new BadRequestException('이미지는 파일당 15MB 이하만 업로드할 수 있습니다.');
         }
 
-        const objectKey = this.createObjectKey(memberId, `chat/${roomId}`, file.fileName);
+        const objectKey = this.createObjectKey(memberId, prefix, file.fileName);
         const uploadUrl = await getSignedUrl(
           // client-s3와 presigner가 서로 다른 Smithy 타입을 해석할 수 있어 SDK 경계에서만 맞춥니다.
           s3Client as unknown as Parameters<typeof getSignedUrl>[0],
@@ -103,7 +107,6 @@ export class UploadService {
             Bucket: bucket,
             Key: objectKey,
             ContentType: file.mimeType,
-            ContentLength: file.fileSize,
           }) as unknown as Parameters<typeof getSignedUrl>[1],
           { expiresIn: 300 },
         );
@@ -117,6 +120,14 @@ export class UploadService {
         };
       }),
     );
+  }
+
+  async createPresignedChatImageUploads(
+    memberId: number,
+    roomId: number,
+    files: ChatImagePresignInput[],
+  ): Promise<PresignedChatImageUpload[]> {
+    return this.createPresignedImageUploads(memberId, files, `chat/${roomId}`);
   }
 
   isValidChatImageMetadata(
@@ -164,7 +175,10 @@ export class UploadService {
 
   private createS3Client(region: string): S3Client {
     if (!this.s3Client) {
-      this.s3Client = new S3Client({ region });
+      this.s3Client = new S3Client({
+        region,
+        requestChecksumCalculation: 'WHEN_REQUIRED',
+      });
     }
 
     return this.s3Client;

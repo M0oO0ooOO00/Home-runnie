@@ -10,15 +10,14 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ErrorResponseDto } from '@/common';
-import { UploadImagesResponseDto } from '@/upload/dto';
 
 export const UploadImagesSwagger = applyDecorators(
   ApiBearerAuth(),
-  ApiConsumes('multipart/form-data'),
+  ApiConsumes('application/json'),
   ApiOperation({
-    summary: '이미지 업로드',
+    summary: '이미지 업로드 URL 발급',
     description:
-      '피드 작성/수정에 사용할 이미지 파일을 AWS S3에 업로드합니다. 최대 4장, 파일당 15MB까지 허용합니다.',
+      '피드 작성/수정과 댓글에 사용할 이미지의 S3 presigned PUT URL을 발급합니다. 브라우저는 발급받은 URL로 이미지를 직접 업로드해야 합니다. 최대 4장, 파일당 15MB까지 허용합니다.',
   }),
   ApiBody({
     schema: {
@@ -26,23 +25,54 @@ export const UploadImagesSwagger = applyDecorators(
       properties: {
         files: {
           type: 'array',
+          maxItems: 4,
           items: {
-            type: 'string',
-            format: 'binary',
+            type: 'object',
+            properties: {
+              fileName: { type: 'string', example: 'stadium.png' },
+              mimeType: { type: 'string', example: 'image/png' },
+              fileSize: { type: 'integer', example: 102400 },
+            },
+            required: ['fileName', 'mimeType', 'fileSize'],
           },
-          description: '업로드할 이미지 파일 목록',
+          description: '업로드할 이미지 메타데이터 목록 (파일당 최대 15MB)',
         },
       },
       required: ['files'],
     },
   }),
   ApiCreatedResponse({
-    type: UploadImagesResponseDto,
-    description: '업로드된 이미지 URL 목록',
+    description: '이미지 presigned URL 발급 성공',
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              uploadUrl: {
+                type: 'string',
+                format: 'uri',
+                example: 'https://bucket.s3.ap-northeast-2.amazonaws.com/feed/10/uuid.png?...',
+              },
+              objectKey: { type: 'string', example: 'feed/10/uuid.png' },
+              imageUrl: {
+                type: 'string',
+                format: 'uri',
+                example: 'https://bucket.s3.ap-northeast-2.amazonaws.com/feed/10/uuid.png',
+              },
+              mimeType: { type: 'string', example: 'image/png' },
+              fileSize: { type: 'integer', example: 102400 },
+            },
+          },
+        },
+      },
+    },
   }),
   ApiBadRequestResponse({
     type: ErrorResponseDto,
-    description: '파일 없음, 이미지 외 확장자, 용량/개수 제한 초과',
+    description: '파일 메타데이터 없음, 이미지 외 확장자, 용량/개수 제한 초과',
   }),
   ApiUnauthorizedResponse({
     type: ErrorResponseDto,
@@ -50,6 +80,6 @@ export const UploadImagesSwagger = applyDecorators(
   }),
   ApiInternalServerErrorResponse({
     type: ErrorResponseDto,
-    description: '서버 내부 오류 또는 AWS S3 업로드 실패',
+    description: '서버 내부 오류 또는 AWS S3 presigned URL 발급 실패',
   }),
 );
