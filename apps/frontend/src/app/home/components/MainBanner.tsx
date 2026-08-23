@@ -7,6 +7,7 @@ import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
 import { useRouter } from 'next/navigation';
 import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
 import { CtaButton } from '@/shared/ui/button/cta-button';
+import { trackWriteCtaClick } from '@/shared/lib/analytics/gtag';
 
 const bannerItems = [
   {
@@ -47,8 +48,18 @@ export default function MainBanner() {
 
   const onClickWriteBanner = () => {
     if (isLogged) {
+      trackWriteCtaClick({
+        post_type: 'recruitment',
+        source: 'home_banner',
+        blocked_by_login: false,
+      });
       router.push('/write');
     } else {
+      trackWriteCtaClick({
+        post_type: 'recruitment',
+        source: 'home_banner',
+        blocked_by_login: true,
+      });
       setIsLoginModalOpen(true);
     }
   };

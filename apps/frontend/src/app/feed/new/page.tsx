@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCreateFeedPostMutation } from '@/hooks/feed/useCreateFeedPostMutation';
 import { useFeedImagePicker } from '@/hooks/feed/useFeedImagePicker';
@@ -10,6 +10,7 @@ import { useLoginRequiredModal } from '@/hooks/auth/useLoginRequiredModal';
 import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
 import { FeedPostForm } from '@/app/feed/components/FeedPostForm';
 import { FEED_POST_MAX_CONTENT, FEED_POST_MAX_IMAGES } from '@/app/feed/constants';
+import { trackPostCreateSuccess, trackWritePageView } from '@/shared/lib/analytics/gtag';
 
 export default function FeedNewPage() {
   const router = useRouter();
@@ -18,6 +19,10 @@ export default function FeedNewPage() {
   const { formImages, newFiles, addFiles, removeImage } = useFeedImagePicker({
     maxImages: FEED_POST_MAX_IMAGES,
   });
+
+  useEffect(() => {
+    trackWritePageView('feed');
+  }, []);
 
   const { isLogged, isLoading: isLoginLoading } = useLoginStatus();
   const { loginModalOpen, setLoginModalOpen } = useLoginRequiredModal({
@@ -33,7 +38,10 @@ export default function FeedNewPage() {
     isError,
     error,
   } = useCreateFeedPostMutation({
-    onSuccess: () => router.push('/feed'),
+    onSuccess: (post) => {
+      trackPostCreateSuccess({ post_type: 'feed', post_id: post.id });
+      router.push('/feed');
+    },
   });
 
   const isSubmitting = isUploading || isCreating;

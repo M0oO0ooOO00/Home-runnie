@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { FeedCard } from '@/shared/ui/feed-card/feed-card';
@@ -12,6 +12,7 @@ import { useMyProfileQuery } from '@/hooks/my/useProfileQuery';
 import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
 import ConfirmModal from '@/shared/ui/modal/ConfirmModal';
 import { CommentList } from './components/CommentList';
+import { trackPostView } from '@/shared/lib/analytics/gtag';
 
 interface FeedDetailPageProps {
   params: { id: string };
@@ -25,6 +26,11 @@ export default function FeedDetailPageClient({
 }) {
   const router = useRouter();
   const postId = Number(params.id);
+
+  useEffect(() => {
+    if (!Number.isFinite(postId) || postId <= 0) return;
+    trackPostView({ post_type: 'feed', post_id: postId });
+  }, [postId]);
 
   const { data: post, isLoading, isError, error } = useFeedPostQuery(postId, initialPost);
   const { data: profile, isError: isProfileError } = useMyProfileQuery({ retry: false });

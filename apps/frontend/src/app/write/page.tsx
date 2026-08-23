@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,9 +15,14 @@ import { createChatRoom } from '@/apis/chat/chat';
 import { writeFormSchema, type WriteFormValues } from './schema';
 import { showToast, ToastIconType } from '@/shared/ui/toast/toast';
 import PickedTagsField from './components/picked-tags-field';
+import { trackPostCreateSuccess, trackWritePageView } from '@/shared/lib/analytics/gtag';
 
 export default function Page() {
   const router = useRouter();
+
+  useEffect(() => {
+    trackWritePageView('recruitment');
+  }, []);
 
   const {
     register,
@@ -38,6 +44,7 @@ export default function Page() {
 
   const { mutate: createPost, isPending } = useCreateRecruitmentPostMutation({
     onSuccess: async (response) => {
+      trackPostCreateSuccess({ post_type: 'recruitment', post_id: response.id });
       try {
         await createChatRoom(response.id);
         showToast('게시글과 채팅방이 성공적으로 생성되었습니다.', ToastIconType.SUCCESS);

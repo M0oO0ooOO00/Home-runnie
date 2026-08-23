@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getChatRoomByPostId, requestJoinChatRoom } from '@/apis/chat/chat';
 import { showToast, ToastIconType } from '@/shared/ui/toast/toast';
 import type { GetRecruitmentPostDetailResponse } from '@/apis/post/post';
+import { trackCommentCreateSuccess, trackPostView } from '@/shared/lib/analytics/gtag';
 
 const TEAM_VALUES = new Set<string>(Object.values(Team));
 const STADIUM_LABEL_MAP = new Map(baseBallStadiumItems.map((item) => [item.value, item.label]));
@@ -90,10 +91,16 @@ export default function RecruitmentPostDetailClient({
   const { mutate: createComment, isPending: isCreatingComment } =
     useCreateRecruitmentCommentMutation(postId, {
       onSuccess: () => {
+        trackCommentCreateSuccess({ post_type: 'recruitment', post_id: postId });
         setCommentInput('');
         queryClient.invalidateQueries({ queryKey: ['recruitment-comments', postId] });
       },
     });
+
+  useEffect(() => {
+    if (!Number.isFinite(postId) || postId <= 0) return;
+    trackPostView({ post_type: 'recruitment', post_id: postId });
+  }, [postId]);
 
   const handleApply = async () => {
     if (!myProfile) {
