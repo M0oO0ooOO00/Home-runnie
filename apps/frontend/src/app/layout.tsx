@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import Providers from './providers';
 import '@/shared/styles/index.css';
 import 'sonner/dist/styles.css';
@@ -7,6 +8,7 @@ import Footer from '@/shared/ui/footer/footer';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.homerunnie.app';
 const SITE_DESCRIPTION = '홈러니는 야구 직관 메이트를 모집하고 함께 응원할 팬을 연결합니다.';
+const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -114,6 +116,7 @@ export default function RootLayout({
             <Footer />
           </div>
         </Providers>
+        {GA_ID ? <GoogleAnalytics gaId={GA_ID} /> : null}
       </body>
     </html>
   );

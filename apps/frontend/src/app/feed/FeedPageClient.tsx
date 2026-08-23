@@ -16,6 +16,7 @@ import LoginRequiredModal from '@/shared/ui/modal/LoginRequiredModal';
 import ConfirmModal from '@/shared/ui/modal/ConfirmModal';
 import { cn } from '@/lib/utils';
 import type { GetFeedPostsResponse } from '@/apis/feed/feed';
+import { trackWriteCtaClick } from '@/shared/lib/analytics/gtag';
 
 export default function FeedPageClient({
   initialData,
@@ -66,8 +67,18 @@ export default function FeedPageClient({
 
   const handleWriteClick = () => {
     if (isLogged) {
+      trackWriteCtaClick({
+        post_type: 'feed',
+        source: 'feed_fab',
+        blocked_by_login: false,
+      });
       router.push('/feed/new');
     } else {
+      trackWriteCtaClick({
+        post_type: 'feed',
+        source: 'feed_fab',
+        blocked_by_login: true,
+      });
       showLoginModal('글을 작성하려면 로그인이 필요합니다.');
     }
   };

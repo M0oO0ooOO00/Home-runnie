@@ -9,6 +9,7 @@ import {
 import { uploadImages } from '@/apis/upload/upload';
 import type { GetFeedPostsResponse } from '@/apis/feed/feed';
 import type { FeedPost } from '@/shared/ui/feed-card/feed-card.types';
+import { trackCommentCreateSuccess } from '@/shared/lib/analytics/gtag';
 
 export interface CreateFeedCommentVariables extends Omit<CreateFeedCommentRequest, 'imageUrl'> {
   imageFile?: File;
@@ -61,6 +62,11 @@ export const useCreateFeedCommentMutation = (postId: number, { onError }: Option
       return createFeedComment(postId, { ...body, imageUrl });
     },
     onSuccess: (comment) => {
+      trackCommentCreateSuccess({
+        post_type: 'feed',
+        post_id: postId,
+        is_reply: comment.parentId !== null,
+      });
       queryClient.setQueryData<FeedComment[]>(['feed-comments', postId], (old) =>
         old ? appendComment(old, comment) : old,
       );

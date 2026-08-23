@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { trackWriteCtaClick } from '@/shared/lib/analytics/gtag';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -22,7 +23,17 @@ export default function Footer() {
               <Link href="/home" className="text-b03-r text-gray-600 hover:text-gray-900">
                 홈
               </Link>
-              <Link href="/write" className="text-b03-r text-gray-600 hover:text-gray-900">
+              <Link
+                href="/write"
+                className="text-b03-r text-gray-600 hover:text-gray-900"
+                onClick={() =>
+                  trackWriteCtaClick({
+                    post_type: 'recruitment',
+                    source: 'footer',
+                    blocked_by_login: false,
+                  })
+                }
+              >
                 모집글 작성
               </Link>
             </div>
