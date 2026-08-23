@@ -271,11 +271,13 @@ CTA 기준 작성을 보려면 A와 이어 3단 퍼널로도 구성 가능.
 
 1. GA4 **관리** → **DebugView** (또는 Realtime)
 2. 앱에서 순서대로:
-   - 홈 「작성하러 가기」 → `write_cta_click`
-   - `/write` 진입 → `write_page_view`
-   - (가능하면) 업로드 성공 → `post_create_success`
-   - 모집/피드 상세 → `post_view`
-   - 댓글 작성 → `comment_create_success`
+
+- 홈 「작성하러 가기」 → `write_cta_click`
+- `/write` 진입 → `write_page_view`
+- (가능하면) 업로드 성공 → `post_create_success`
+- 모집/피드 상세 → `post_view`
+- 댓글 작성 → `comment_create_success`
+
 3. DebugView에서 파라미터(`post_type`, `source` 등)가 함께 보이는지 확인
 4. 표준 보고서·저장된 퍼널은 보통 **24~48시간** 후부터 안정적으로 보임
 
@@ -289,4 +291,4 @@ CTA 기준 작성을 보려면 A와 이어 3단 퍼널로도 구성 가능.
 
 - `/write`는 middleware로 로그인 필요. 비로그인 CTA는 `write_page_view` 없이 `blocked_by_login: true`만 찍힐 수 있음.
 - App Router는 클라이언트 라우팅 시 기본 page_view가 빠질 수 있어 `GaPageView`로 보정함. 이탈 페이지 지표 정확도에 필요.
-- Measurement ID가 없으면 모든 `track*` / pageview는 no-op.
+- Measurement ID가 없으면 모든 `track`\* / pageview는 no-op.
